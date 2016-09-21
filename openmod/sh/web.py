@@ -158,6 +158,12 @@ osm_map.nodes = [{"lat": 0.0075, "lon": -0.0025,
 
 oauth = OAuth1Provider(app)
 
+@app.route('/iD/connection/oauth/request_token')#, methods=['GET', 'POST'])
+@oauth.request_token_handler
+@cors.cross_origin()
+def oauth_request_token():
+    return {}
+
 ##### Persistence code ends here ##############################################
 
 @app.route('/series/<path:ids>')
