@@ -12,7 +12,6 @@ import flask_cors as cors # TODO: Check whether the `@cors.cross_origin()`
 import flask_login as fl
 import flask_wtf as wtfl
 import wtforms as wtf
-import werkzeug.security as ws
 
 import oemof.db
 
@@ -84,38 +83,12 @@ class RedirectForm(wtfl.Form):
 #
 ##############################################################################
 
-class User:
-    """ Required by flask-login.
-
-    See: https://flask-login.readthedocs.io/en/latest/#your-user-class
-
-    This implementation just stores users in memory in a class variable and
-    creates new users as they try to log in.
-    """
-    known = {}
-    def __init__(self, name, pw):
-        if name in self.known:
-            raise ValueError(
-                    "Trying to create user '{}' which already exists.".format(
-                        name))
-        self.known[name] = self
-        self.name = name
-        self.pw_hash = ws.generate_password_hash(pw)
-        self.is_authenticated = True
-        self.is_active = True
-        self.is_anonymous = False
-
-    def get_id(self): return self.name
-
-    def check_pw(self, pw):
-        return ws.check_password_hash(self.pw_hash, pw)
-
 login_manager = fl.LoginManager()
 login_manager.login_view = 'login'
 login_manager.init_app(app)
 @login_manager.user_loader
 def load_user(user_id):
-    return User.known.get(user_id)
+    return osm.User.known.get(user_id)
 
 class Login(RedirectForm):
     username = wtf.StringField('Username', [wtf.validators.Length(min=3,
@@ -137,7 +110,7 @@ def login():
                 flask.flash('Invalid username/password combination.')
                 return flask.redirect(flask.url_for('login'))
         else:
-            user = User(form.username.data, form.password.data)
+            user = osm.User(form.username.data, form.password.data)
             flask.flash('User "{}" created.'.format(user.name))
             fl.login_user(user)
         # From now on: user logged in.
