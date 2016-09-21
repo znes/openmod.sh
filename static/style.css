@@ -1,3 +1,4 @@
+.flow { display: flex; }
 .map, .plot { height: 233px; width: 377px; }
 .marker {
   width: 5px;
