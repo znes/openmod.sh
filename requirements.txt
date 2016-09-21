@@ -1,5 +1,6 @@
 flask
 geoalchemy2
+oemof
 psycopg2
 sqlalchemy
 
