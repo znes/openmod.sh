@@ -187,6 +187,13 @@ def osm_map():
     # Get all nodes in the given bounding box.
     nodes = osm.Node.query.filter(minx <= osm.Node.lat, miny <= osm.Node.lon,
                                   maxx >= osm.Node.lat, maxy >= osm.Node.lon)
+    if nodes.count() == 0:
+        template = flask.render_template('map.xml', nodes=(), ways=(),
+                                                    relations=(),
+                                                    minlon=miny, maxlon=maxy,
+                                                    minlat=minx, maxlat=maxx)
+        return xml_response(template)
+
     # Limit nodes to the one's contained in the selected scenario.
     scenario = flask.session.get("scenario")
     if (scenario):
