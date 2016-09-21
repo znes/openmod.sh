@@ -331,8 +331,9 @@ def save_verifier(token, verifier, *args, **kwargs):
 
 @oauth.tokengetter
 def load_access_token(client_key, token, *args, **kwargs):
-    return [at for at in AccessToken.known
-               if at.client_key == client_key and at.token == token][0]
+    ats =  [at for at in AccessToken.known
+               if at.client_key == client_key and at.token == token]
+    return (ats[0] if ats else None)
 
 @oauth.tokensetter
 def save_access_token(token, request):
