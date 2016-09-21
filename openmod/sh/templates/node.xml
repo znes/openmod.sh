@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+{% from "macros.xml" import tags %}
 <osm version="0.6" generator="openmod.sh">
   {% for node in nodes %}
     <node {% for k,v in node.attributes.items() %} {{k}}="{{v}}" {% endfor %}>
-      {% for tag in node.tags %} <tag k="{{tag.key}}" v="{{tag.value}}"/>
-      {% endfor %}
+      {{ tags(node) }}
     </node>
   {% endfor %}
 </osm>
