@@ -165,6 +165,28 @@ class Element(Tagged):
         for k in kwargs:
             setattr(self, k, kwargs[k])
 
+    @DB.validates('timeseries_objects', include_removes=True)
+    def timeseries_tag_hook(self, key, tso, is_remove):
+        """ Hackily abuse a validator to manage timeseries tags.
+
+        This validator doesn't really do validation, but is used as a hook to
+        intercept addition and removal of `timeseries_objects` on `Element`s
+        and modify the `Element`'s timeseries tag accordingly.
+        """
+
+        # tso: timeseries object
+        ttags = (self.tags['timeseries'].split(", ")
+                 if 'timeseries' in self.tags else [])
+        if is_remove:
+            self.tags['timeseries'] = ", ".join(t for t in ttags
+                                                  if t != tso.key)
+        else:
+            ttags.append(tso.key)
+            self.tags['timeseries'] = ", ".join(t for t in ttags)
+        if self.tags['timeseries'] == '':
+            del self.tags['timeseries']
+        return tso
+
 class Node(Element):
     __mapper_args__ = {'polymorphic_identity': 'node'}
     id = DB.Column(DB.Integer, primary_key=True)
