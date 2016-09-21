@@ -199,8 +199,12 @@ oauth = OAuth1Provider(app)
 
 class Client:
     def __init__(self):
-        self.client_key = "5A043yRSEugj4DJ5TljuapfnrflWDte8jTOcWLlT"
-        self.client_secret = "aB3jKq1TRsCOUrfOIZ6oQMEDmv2ptV76PA54NGLL"
+        # At this point we don't really care about OAuth. That's why the
+        # key/secret is set to something silly to make sure it's set to
+        # something more secret and unguessable once we start caring about
+        # OAuth again.
+        self.client_key = 'NotReallyAKey'
+        self.client_secret = 'NotReallyASecret'
         self.redirect_uris = ["http://localhost:5000/oauth-redirected",
                               # The [OAuthLib example][0] needs this redirect.
                               #
