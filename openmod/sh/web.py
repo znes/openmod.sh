@@ -15,6 +15,10 @@ from .schemas import dev as schema  # test as schema
 
 
 app = flask.Flask(__name__)
+# For production deployment: generate a different one via Python's `os.urandom`
+# and store it in a safe place.
+# See: http://flask.pocoo.org/docs/0.11/quickstart/#sessions
+app.secret_key = b"DON'T USE THIS IN PRODUCTION! " + b'\xdb\xcd\xb4\x8cp'
 
 Plant = schema.Plant
 Timeseries = schema.Timeseries
