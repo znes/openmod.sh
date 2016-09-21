@@ -476,7 +476,7 @@ def upload_changeset(cid):
     for element in modified_nodes:
         element.tag = "node"
         created_nodes.append(element)
-    osm.DB.session.commit()
+    osm.DB.session.flush()
     temporary_id2node = {n.old_id: n for n in created_nodes}
     created_ways = itertools.chain(*[c.findall('way') for c in creations])
     created_ways = {int(att["id"]): osm.Way(
@@ -500,7 +500,7 @@ def upload_changeset(cid):
         way.tag = "way"
         osm.DB.session.add(way)
         created_nodes.append(way)
-    osm.DB.session.commit()
+    osm.DB.session.flush()
 
     modified_ways = itertools.chain(*[c.findall('way')
         for c in modifications])
@@ -517,6 +517,9 @@ def upload_changeset(cid):
     for element in modified_ways:
         element.tag = "way"
         created_nodes.append(element)
+    osm.DB.session.flush()
+
+
     osm.DB.session.commit()
 
     return flask.render_template('diffresult.xml', modifications=created_nodes)
