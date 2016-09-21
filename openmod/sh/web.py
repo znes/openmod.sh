@@ -401,6 +401,7 @@ def authorize(*args, **kwargs):
     return (flask.request.form.get('confirm', 'no') == 'y')
 
 @app.route('/iD/connection/oauth/access_token', methods=['GET', 'POST'])
+@cors.cross_origin()
 @oauth.access_token_handler
 def access_token():
     return {}
