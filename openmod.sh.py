@@ -90,11 +90,11 @@ def plant_coordinate_json():
                                         plants, lambda p: p.gjson)],
                        "type": "FeatureCollection"})
 
+
 @app.route('/grids-json')
 def grid():
     grids = session.query(geojson(Grid.geometry).label("gjson"),
-                           Grid.voltage, Grid.id
-                           ).all()
+                          Grid.voltage, Grid.id).all()
     return json.dumps({"features": [{"type": "Feature",
                                      "geometry": json.loads(g.gjson),
                                      "properties": {
@@ -103,6 +103,7 @@ def grid():
                                      }}
                                     for g in grids],
                        "type": "FeatureCollection"})
+
 
 @app.route('/types')
 def types():
