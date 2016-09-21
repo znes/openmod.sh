@@ -52,7 +52,7 @@ $(document).ready(function() {
                map.forEachFeatureAtPixel(e.pixel, function (feature, layer) {
                  var position = feature.getGeometry().getCoordinates();
                  var content = $(
-                     '<table><tr><th>EEG ID</th><th>capacity</th></tr></table>');
+                     '<table><tr><th>EEG ID</th><th>capacity</th><th>download</th></tr></table>');
                  var ids = "";
                  $.each(feature.get("plants"), function (i, x) {
                    var button = $(
@@ -73,7 +73,7 @@ $(document).ready(function() {
                    });
                    content.append($('<tr></tr>').append(
                          $('<td></td>').append(button)).append(
-                         $("<td>" + x.capacity + "</td>")));
+                         $("<td>" + x.capacity + "</td>")).append('<td><input type="checkbox"></td>'));
                  });
                  content.append($(
                        '<button type="button" onclick="location=\'/csv/' +
@@ -92,8 +92,11 @@ $(document).ready(function() {
                                 featureProjection: 'EPSG:3857'};
              var features = gjs.readFeatures(d, projections);
              var layer = new ol.layer.Vector(
-                 {source: new ol.source.Vector({features: features})
-                  });
+                 {source: new ol.source.Vector({features: features}),
+                  style: new ol.style.Style({stroke: new ol.style.Stroke({
+                    'color': '#ff0000',
+                    'width': 2
+                  })})});
              map.addLayer(layer, projections);
            },
            dataType: "json"});
