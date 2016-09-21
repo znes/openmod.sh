@@ -94,15 +94,11 @@ widgets.scenarios = function (parent, context) {
         .on('accept', function (e) {
           d3.xhr('/scenario/' + e.title)
             .on('load', function (_) {
-              var s = window.location.hash;
-              if (s.indexOf('id=') == -1) {
-                if (s === ""){ s = '#' };
-                s = s + '&id=r' + e.title;
-              } else {
-                s = s.replace(/(#.*)(?=id=)id=[^&]*(&.*$)/,
-                              "$1id=r" + e.title + "$2");
-              }
-              window.location.hash = s;
+              if (e.title === null){
+                window.location.reload(true);
+                return ;
+              };
+              context.enter(iD.modes.Select(context, ["r" + e.title]))
               window.location.reload(true);
         }).send('PUT')}));
       input.attr("defaultValue", data[0]);
