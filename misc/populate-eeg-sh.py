@@ -1,3 +1,7 @@
+import sys
+import os.path
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
 import pandas as pd
 import openmod.sh.schemas.osm as osm
 from openmod.sh import web
@@ -14,7 +18,7 @@ for i, r in x.iterrows():
     node = osm.Node(r['lat'], r['lon'], 1, cs.id,
                     tags=[("area", "yes"),
                           ("type", r["generation"]),
-                           ("installed_capacity", r["electrical"])])
+                          ("installed_capacity", r["electrical"])])
     db.add(node)
     db.commit()
     print(i)

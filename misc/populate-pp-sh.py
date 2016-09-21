@@ -2,6 +2,10 @@
 """
 
 """
+import sys
+import os.path
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
 import pandas as pd
 import openmod.sh.schemas.osm as osm
 from openmod.sh import web
