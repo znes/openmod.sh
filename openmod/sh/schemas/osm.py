@@ -146,6 +146,10 @@ class Element(Tagged):
             foreign_keys=[changeset_id])
     referencing_relations = association_proxy('relation_associations',
                                               'relation')
+    timeseries_objects = DB.relationship('Timeseries',
+            secondary=Element_Timeseries_Associations,
+            collection_class=amc('key'))
+    timeseries = association_proxy('timeseries_objects', 'values')
 
     def __init__(self, **kwargs):
         self.version = 1
