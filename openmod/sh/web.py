@@ -574,6 +574,15 @@ def get_ways():
     template = flask.render_template('ways.xml', ways=ways)
     return xml_response(template)
 
+@app.route('/osm/api/0.6/relations')
+def get_relations():
+    relations = [
+            attach_non_node_attribute_hash(
+                osm.Relation.query.get(int(relation_id)))
+            for relation_id in flask.request.args['relations'].split(",")]
+    template = flask.render_template('relations.xml', relations=relations)
+    return xml_response(template)
+
 ##### Persistence code ends here ##############################################
 
 
