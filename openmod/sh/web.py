@@ -419,7 +419,7 @@ def upload_changeset(cid):
               float(n["lat"]), float(n["lon"]), 1, 1,
               tags=list(fun.reduce(
                  lambda old, new: old.update(new) or old,
-                 [{k: float(v) if k in ["lat", "lon"] else v}
+                 [{k: v}
                      for tag in node.findall('tag')
                      for k, v in ((tag.attrib['k'], tag.attrib['v']),)],
                  {}).items()),
@@ -428,6 +428,19 @@ def upload_changeset(cid):
             for n in (node.attrib,)]
     for node in created_nodes:
         osm.DB.session.add(node)
+    modifications = xml.findall('modify')
+    modified_nodes = itertools.chain(*[c.findall('node')
+        for c in modifications])
+    for xml_node in modified_nodes:
+        atts = xml_node.attrib
+        tags = xml_node.findall('tag')
+        db_node = osm.Node.query.get(int(atts["id"]))
+        db_node.old_id = db_node.id
+        db_node.version = atts["version"]
+        db_node.changeset = osm.Changeset.query.get(int(atts["changeset"]))
+        db_node.tags = [osm.Tag(key=k, value=v)
+                for tag in xml_node.findall('tag')
+                for k, v in ((tag.attrib['k'], tag.attrib['v']),)]
     osm.DB.session.commit()
     return flask.render_template('diffresult.xml', nodes=created_nodes)
 
