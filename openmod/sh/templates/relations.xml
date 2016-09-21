@@ -7,23 +7,20 @@
       {% endfor %}
       {% for reference in relation.referenced_nodes %}
         <member type="node" ref="{{reference.element_id}}"
-          {% if reference.role %}
-                role="{{reference.role}}"
-          {% endif %}
+                role={% if reference.role %}"{{reference.role}}"{%else%}""
+                     {% endif %}
         />
       {% endfor %}
       {% for reference in relation.referenced_ways %}
         <member type="way" ref="{{reference.element_id}}"
-          {% if reference.role %}
-                role="{{reference.role}}"
-          {% endif %}
+                role={% if reference.role %}"{{reference.role}}"{%else%}""
+                     {% endif %}
         />
       {% endfor %}
       {% for reference in relation.referenced %}
         <member type="relation" ref="{{reference.element_id}}"
-          {% if reference.role %}
-                role="{{reference.role}}"
-          {% endif %}
+                role={% if reference.role %}"{{reference.role}}"{%else%}""
+                     {% endif %}
         />
       {% endfor %}
     </relation>
