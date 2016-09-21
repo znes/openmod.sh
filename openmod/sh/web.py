@@ -14,7 +14,9 @@ import flask_wtf as wtfl
 import wtforms as wtf
 import werkzeug.security as ws
 
+import oemof.db
 
+from .schemas import osm
 
 
 app = flask.Flask(__name__)
@@ -418,6 +420,10 @@ def oauth_protected_test_endpoint():
 # factored out later. The 'factoring out' part can be considered an open TODO.
 #
 ###############################################################################
+
+app.config['SQLALCHEMY_DATABASE_URI'] = oemof.db.url('openMod.sh R/W')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = osm.DB.init_app(app)
 
 @app.route('/iD/connection/api/0.6/changeset/create', methods=['PUT'])
 @cors.cross_origin()

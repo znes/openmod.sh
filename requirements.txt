@@ -2,6 +2,7 @@ flask
 flask-cors
 flask-login
 flask-oauthlib
+flask-sqlalchemy
 geoalchemy2
 keyrings.alt
 oemof
