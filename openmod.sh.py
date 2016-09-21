@@ -107,5 +107,9 @@ def grid():
                                     for g in grids],
                        "type": "FeatureCollection"})
 
+@app.route('/types')
+def types():
+    return str(session.query(Plant.type).distinct().all())
+
 if __name__ == '__main__':
     app.run(host="0.0.0.0", debug=True)
