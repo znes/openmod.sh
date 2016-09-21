@@ -84,7 +84,6 @@ def login():
         if user is not None:
             if user.pw == form.password.data:
                 fl.login_user(user)
-                return flask.redirect('http://localhost:8000')
             else:
                 flask.flash('Invalid username/password combination.')
                 return flask.redirect(flask.url_for('login'))
@@ -92,7 +91,12 @@ def login():
             user = User(form.username.data, form.password.data)
             flask.flash('User "{}" created.'.format(user.name))
             fl.login_user(user)
-            return flask.redirect('http://localhost:8000')
+        # From now on: user logged in.
+        # TODO: Doesn't seem to work, as `flask.request.args.get('next')` is
+        #       always none. Have a look at http://flask.pocoo.org/snippets/63/
+        #       for pointers on how to make this work.
+        redirect = flask.request.args.get('next')
+        return flask.redirect(redirect or flask.url_for('login'))
     return flask.render_template('login.html', form=form)
 
 @app.route('/logout')
@@ -106,9 +110,7 @@ def logout():
 @app.route('/')
 @fl.login_required
 def root():
-    # TODO: Actually use this by using the `flask.request.args.get('next')` in
-    #       the `login` endpoint instead of hardcoding the redirect there too.
-    return flask.redirect('http://localhost:8000')
+    return flask.redirect('http://127.0.0.1:8000')
 
 # TODO: Factor adding the 'Content-Type' header out into a separate function.
 
