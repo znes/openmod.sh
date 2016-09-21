@@ -29,7 +29,8 @@ def simulate(**kwargs):
     Session = sessionmaker(bind=engine)
     session = Session()
 
-    scenario = session.query(osm.Relation).get(int(kwargs['scenario'][1:]))
+    scenario = session.query(osm.Relation).filter_by(
+            id = int(kwargs['scenario'][1:])).first()
 
     scenario_tags = {}
     for t in scenario.tags:
