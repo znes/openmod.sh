@@ -253,8 +253,13 @@ def scenarios():
 @app.route('/scenario/<s>', methods=['PUT'])
 @fl.login_required
 def scenario(s):
+    scenario_id = flask.session.get('scenario')
     if flask.request.method == 'GET':
-        return str(flask.session.get("scenario", ""))
+        if not scenario_id:
+            return ""
+        scenario = osm.Relation.query.filter_by(id=scenario_id).first()
+        return json.dumps({'value': getattr(scenario, 'tags', {}).get('name'),
+                           'title': scenario_id})
     elif s and not json.loads(s) and "scenario" in flask.session:
         del flask.session["scenario"]
     else:
