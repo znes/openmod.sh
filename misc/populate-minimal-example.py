@@ -55,7 +55,7 @@ for k,v in hub_tags.items():
     r = osm.Relation(myid=k,
                     timestamp=datetime.now(tz.utc),
                     visible=True,
-                    nodes=nodes[k],
+                    elements=nodes[k],
                     tags=v)
     relations.append(r)
     DB.add(r)
