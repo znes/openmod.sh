@@ -145,7 +145,8 @@ class Element(Tagged):
     changeset = DB.relationship('Changeset', uselist=False,
             foreign_keys=[changeset_id])
     referencing_relations = association_proxy('relation_associations',
-                                              'relation')
+                                              'relation',
+                                              creator=lambda r: Element_Relation_Associations(relation=r))
 
     def __init__(self, **kwargs):
         self.version = 1
