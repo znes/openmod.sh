@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="openmod.sh">
+    <node {% for k,v in node.attributes.items() %} {{k}}="{{v}}" {% endfor %}>
+      {% for tag in node.tags %} <tag k="{{tag.key}}" v="{{tag.value}}"/>
+      {% endfor %}
+    </node>
+</osm>

@@ -423,7 +423,7 @@ def upload_changeset(cid):
               float(n["lat"]), float(n["lon"]), 1, 1,
               tags=list(fun.reduce(
                  lambda old, new: old.update(new) or old,
-                 [{k: float(v) if k in ["lat", "lon"] else v}
+                 [{k: v}
                      for tag in node.findall('tag')
                      for k, v in ((tag.attrib['k'], tag.attrib['v']),)],
                  {}).items()),
@@ -432,6 +432,19 @@ def upload_changeset(cid):
             for n in (node.attrib,)]
     for node in created_nodes:
         osm.DB.session.add(node)
+    modifications = xml.findall('modify')
+    modified_nodes = itertools.chain(*[c.findall('node')
+        for c in modifications])
+    for xml_node in modified_nodes:
+        atts = xml_node.attrib
+        tags = xml_node.findall('tag')
+        db_node = osm.Node.query.get(int(atts["id"]))
+        db_node.old_id = db_node.id
+        db_node.version = atts["version"]
+        db_node.changeset = osm.Changeset.query.get(int(atts["changeset"]))
+        db_node.tags = [osm.Tag(key=k, value=v)
+                for tag in xml_node.findall('tag')
+                for k, v in ((tag.attrib['k'], tag.attrib['v']),)]
     osm.DB.session.commit()
     return flask.render_template('diffresult.xml', nodes=created_nodes)
 
@@ -440,6 +453,25 @@ def upload_changeset(cid):
 @cors.cross_origin()
 def close_changeset(id):
     return ""
+
+@app.route('/osm/api/0.6/nodes')
+@cors.cross_origin()
+def get_node():
+    # TODO: Handle multiple, comma separated node ids
+    node = osm.Node.query.get(int(flask.request.args['nodes']))
+    node.attributes = {
+            ("changeset" if k == "changeset_id" else k):
+            (v.name if k == "user" else (
+             v.replace(microsecond=0).isoformat() if k == "timestamp" else (
+             str(v).lower() if k == "visible" else
+             v)))
+            for k in ["lat", "lon", "version", "timestamp", "visible", "uid",
+                      "user", "changeset_id", "id"]
+            for v in (getattr(node, k),)}
+    template = flask.render_template('node.xml', node=node)
+    response = flask.make_response(template)
+    response.headers['Content-Type'] = 'text/xml'
+    return response
 
 ##### Persistence code ends here ##############################################
 
