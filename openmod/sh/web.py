@@ -173,10 +173,15 @@ def osm_map():
     left, bottom, right, top = map(float, flask.request.args['bbox'].split(","))
     minx, maxx = sorted([top, bottom])
     miny, maxy = sorted([left, right])
+    # Get all nodes in the given bounding box.
     nodes = osm.Node.query.filter(minx <= osm.Node.lat, miny <= osm.Node.lon,
                                   maxx >= osm.Node.lat, maxy >= osm.Node.lon)
+    # Get all ways referencing the above nodes.
     ways = set(way for node in nodes for way in node.ways)
+    # Get all relations referencing the above ways.
     relations = set(relation for way in ways for relation in way.relations)
+    # Add possibly missing nodes (from outside the bounding box) referenced by
+    # the ways retrieved above.
     nodes = set(itertools.chain([n for way in ways for n in way.nodes], nodes))
     relations = set(itertools.chain((r for n in nodes
                                        for r in n.relations),
