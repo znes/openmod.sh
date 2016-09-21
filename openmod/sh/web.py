@@ -1,6 +1,7 @@
 import itertools
 import json
 
+from flask_oauthlib.provider import OAuth1Provider
 import flask
 import flask_cors as cors # TODO: Check whether the `@cors.cross_origin()`
                           #       decorators are still necessary once 'iD' is
@@ -154,6 +155,8 @@ osm_map.nodes = [{"lat": 0.0075, "lon": -0.0025,
 # factored out later. The 'factoring out' part can be considered an open TODO.
 #
 ###############################################################################
+
+oauth = OAuth1Provider(app)
 
 ##### Persistence code ends here ##############################################
 
