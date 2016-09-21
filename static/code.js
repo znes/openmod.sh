@@ -1,4 +1,12 @@
 $(document).ready(function() {
+  function time(label, f) {
+    console.log(label + ".");
+    var then = Date.now();
+    result = f();
+    console.log(label + ": " + ((then - Date.now()) / 1000) + "s");
+    return result;
+  };
+
   $.ajax({ url: "series",
            success: function (d, _, _) {$.plot($("#timeseries-plot"), d);},
            dataType: "json"});
