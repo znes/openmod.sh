@@ -45,6 +45,12 @@ class Timeseries(Base):
 def root():
     plants = session.query(Plant).all()
     series = session.query(Timeseries).all()
+    return render_template('index.html', plants=plants, series=series)
+
+@app.route('/series')
+def series():
+    plants = session.query(Plant).all()
+    series = session.query(Timeseries).all()
     # This is not clever. It iterates through all timeseries, for all plants in
     # the 'plants' database. It would of course be better, to do this via some
     # clever SQL statement or (even better) via a concise, ORM powered join.
@@ -61,8 +67,7 @@ def root():
                              for t in series if t.plant == plant.id]}
                    for plant in plants]
     series_json = json.dumps(series_data)
-    return render_template('index.html', plants=plants, series=series,
-                           series_json=series_json)
+    return series_json
 
 if __name__ == '__main__':
     app.run(debug=True)

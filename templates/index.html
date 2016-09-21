@@ -18,7 +18,9 @@
 <script type="text/javascript">
 
 $(document).ready(function() {
-  $.plot($("#timeseries-plot"), {{ series_json | safe }});
+  $.ajax({ url: "series",
+           success: function (d, _, _) {$.plot($("#timeseries-plot"), d);},
+           dataType: "json"});
 
   var map = new ol.Map({
     target: 'map',
@@ -45,13 +47,7 @@ $(document).ready(function() {
   <tr><td>Plants</td><td> {{ plants | count }} </td></tr>
   <tr><td>Timeseries</td><td> {{ series | count }} </td></tr>
 </table>
-<div id="plotting">
-  <p>Let's see how how <a href="http://www.flotcharts.org/">Flot</a> plots this
-     JSON:<br>{{ series_json }}
-  </p>
-  <div id="timeseries-plot" style="width:377px;height:233px">
-  </div>
-</div>
+<div id="timeseries-plot" style="width:377px;height:233px"></div>
 
 <div id="map" class="map"></div>
 
