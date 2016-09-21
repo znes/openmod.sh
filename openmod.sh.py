@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 from geoalchemy2 import Geometry
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -41,12 +41,9 @@ class Timeseries(Base):
 
 @app.route('/')
 def root():
-    response = "The openMod.sh landing page.<br>|<br>"
     plants = session.query(Plant).all()
     series = session.query(Timeseries).all()
-    response += "| # of plants: {0}<br>| # of timeseries: {1}<br>|".format(
-        len(plants), len(series))
-    return response
+    return render_template('index.html', plants=plants, series=series)
 
 if __name__ == '__main__':
     app.run(debug=True)
