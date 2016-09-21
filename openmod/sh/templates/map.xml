@@ -12,4 +12,11 @@
       {% endfor %}
     </node>
   {% endfor %}
+  {% for way in ways %}
+  <way id="{{way.id}}" version="{{way.version}}"
+       changeset="{{way.changeset.id}}">
+    {% for node in way.nodes %}<nd ref="{{node.id}}"/>{% endfor %}
+    {% for tag in way.tags %}<tag k="{{tag.key}}" v="{{tag.value}}"/>{% endfor %}
+  </way>
+  {% endfor %}
 </osm>

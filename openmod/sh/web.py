@@ -171,7 +171,9 @@ def osm_map():
     miny, maxy = sorted([left, right])
     nodes = osm.Node.query.filter(minx <= osm.Node.lat, miny <= osm.Node.lon,
                                   maxx >= osm.Node.lat, maxy >= osm.Node.lon)
-    template = flask.render_template('map.xml', nodes=nodes,
+    ways = set(way for node in nodes for way in node.ways)
+    nodes = set(itertools.chain([n for way in ways for n in way.nodes], nodes))
+    template = flask.render_template('map.xml', nodes=nodes, ways=ways,
                                           minlon=miny, maxlon=maxy,
                                           minlat=minx, maxlat=maxx)
     return xml_response(template)
