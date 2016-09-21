@@ -145,6 +145,18 @@ osm_map.nodes = [{"lat": 0.0075, "lon": -0.0025,
                   "tags": {"ele": 0, # stands for 'elevation' (usually)
                            "name": "A Test Node"}}]
 
+##### Persisting changes from iD ##############################################
+#
+# Persistence code to store changes done in iD on the server.
+#
+# This should probably go into it's own module but I'm putting it all here for
+# now, as some parts need to stay in this module while some parts can be
+# factored out later. The 'factoring out' part can be considered an open TODO.
+#
+###############################################################################
+
+##### Persistence code ends here ##############################################
+
 @app.route('/series/<path:ids>')
 def series(ids):
     ids = ids.split("/")
