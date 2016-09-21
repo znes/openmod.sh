@@ -3,7 +3,7 @@
 import time
 
 from sqlalchemy.orm import sessionmaker
-import matplotlib.pyplot as plt, mpld3
+#import matplotlib.pyplot as plt, mpld3
 import pandas as pd
 import numpy as np
 # solph imports
