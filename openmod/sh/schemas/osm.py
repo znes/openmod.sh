@@ -67,6 +67,39 @@ class nodes_and_ways(DB.Model):
         node = DB.relationship('Node', backref='nodes_way')
         way = DB.relationship('Way')
 
+class rs_and_nodes(DB.Model):
+        __tablename__ = 'relations_and_nodes'
+        id = DB.Column(DB.Integer, primary_key=True)
+        role = DB.Column(DB.String(255))
+        relation_id = DB.Column(DB.Integer, DB.ForeignKey('relation.id'))
+        node_id = DB.Column(DB.Integer, DB.ForeignKey('node.id'))
+        node = DB.relationship('Node', backref='referencing_relations')
+        relation = DB.relationship('Relation', backref='referenced_nodes')
+
+class rs_and_ways(DB.Model):
+        __tablename__ = 'relations_and_ways'
+        id = DB.Column(DB.Integer, primary_key=True)
+        role = DB.Column(DB.String(255))
+        relation_id = DB.Column(DB.Integer, DB.ForeignKey('relation.id'))
+        way_id = DB.Column(DB.Integer, DB.ForeignKey('way.id'))
+        way = DB.relationship('Way', backref='referencing_relations')
+        relation = DB.relationship('Relation', backref='referenced_ways')
+
+class rs_and_rs(DB.Model):
+        __tablename__ = 'relations_and_relations'
+        id = DB.Column(DB.Integer, primary_key=True)
+        role = DB.Column(DB.String(255))
+        referencing_id = DB.Column(DB.Integer, DB.ForeignKey('relation.id'),
+            primary_key=True)
+        referenced_id = DB.Column(DB.Integer, DB.ForeignKey('relation.id'),
+            primary_key=True)
+        referenced = DB.relationship('Relation',
+                primaryjoin=("rs_and_rs.referenced_id == Relation.id"),
+                backref='referencing')
+        referencing = DB.relationship('Relation',
+                primaryjoin=("rs_and_rs.referencing_id == Relation.id"),
+                backref='referenced')
+
 tags_and_nodes = DB.Table('tags_and_nodes',
         DB.Column('tag_id', DB.Integer, DB.ForeignKey('tag.id')),
         DB.Column('node_id', DB.Integer, DB.ForeignKey('node.id')))
@@ -78,6 +111,10 @@ tags_and_ways = DB.Table('tags_and_ways',
 tags_and_changesets = DB.Table('tags_and_changesets',
         DB.Column('tag_id', DB.Integer, DB.ForeignKey('tag.id')),
         DB.Column('changeset_id', DB.Integer, DB.ForeignKey('changeset.id')))
+
+tags_and_rs = DB.Table('tags_and_relations',
+        DB.Column('tag_id', DB.Integer, DB.ForeignKey('tag.id')),
+        DB.Column('relation_id', DB.Integer, DB.ForeignKey('relation.id')))
 
 # No association tables anymore. These are regular models.
 
@@ -102,6 +139,7 @@ class Node(DB.Model):
     uid = DB.Column(DB.Integer, DB.ForeignKey(User.id))
     user = DB.relationship(User, uselist=False)
     ways = association_proxy('nodes_way', 'way')
+    relations = association_proxy('referencing_relations', 'relation')
     changeset = DB.relationship('Changeset', uselist=False)
     changeset_id = DB.Column(DB.Integer, DB.ForeignKey('changeset.id'))
 
@@ -127,11 +165,24 @@ class Way(DB.Model):
                                 collection_class=ordering_list('position'))
     nodes = association_proxy('way_nodes', 'node',
                               creator=lambda n: nodes_and_ways(node=n))
+    relations = association_proxy('referencing_relations', 'relation')
     uid = DB.Column(DB.Integer, DB.ForeignKey(User.id))
     user = DB.relationship(User, uselist=False)
     changeset = DB.relationship('Changeset', uselist=False)
     changeset_id = DB.Column(DB.Integer, DB.ForeignKey('changeset.id'))
 
+class Relation(DB.Model):
+    id = DB.Column(DB.Integer, primary_key=True)
+    myid = DB.Column(DB.String(255))
+    version = DB.Column(DB.String)
+    timestamp = DB.Column(DB.DateTime, nullable=False)
+    visible = DB.Column(DB.Boolean, nullable=False)
+    tags = DB.relationship(Tag, secondary=tags_and_rs)
+    uid = DB.Column(DB.Integer, DB.ForeignKey(User.id))
+    user = DB.relationship(User, uselist=False)
+    superiors = association_proxy('referencing', 'relation')
+    changeset = DB.relationship('Changeset', uselist=False)
+    changeset_id = DB.Column(DB.Integer, DB.ForeignKey('changeset.id'))
 
 class Changeset(DB.Model):
     id = DB.Column(DB.Integer, primary_key=True)

@@ -1,3 +1,4 @@
+from datetime import datetime, timezone as tz
 from urllib.parse import urlparse, urljoin
 from xml.etree.ElementTree import XML
 import functools as fun
@@ -162,6 +163,10 @@ def capabilities():
                                      timeout=250)
     return xml_response(template)
 
+# See:
+#   * http://wiki.openstreetmap.org/wiki/API_v0.6#Retrieving_map_data_by_bounding_box:_GET_.2Fapi.2F0.6.2Fmap
+# for notes on how exctly to do this.
+
 @app.route('/iD/api/0.6/map')
 @app.route('/osm/api/0.6/map')
 @cors.cross_origin()
@@ -169,11 +174,23 @@ def osm_map():
     left, bottom, right, top = map(float, flask.request.args['bbox'].split(","))
     minx, maxx = sorted([top, bottom])
     miny, maxy = sorted([left, right])
+    # Get all nodes in the given bounding box.
     nodes = osm.Node.query.filter(minx <= osm.Node.lat, miny <= osm.Node.lon,
                                   maxx >= osm.Node.lat, maxy >= osm.Node.lon)
+    # Get all ways referencing the above nodes.
     ways = set(way for node in nodes for way in node.ways)
+    # Get all relations referencing the above ways.
+    relations = set(relation for way in ways for relation in way.relations)
+    # Add possibly missing nodes (from outside the bounding box) referenced by
+    # the ways retrieved above.
     nodes = set(itertools.chain([n for way in ways for n in way.nodes], nodes))
+    relations = set(itertools.chain((r for n in nodes
+                                       for r in n.relations),
+                                    (s for r in relations
+                                       for s in r.superiors),
+                                    relations))
     template = flask.render_template('map.xml', nodes=nodes, ways=ways,
+                                          relations=relations,
                                           minlon=miny, maxlon=maxy,
                                           minlat=minx, maxlat=maxx)
     return xml_response(template)
@@ -445,8 +462,8 @@ def upload_changeset(cid):
     for node in created_nodes:
         osm.DB.session.add(node)
     modifications = xml.findall('modify')
-    modified_nodes = itertools.chain(*[c.findall('node')
-        for c in modifications])
+    modified_nodes = list(
+            itertools.chain(*[c.findall('node') for c in modifications]))
     for xml_node in modified_nodes:
         atts = xml_node.attrib
         tags = xml_node.findall('tag')
@@ -460,7 +477,7 @@ def upload_changeset(cid):
     for element in modified_nodes:
         element.tag = "node"
         created_nodes.append(element)
-    osm.DB.session.commit()
+    osm.DB.session.flush()
     temporary_id2node = {n.old_id: n for n in created_nodes}
     created_ways = itertools.chain(*[c.findall('way') for c in creations])
     created_ways = {int(att["id"]): osm.Way(
@@ -484,10 +501,10 @@ def upload_changeset(cid):
         way.tag = "way"
         osm.DB.session.add(way)
         created_nodes.append(way)
-    osm.DB.session.commit()
+    osm.DB.session.flush()
 
-    modified_ways = itertools.chain(*[c.findall('way')
-        for c in modifications])
+    modified_ways = list(
+            itertools.chain(*[c.findall('way') for c in modifications]))
     for xml_way in modified_ways:
         atts = xml_way.attrib
         tags = xml_way.findall('tag')
@@ -501,6 +518,97 @@ def upload_changeset(cid):
     for element in modified_ways:
         element.tag = "way"
         created_nodes.append(element)
+    osm.DB.session.flush()
+
+    created_relations = itertools.chain(*[ c.findall('relation')
+                                           for c in creations])
+    created_relations = {
+            int(atts["id"]):
+                ( osm.Relation(
+                    timestamp=datetime.now(tz.utc),
+                    uid=fl.current_user.id,
+                    changeset_id=cid,
+                    tags=[osm.Tag(k, v) for k,v in fun.reduce(
+                        lambda old, new: old.update(new) or old,
+                        [ {k: v}
+                            for tag in node.findall('tag')
+                            for k, v in ((tag.attrib['k'], tag.attrib['v']),)],
+                        {}).items()],
+                    version=1,
+                    visible=True)
+                , node.findall('member'))
+            for node in created_relations
+            for atts in (node.attrib,)}
+
+    for old_id, (relation, members) in created_relations.items():
+        osm.DB.session.add(relation)
+        osm.DB.session.flush()
+        relation.old_id = old_id
+        relation.tag = "relation"
+        for member in members:
+            if member.attrib['type'] == 'node':
+                reference = osm.rs_and_nodes(node_id=int(member.attrib['ref']),
+                                             relation_id=relation.id)
+            elif member.attrib['type'] == 'way':
+                reference = osm.rs_and_ways(way_id=int(member.attrib['ref']),
+                                            relation_id=relation.id)
+            elif member.attrib['type'] == 'relation':
+                reference = osm.rs_and_rs(
+                        referenced_id=int(member.attrib['ref']),
+                        referencing_id=relation.id)
+
+            if member.attrib['role']:
+                reference.role = member.attrib['role']
+
+            osm.DB.session.add(reference)
+
+        created_nodes.append(relation)
+
+    osm.DB.session.flush()
+
+    modifications = xml.findall('modify')
+    modified_relations = list(
+            itertools.chain(*[c.findall('relation') for c in modifications]))
+    for xml_node in modified_relations:
+        atts = xml_node.attrib
+        relation = osm.Relation.query.get(int(atts["id"]))
+        relation.old_id = relation.id
+        relation.version = atts["version"]
+        relation.changeset = osm.Changeset.query.get(int(atts["changeset"]))
+        relation.tags = relation.tags + [osm.Tag(key=k, value=v)
+                for tag in xml_node.findall('tag')
+                for k, v in ((tag.attrib['k'], tag.attrib['v']),)]
+        members = xml_node.findall('member')
+        nodes = {str(r.node_id): r.node for r in relation.referenced_nodes}
+        ways = {str(r.way_id): r.way for r in relation.referenced_ways}
+        relations = {str(r.referenced_id): r.referenced
+                     for r in relation.referenced}
+        for member in members:
+            if member.attrib['type'] == 'node':
+                reference = nodes.get(member.attrib['ref'],
+                                      osm.rs_and_nodes(
+                                          node_id=int(member.attrib['ref']),
+                                          relation_id=relation.id))
+            elif member.attrib['type'] == 'way':
+                reference = ways.get(member.attrib['ref'],
+                                     osm.rs_and_ways(
+                                         way_id=int(member.attrib['ref']),
+                                         relation_id=relation.id))
+            elif member.attrib['type'] == 'relation':
+                reference = relations.get(
+                        member.attrib['ref'],
+                        osm.rs_and_rs(referenced_id=int(member.attrib['ref']),
+                                      referencing_id=relation.id))
+
+            if member.attrib['role']:
+                reference.role = member.attrib['role']
+
+            osm.DB.session.add(reference)
+
+    for element in modified_relations:
+        element.tag = "relation"
+        created_nodes.append(element)
+
     osm.DB.session.commit()
 
     return flask.render_template('diffresult.xml', modifications=created_nodes)
@@ -533,8 +641,8 @@ def get_nodes():
     template = flask.render_template('node.xml', nodes=nodes)
     return xml_response(template)
 
-def attach_way_attribute_hash(way):
-    way.attributes = {
+def attach_non_node_attribute_hash(non_node):
+    non_node.attributes = {
             ("changeset" if k == "changeset_id" else k):
             (v.name if k == "user" else (
              v.replace(microsecond=0).isoformat() if k == "timestamp" else (
@@ -542,17 +650,26 @@ def attach_way_attribute_hash(way):
              v)))
             for k in ["version", "timestamp", "visible", "uid",
                       "user", "changeset_id", "id"]
-            for v in (getattr(way, k),)}
-    return way
+            for v in (getattr(non_node, k),)}
+    return non_node
 
 @app.route('/osm/api/0.6/ways')
 @cors.cross_origin()
 def get_ways():
     # TODO: See whether you can make this better by querying only once.
     #       Maybe 'in' works?
-    ways = [attach_way_attribute_hash(osm.Node.query.get(int(way_id)))
+    ways = [attach_non_node_attribute_hash(osm.Way.query.get(int(way_id)))
            for way_id in flask.request.args['ways'].split(",")]
     template = flask.render_template('ways.xml', ways=ways)
+    return xml_response(template)
+
+@app.route('/osm/api/0.6/relations')
+def get_relations():
+    relations = [
+            attach_non_node_attribute_hash(
+                osm.Relation.query.get(int(relation_id)))
+            for relation_id in flask.request.args['relations'].split(",")]
+    template = flask.render_template('relations.xml', relations=relations)
     return xml_response(template)
 
 ##### Persistence code ends here ##############################################
