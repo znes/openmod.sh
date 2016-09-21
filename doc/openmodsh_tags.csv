@@ -6,7 +6,7 @@ Demand,type,demand,energy_amount,"electricity, heat",sink,point,Sink,Oemof class
 Volatile Generator,type,source,installed_power,"electricity, heat",source,point,Source,Oemof class
 ,source,"wind, pv, solar",dispatchable,,,,,
 ,,,,,,,,
-Flexible Generator,type,transformer,installed_power,"electricity, heat",%,point,LinearTransformer,Oemof class
+Flexible Generator,type,transformer,installed_power,"electricity, heat",transformer,point,LinearTransformer,Oemof class
 ,transformer,"electricity, heat, chp",efficiency,,,,,
 ,,,dispatchable,,,,,
 ,,,costs,,,,,
@@ -14,10 +14,12 @@ Flexible Generator,type,transformer,installed_power,"electricity, heat",%,point,
 Storage,type,storage,installed_power,"electricity, heat",%,point,Storage,Oemof class
 ,,,installed_energy,,,,,
 ,,,,,,,,
-Transmission,type,transmission,installed_power,"electricity, heat",%,way,LinearTransformer,Oemof class
+Transmission,type,transmission,installed_power,"electricity, heat",%,Relation + way,LinearTransformer,Oemof class
 ,,,efficiency,,,,,
 ,,,,,,,,
-Region,type,bus,,"electricity, heat",%,Relation + closed way,Bus,Oemof class
+Hub,type,bus,,"electricity, heat",%,Relation + closed way,Bus,Oemof class
+,,,,,,,,
+Scenario,type,scenario,,,,Relation,,
 ,,,,,,,,
 Fields,,,,,,,,
 energy_amount,,,,,,,,
