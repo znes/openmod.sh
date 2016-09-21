@@ -1,3 +1,5 @@
+import json
+
 from flask import Flask, render_template
 from geoalchemy2 import Geometry
 from sqlalchemy.ext.declarative import declarative_base
@@ -43,7 +45,24 @@ class Timeseries(Base):
 def root():
     plants = session.query(Plant).all()
     series = session.query(Timeseries).all()
-    return render_template('index.html', plants=plants, series=series)
+    # This is not clever. It iterates through all timeseries, for all plants in
+    # the 'plants' database. It would of course be better, to do this via some
+    # clever SQL statement or (even better) via a concise, ORM powered join.
+    # But as a proof of concept this should suffice.
+    # Also: premature optimization is the root of all evil. ;)
+    # The first line just contains some constant options for plotting.
+    # If you want to know why the data is structured the way it is, consult the
+    # [Flot data format][0] documentation.
+    #
+    # [0]: https://github.com/flot/flot/blob/master/API.md#data-format
+    series_data = [{"lines": {"show": False}, "points": {"show": True},
+                    "label": plant.id,
+                    "data": [[t.step, t.value]
+                             for t in series if t.plant == plant.id]}
+                   for plant in plants]
+    series_json = json.dumps(series_data)
+    return render_template('index.html', plants=plants, series=series,
+                           series_json=series_json)
 
 if __name__ == '__main__':
     app.run(debug=True)
