@@ -165,8 +165,9 @@ class Node(Tagged):
     user = DB.relationship(User, uselist=False)
     ways = association_proxy('nodes_way', 'way')
     relations = association_proxy('referencing_relations', 'relation')
-    changeset = DB.relationship('Changeset', uselist=False)
     changeset_id = DB.Column(DB.Integer, DB.ForeignKey('changeset.id'))
+    changeset = DB.relationship('Changeset', uselist=False,
+            foreign_keys=[changeset_id])
 
     def __init__(self, lat, lon, user_id, changeset_id, **kwargs):
         self.lat = lat
@@ -193,8 +194,9 @@ class Way(Tagged):
     relations = association_proxy('referencing_relations', 'relation')
     uid = DB.Column(DB.Integer, DB.ForeignKey(User.id))
     user = DB.relationship(User, uselist=False)
-    changeset = DB.relationship('Changeset', uselist=False)
     changeset_id = DB.Column(DB.Integer, DB.ForeignKey('changeset.id'))
+    changeset = DB.relationship('Changeset', uselist=False,
+            foreign_keys=[changeset_id])
 
 class Relation(Tagged):
     __mapper_args__ = {'polymorphic_identity': 'relation'}
@@ -207,8 +209,9 @@ class Relation(Tagged):
     uid = DB.Column(DB.Integer, DB.ForeignKey(User.id))
     user = DB.relationship(User, uselist=False)
     superiors = association_proxy('referencing', 'relation')
-    changeset = DB.relationship('Changeset', uselist=False)
     changeset_id = DB.Column(DB.Integer, DB.ForeignKey('changeset.id'))
+    changeset = DB.relationship('Changeset', uselist=False,
+            foreign_keys=[changeset_id])
 
 class Changeset(Tagged):
     __mapper_args__ = {'polymorphic_identity': 'changeset'}
