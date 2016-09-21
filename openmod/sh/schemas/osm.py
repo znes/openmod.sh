@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.orderinglist import ordering_list
+from sqlalchemy.dialects.postgresql import ARRAY
 import werkzeug.security as ws
 from oemof.db import config as cfg
 
@@ -116,6 +117,20 @@ tags_and_rs = DB.Table('tags_and_relations',
         DB.Column('tag_id', DB.Integer, DB.ForeignKey('tag.id')),
         DB.Column('relation_id', DB.Integer, DB.ForeignKey('relation.id')))
 
+# Define timeseries association tables
+
+ts_and_nodes = DB.Table('timeseries_and_nodes',
+        DB.Column('timeseries_id', DB.Integer, DB.ForeignKey('timeseries.id')),
+        DB.Column('node_id', DB.Integer, DB.ForeignKey('node.id')))
+
+ts_and_ways = DB.Table('timeseries_and_ways',
+        DB.Column('timeseries_id', DB.Integer, DB.ForeignKey('timeseries.id')),
+        DB.Column('way_id', DB.Integer, DB.ForeignKey('way.id')))
+
+ts_and_rs = DB.Table('timeseries_and_relations',
+        DB.Column('timeseries_id', DB.Integer, DB.ForeignKey('timeseries.id')),
+        DB.Column('relation_id', DB.Integer, DB.ForeignKey('relation.id')))
+
 # No association tables anymore. These are regular models.
 
 class Tag(DB.Model):
@@ -189,4 +204,9 @@ class Changeset(DB.Model):
     tags = DB.relationship(Tag, secondary=tags_and_changesets)
     def __init__(self, tags=()):
         self.tags = [Tag(key=k, value=v) for k, v in tags]
+
+class Timeseries(DB.Model):
+    id = DB.Column(DB.Integer, primary_key=True)
+    key = DB.Column(DB.String(255), nullable=False)
+    value = DB.Column(ARRAY(DB.Float, dimensions=1), nullable=False)
 
