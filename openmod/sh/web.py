@@ -84,6 +84,7 @@ def login():
         if user is not None:
             if user.pw == form.password.data:
                 fl.login_user(user)
+                #print("Current user: {}".format(fl.current_user))
             else:
                 flask.flash('Invalid username/password combination.')
                 return flask.redirect(flask.url_for('login'))
@@ -158,6 +159,14 @@ osm_map.nodes = [{"lat": 0.0075, "lon": -0.0025,
 #
 ###############################################################################
 
+"""
+import logging
+import sys
+log = logging.getLogger('flask_oauthlib')
+log.addHandler(logging.StreamHandler(sys.stdout))
+log.setLevel(logging.DEBUG)
+"""
+
 app.config['OAUTH1_PROVIDER_ENFORCE_SSL'] = False
 app.config['OAUTH1_PROVIDER_KEY_LENGTH'] = (3, 127)
 
@@ -179,6 +188,7 @@ CLIENT = Client()
 class RequestToken:
     known = []
     def __init__(self, token, request):
+        #print("Creating request token.")
         self.known.append(self)
         self.client = CLIENT
         self.token = token['oauth_token']
@@ -229,9 +239,16 @@ def save_request_token(token, request):
 
 @oauth.verifiergetter
 def load_verifier(verifier, token):
+    #print("Verifiers on known rts: {}".format(
+    #    [rt.verifier for rt in RequestToken.known]))
+    #print("Verifier: {}".format(verifier))
+    #print("Tokens on known rts: {}".format(
+    #    [rt.token for rt in RequestToken.known]))
+    #print("Token: {}".format(token))
     rt = [rt for rt in RequestToken.known
              if rt.token == token
              if rt.verifier == verifier]
+    #print("rt: {}".format(rt))
     return (rt[0] if rt else None)
 
 @oauth.verifiersetter
@@ -252,6 +269,14 @@ def save_access_token(token, request):
 
 @oauth.noncegetter
 def load_nonce(client_key, timestamp, nonce, request_token, access_token):
+    """
+    print('\n  '.join([
+        "In `load_nonce`. Arguments:",
+        "client_key: {}", "timestamp: {}", "nonce: {}", "request_token: {}",
+        "access_token: {}"]).format(
+            client_key, timestamp, nonce, request_token, access_token))
+    print(Nonce.known)
+    """
     filtered = [n for n in Nonce.known if (n.client_key == client_key and
                                            n.timestamp == timestamp and
                                            n.nonce == nonce and
@@ -261,13 +286,28 @@ def load_nonce(client_key, timestamp, nonce, request_token, access_token):
 
 @oauth.noncesetter
 def save_nonce(client_key, timestamp, nonce, request_token, access_token):
+    #print("Setting nonce.")
     return Nonce(timestamp, nonce, request_token, access_token)
 
 @app.route('/iD/connection/oauth/request_token', methods=['GET', 'POST'])
 @cors.cross_origin()
 @oauth.request_token_handler
 def oauth_request_token():
+    #print("request_token_handler: {}".format(flask.request.method))
     return {}
+
+"""
+@app.before_request
+def pre_request_debug_hook():
+    print("\n  ".join([
+        "Got request: ",
+        "Method: {0.method}",
+        "Path  : {0.path}",
+        "Rule  : {0.url_rule}",
+        "Data  : {0.data}",
+        "T(D)  : {1}",
+        "Endpt.: {0.endpoint}"]).format(flask.request, type(flask.request.data)))
+"""
 
 class Authorize(wtf.Form):
      confirm = wtf.BooleanField('Authorize')
