@@ -51,7 +51,7 @@ have to enable serving the iD editor via `openmod.sh`:
 
   ```
   cd OPENMOD.SH
-  ln -s ID/dist OPENMOD.SH/openmod/sh/static/iD
+  ln -s /../ID/dist openmod/sh/static/iD
   ```
 
 Please note that ID **has** to be specified as an absolute path here or
