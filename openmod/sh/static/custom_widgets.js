@@ -70,7 +70,7 @@ widgets.scenarios = function (parent, context) {
   var input = outer.append('input')
     .attr('class', 'value combobox-input')
     .attr('type', 'text')
-    .attr('placeholder', 'Checking selected scenario');
+    .attr('placeholder', 'Getting scenarios');
   outer.append('div').attr('class', 'combobox-caret');
 
   d3.xhr('/scenario')
@@ -78,7 +78,8 @@ widgets.scenarios = function (parent, context) {
       if (xhr.response === '') {
         input.attr('placeholder', 'Select a scenario');
       } else {
-        prepend('span', outer).text('Selected scenario: ' + xhr.response);
+        var e = JSON.parse(xhr.response);
+        prepend('span', outer).text('Selected scenario: ' + e.value);
         input.attr('placeholder', 'Change selected scenario');
       };
     })
@@ -93,15 +94,11 @@ widgets.scenarios = function (parent, context) {
         .on('accept', function (e) {
           d3.xhr('/scenario/' + e.title)
             .on('load', function (_) {
-              var s = window.location.hash;
-              if (s.indexOf('id=') == -1) {
-                if (s === ""){ s = '#' };
-                s = s + '&id=r' + e.title;
-              } else {
-                s = s.replace(/(#.*)(?=id=)id=[^&]*(&.*$)/,
-                              "$1id=r" + e.title + "$2");
-              }
-              window.location.hash = s;
+              if (e.title === null){
+                window.location.reload(true);
+                return ;
+              };
+              context.enter(iD.modes.Select(context, ["r" + e.title]))
               window.location.reload(true);
         }).send('PUT')}));
       input.attr("defaultValue", data[0]);
