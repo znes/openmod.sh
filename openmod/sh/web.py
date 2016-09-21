@@ -506,7 +506,8 @@ def create_changeset():
 def userdetails():
     cu = fl.current_user
     fl.id = id(fl)
-    return flask.render_template('userdetails.xml', user=fl.current_user)
+    template = flask.render_template('userdetails.xml', user=fl.current_user)
+    return xml_response(template)
 
 @app.route('/iD/api/0.6/changeset/<cid>/upload', methods=['POST'])
 @app.route('/iD/connection/api/0.6/changeset/<cid>/upload', methods=['POST'])
