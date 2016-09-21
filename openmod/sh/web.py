@@ -163,13 +163,8 @@ def osm_map():
     left, bottom, right, top = map(float, flask.request.args['bbox'].split(","))
     minx, maxx = sorted([top, bottom])
     miny, maxy = sorted([left, right])
-    nodes = [dict(**n)
-            for n in OSM.nodes
-            for x, y in ((n["lat"], n["lon"]),)
-            if minx <= x and  miny <= y and maxx >= x and maxy >= y]
-    for node in nodes:
-        node['id'] = node.get('id', id(node))
-        node['tags'] = node.get('tags', {})
+    nodes = osm.Node.query.filter(minx <= osm.Node.lat, miny <= osm.Node.lon,
+                                  maxx >= osm.Node.lat, maxy >= osm.Node.lon)
     template = flask.render_template('map.xml', nodes=nodes,
                                           minlon=miny, maxlon=maxy,
                                           minlat=minx, maxlat=maxx)

@@ -6,10 +6,9 @@
             {% include %}d templates.
         #}
   {% for node in nodes %}
-    <node id="{{node.id}}" visible="true" lat="{{node.lat}}" lon="{{node.lon}}"
-          version="0"
-      >
-      {% for k, v in node.tags.items() %} <tag k="{{k}}" v="{{v}}"/>
+    <node id="{{node.id}}" visible="{{node.visible}}" version="{{node.version}}"
+          lat="{{node.lat}}" lon="{{node.lon}}">
+      {% for tag in node.tags %} <tag k="{{tag.key}}" v="{{tag.value}}"/>
       {% endfor %}
     </node>
   {% endfor %}
