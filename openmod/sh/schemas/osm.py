@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.orderinglist import ordering_list
+from sqlalchemy.orm.collections import attribute_mapped_collection as amc
 import werkzeug.security as ws
 from oemof.db import config as cfg
 
@@ -135,7 +136,9 @@ class Node(DB.Model):
     version = DB.Column(DB.Integer, nullable=False)
     timestamp = DB.Column(DB.DateTime, nullable=False)
     visible = DB.Column(DB.Boolean, nullable=False)
-    tags = DB.relationship(Tag, secondary=tags_and_nodes)
+    tag_objects = DB.relationship(Tag, secondary=tags_and_nodes,
+                                       collection_class=amc('key'))
+    tags = association_proxy('tag_objects', 'value')
     uid = DB.Column(DB.Integer, DB.ForeignKey(User.id))
     user = DB.relationship(User, uselist=False)
     ways = association_proxy('nodes_way', 'way')
@@ -143,7 +146,7 @@ class Node(DB.Model):
     changeset = DB.relationship('Changeset', uselist=False)
     changeset_id = DB.Column(DB.Integer, DB.ForeignKey('changeset.id'))
 
-    def __init__(self, lat, lon, user_id, changeset_id, tags=(), **kwargs):
+    def __init__(self, lat, lon, user_id, changeset_id, **kwargs):
         self.lat = lat
         self.lon = lon
         self.version = 1
@@ -151,7 +154,6 @@ class Node(DB.Model):
         self.visible = True
         self.uid = user_id
         self.changeset_id = changeset_id
-        self.tags = [Tag(key=k, value=v) for k, v in tags]
         for k in kwargs:
             setattr(self, k, kwargs[k])
 
@@ -159,7 +161,9 @@ class Way(DB.Model):
     id = DB.Column(DB.Integer, primary_key=True)
     myid = DB.Column(DB.String(255))
     version = DB.Column(DB.String)
-    tags = DB.relationship(Tag, secondary=tags_and_ways)
+    tag_objects = DB.relationship(Tag, secondary=tags_and_ways,
+                                       collection_class=amc('key'))
+    tags = association_proxy('tag_objects', 'value')
     way_nodes = DB.relationship('nodes_and_ways',
                                 order_by='nodes_and_ways.position',
                                 collection_class=ordering_list('position'))
@@ -177,7 +181,9 @@ class Relation(DB.Model):
     version = DB.Column(DB.String)
     timestamp = DB.Column(DB.DateTime, nullable=False)
     visible = DB.Column(DB.Boolean, nullable=False)
-    tags = DB.relationship(Tag, secondary=tags_and_rs)
+    tag_objects = DB.relationship(Tag, secondary=tags_and_rs,
+                                       collection_class=amc('key'))
+    tags = association_proxy('tag_objects', 'value')
     uid = DB.Column(DB.Integer, DB.ForeignKey(User.id))
     user = DB.relationship(User, uselist=False)
     superiors = association_proxy('referencing', 'relation')
@@ -186,7 +192,7 @@ class Relation(DB.Model):
 
 class Changeset(DB.Model):
     id = DB.Column(DB.Integer, primary_key=True)
-    tags = DB.relationship(Tag, secondary=tags_and_changesets)
-    def __init__(self, tags=()):
-        self.tags = [Tag(key=k, value=v) for k, v in tags]
+    tag_objects = DB.relationship(Tag, secondary=tags_and_changesets,
+                                       collection_class=amc('key'))
+    tags = association_proxy('tag_objects', 'value')
 

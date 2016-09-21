@@ -50,7 +50,7 @@ def simulate(**kwargs):
             "Parameters:<br />  " +
             "<br />  ".join(["{}: {}".format(*x) for x in kwargs.items()])
             ).format(lengths,
-                     scenario={t.key: t.value for t in scenario.tags}['name'])
+                     scenario=scenario.tags['name'])
 
     # Now sleep for 5 minutes to pretend we are doing something.
     time.sleep(300)
