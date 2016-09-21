@@ -210,7 +210,7 @@ class Client:
                               # where the user is redirected to after
                               # authorizing iD, so that iD gets to know that it
                               # can go on.
-                              "http://127.0.0.1:8000/land.html"]
+                              "/static/iD/land.html"]
         self.default_redirect_uri = self.redirect_uris[0]
         self.default_realms = []
 CLIENT = Client()
