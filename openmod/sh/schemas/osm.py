@@ -190,7 +190,8 @@ class Relation(Element):
     __mapper_args__ = {'polymorphic_identity': 'relation'}
     id = DB.Column(DB.Integer, primary_key=True)
     element_id = DB.Column(DB.Integer, DB.ForeignKey(Element.element_id))
-    elements = association_proxy('element_associations', 'element')
+    elements = association_proxy('element_associations', 'element',
+            creator=lambda e: Element_Relation_Associations(element=e))
 
     @property
     def referenced_nodes(self):
