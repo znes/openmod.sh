@@ -11,5 +11,6 @@ dev.DB.session.commit()
 
 username = 'admin'
 user = osm.User(username, username)
+osm.DB.session.add(user)
 osm.DB.session.commit()
 
