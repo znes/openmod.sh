@@ -1,12 +1,12 @@
 import itertools
 import json
 
-# TODO: Change this to `import flask` so that it is easier to see what flast
-#       utilities are accessed.
-from flask import Flask, make_response, render_template, request
+import flask
 import flask_cors as cors # TODO: Check whether the `@cors.cross_origin()`
                           #       decorators are still necessary once 'iD' is
                           #       served from within this app.
+import flask_login as fl
+import wtforms as wtf
 from geoalchemy2.functions import ST_AsGeoJSON as geojson
 from sqlalchemy.orm import sessionmaker
 
@@ -15,7 +15,11 @@ import oemof.db as db
 from .schemas import dev as schema  # test as schema
 
 
-app = Flask(__name__)
+app = flask.Flask(__name__)
+# For production deployment: generate a different one via Python's `os.urandom`
+# and store it in a safe place.
+# See: http://flask.pocoo.org/docs/0.11/quickstart/#sessions
+app.secret_key = b"DON'T USE THIS IN PRODUCTION! " + b'\xdb\xcd\xb4\x8cp'
 
 Plant = schema.Plant
 Timeseries = schema.Timeseries
@@ -26,10 +30,84 @@ engine = db.engine("openMod.sh")
 Session = sessionmaker(bind=engine)
 session = Session()
 
+##### User Management #########################################################
+#
+# User management code. This should probably go into it's own module but I'm
+# putting it all here for now, as some parts need to stay in this module while
+# some parts can be factored out later.
+# The 'factoring out' part can be considered an open TODO.
+#
+##############################################################################
+
+class User:
+    """ Required by flask-login.
+
+    See: https://flask-login.readthedocs.io/en/latest/#your-user-class
+
+    This implementation just stores users in memory in a class variable and
+    creates new users as they try to log in.
+    """
+    known = {}
+    def __init__(self, name, pw):
+        if name in self.known:
+            raise ValueError(
+                    "Trying to create user '{}' which already exists.".format(
+                        name))
+        self.known[name] = self
+        self.name = name
+        self.pw = pw
+        self.is_authenticated = True
+        self.is_active = True
+        self.is_anonymous = False
+
+    def get_id(self): return str(id(self))
+
+login_manager = fl.LoginManager()
+login_manager.login_view = 'login'
+login_manager.init_app(app)
+@login_manager.user_loader
+def load_user(user_id):
+    return User.known.get(user_id)
+
+class Login(wtf.Form):
+    username = wtf.StringField('Username', [wtf.validators.Length(min=3,
+                                                                  max=79)])
+    password = wtf.StringField('Password', [wtf.validators.Length(min=3,
+                                                                  max=79)])
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    form = Login(flask.request.form)
+    if flask.request.method == 'POST' and form.validate():
+        user = load_user(form.username.data)
+        if user is not None:
+            if user.pw == form.password.data:
+                fl.login_user(user)
+                return flask.redirect('http://localhost:8000')
+            else:
+                flask.flash('Invalid username/password combination.')
+                return flask.redirect(flask.url_for('login'))
+        else:
+            user = User(form.username.data, form.password.data)
+            flask.flash('User "{}" created.'.format(user.name))
+            fl.login_user(user)
+            return flask.redirect('http://localhost:8000')
+    return flask.render_template('login.html', form=form)
+
+@app.route('/logout')
+def logout():
+    fl.logout_user()
+    flask.flash('Logged out')
+    return flask.redirect(flask.url_for('login'))
+
+##### User Management stuff ends here (except for the `@fl.login_required`).
 
 @app.route('/')
+@fl.login_required
 def root():
-    return render_template('index.html')
+    # TODO: Actually use this by using the `flask.request.args.get('next')` in
+    #       the `login` endpoint instead of hardcoding the redirect there too.
+    return flask.redirect('http://localhost:8000')
 
 # TODO: Factor adding the 'Content-Type' header out into a separate function.
 
@@ -37,26 +115,27 @@ def root():
 @app.route('/osm/api/0.6/capabilities')
 @cors.cross_origin()
 def capabilities():
-    template = render_template('capabilities.xml', area={"max": 1}, timeout=250)
-    response = make_response(template)
+    template = flask.render_template('capabilities.xml', area={"max": 1},
+                                     timeout=250)
+    response = flask.make_response(template)
     response.headers['Content-Type'] = 'text/xml'
     return response
 
 @app.route('/osm/api/0.6/map')
 @cors.cross_origin()
 def osm_map():
-    left, bottom, right, top = map(float, request.args['bbox'].split(","))
+    left, bottom, right, top = map(float, flask.request.args['bbox'].split(","))
     minx, maxx = sorted([top, bottom])
     miny, maxy = sorted([left, right])
     nodes = [dict(id=id(n), **n)
             for n in osm_map.nodes
             for x, y in ((n["lat"], n["lon"]),)
             if minx <= x and  miny <= y and maxx >= x and maxy >= y]
-    template = render_template('map.xml', nodes=nodes,
+    template = flask.render_template('map.xml', nodes=nodes,
                                           minlon=miny, maxlon=maxy,
                                           minlat=minx, maxlat=maxx)
 
-    response = make_response(template)
+    response = flask.make_response(template)
     response.headers['Content-Type'] = 'text/xml'
     return response
 
@@ -156,7 +235,7 @@ def csv(ids):
     plants = plants.all()
     body = "\n".join([",".join([str(getattr(p, k)) for k in header])
                       for p in plants])
-    response = make_response(",".join(header) + "\n" + body)
+    response = flask.make_response(",".join(header) + "\n" + body)
     response.headers["Content-Disposition"] = ("attachment;" +
                                                "filename=eeg_extract.csv")
     return response
