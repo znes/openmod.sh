@@ -50,13 +50,13 @@ def simulate(folder, **kwargs):
 
     # emission factor (hardcoded for now....) t/MWh
     emission_factors = {'gas': 0.2, 'coal': 0.34, 'oil': 0.27, 'lignite': 0.4,
-                        'waste': 0.3, 'biomass': 0}
+                        'waste': 0.3, 'biomass': 0, 'wind':0, 'solar':0}
     #########################################################################
     # OEMOF SOLPH
     #########################################################################
     # We need a datetimeindex for the optimization problem / energysystem
     datetimeindex = pd.date_range('1/1/'+scenario.tags.get('year', '2012'),
-                                  periods=168*12, freq='H')
+                                  periods=168*4, freq='H')
 
     energy_system = EnergySystem(groupings=GROUPINGS, time_idx=datetimeindex)
 
@@ -88,34 +88,38 @@ def simulate(folder, **kwargs):
         node_bus = [r.tags['name'] for r in n.referencing_relations
                     if r.tags['name'] in list(buses.keys())]
         # CREATE SINK OBJECTS
-
         if n.tags.get('oemof_class') == 'sink':
-            Sink(label=n.tags['name'],
-                 inputs={buses[node_bus[0]]:
+            s = Sink(label=n.tags['name'],
+                     inputs={buses[node_bus[0]]:
                      Flow(nominal_value=float(n.tags['energy_amount']),
                           actual_value=n.timeseries['timeseries'],
                           fixed=True)})
+            s.type = n.tags['type']
         # CREATE SOURCE OBJECTS
         if n.tags.get('oemof_class') == 'source':
-            Source(label=n.tags['name'],
-                   outputs={buses[node_bus[0]]:
-                       Flow(nominal_value=float(n.tags['installed_power']),
-                            actual_value=n.timeseries['timeseries'],
-                            fixed=True)})
+            s = Source(label=n.tags['name'],
+                       outputs={buses[node_bus[0]]:
+                           Flow(nominal_value=float(n.tags['installed_power']),
+                                actual_value=n.timeseries['timeseries'],
+                                fixed=True)})
+            s.fuel_type = n.tags['fuel_type']
+            s.type = n.tags['type']
         # CREATE TRANSFORMER OBJECTS
         if n.tags.get('oemof_class') == 'linear_transformer':
             # CREATE LINEAR TRANSFORMER
             if n.tags.get('type') == 'flexible_generator':
                 ins =  global_buses[n.tags['fuel_type']]
                 outs = buses[node_bus[0]]
-                LinearTransformer(label=n.tags['name'],
-                                  inputs={
-                    ins: Flow(variable_costs=float(
+                t = LinearTransformer(label=n.tags['name'],
+                        inputs={ins: Flow(variable_costs=float(
                                             n.tags.get('variable_costs', 0)))},
-                    outputs={outs: Flow(nominal_value=float(
-                                                  n.tags['installed_power']))},
-                conversion_factors={
-                    outs:float(n.tags['efficiency'])})
+                        outputs={outs: Flow(nominal_value=float(
+                                            n.tags['installed_power']))},
+                        conversion_factors={outs:float(n.tags['efficiency'])})
+                # store fuel_type as attribute for identification
+                t.fuel_type = n.tags['fuel_type']
+                t.type = n.tags['type']
+
             # CREATE COMBINED HEAT AND POWER AS LINEAR TRANSFORMER
             if n.tags.get('type') == 'combined_flexible_generator':
                 ins =  global_buses[n.tags['fuel_type']]
@@ -123,31 +127,36 @@ def simulate(folder, **kwargs):
                             if buses[k].energy_sector == 'heat'][0]
                 power_out = [buses[k] for k in node_bus
                              if buses[k].energy_sector == 'electricity'][0]
-                LinearTransformer(label=n.tags['name'],
-                                  inputs={
-                      ins: Flow(variable_costs=float(
+                t = LinearTransformer(label=n.tags['name'],
+                                inputs={ins: Flow(variable_costs=float(
                                             n.tags.get('variable_costs', 0)))},
-                      outputs={power_out: Flow(nominal_value=float(
-                                                   n.tags['installed_power'])),
-                                           heat_out: Flow()},
-                conversion_factors={
-                    heat_out:float(n.tags['thermal_efficiency']),
-                    power_out:float(n.tags['electrical_efficiency'])})
+                                outputs={power_out: Flow(nominal_value=float(
+                                             n.tags['installed_power'])),
+                                         heat_out: Flow()},
+                                conversion_factors={
+                            heat_out: float(n.tags['thermal_efficiency']),
+                            power_out: float(n.tags['electrical_efficiency'])})
+                t.fuel_type = n.tags['fuel_type']
+                t.type = n.tags['type']
 
+        # CRAETE STORAGE OBJECTS
         if n.tags.get('oemof_class') == 'storage':
-            # CRAETE STORAGE OBJECTS
             # Oemof solph does not provide direct way to set power in/out of
             # storage hence, we need to caculate the needed ratios upfront
             nicr = (float(n.tags['installed_power']) /
                     float(n.tags['installed_energy']))
             nocr = (float(n.tags['installed_power']) /
                     float(n.tags['installed_energy']))
-            Storage(label=n.tags['name'],
-                    inputs={buses[node_bus[0]]:Flow()},
-                    outputs={buses[node_bus[0]]:Flow()},
-                    nominal_capacity=float(n.tags['installed_energy']),
-                    nominal_input_capacity_ratio=nicr,
-                    nominal_output_capacity_ration=nocr)
+            s = Storage(label=n.tags['name'],
+                        inputs={buses[node_bus[0]]:Flow()},
+                        outputs={buses[node_bus[0]]:Flow()},
+                        nominal_capacity=float(n.tags['installed_energy']),
+                        nominal_input_capacity_ratio=nicr,
+                        nominal_output_capacity_ration=nocr)
+            s.energy_sector = n.tags['energy_sector']
+            s.type = n.tags['type']
+
+    # loop over all ways to create transmission objects
     for w in ways:
         way_bus = [r.tags['name'] for r in w.referencing_relations
                     if r.tags['name'] in list(buses.keys())]
@@ -159,20 +168,20 @@ def simulate(folder, **kwargs):
                 ins = buses[way_bus[0]]
                 outs = buses[way_bus[1]]
                 # 1st transformer
-                LinearTransformer(label=w.tags['name']+'_1',
-                                  inputs={
-                    outs: Flow()},
-                                  outputs={
+                t1 = LinearTransformer(label=w.tags['name']+'_1',
+                          inputs={outs: Flow()},
+                         outputs={
                     ins: Flow(nominal_value=float(w.tags['installed_power']))},
                 conversion_factors={ins:float(w.tags['efficiency'])})
+                t1.type = w.tags.get('type')
                 # 2nd transformer
-                LinearTransformer(label=w.tags['name']+'_2',
+                t2 = LinearTransformer(label=w.tags['name']+'_2',
                                   inputs={
                     ins: Flow()},
                                   outputs={
                     outs: Flow(nominal_value=float(w.tags['installed_power']))},
                 conversion_factors={outs:float(w.tags['efficiency'])})
-
+                t2.type = w.tags.get('type')
 
     # Create optimization model, solve it, wrtie back results
     om = OperationalModel(es=energy_system)
@@ -184,9 +193,10 @@ def simulate(folder, **kwargs):
              solve_kwargs={'tee': True, 'keepfiles': False})
     om.results()
 
+    # create results dataframe based on oemof's outputlib (multiindex)
     esplot = output.DataFramePlot(energy_system=energy_system)
 
-
+    # select subsets of data frame (full hub balances) and write to temp-csv
     csv_links = {}
     for b in buses.values():
         subset = esplot.slice_by(bus_label=b.label,
@@ -198,37 +208,59 @@ def simulate(folder, **kwargs):
         os.close(fd)
 
         head, tail = os.path.split(temp_path)
-        link = "/static/"+tail
+        link = "/static/" + tail
+        # storage csv-file links in dictionary for html result page
         csv_links[b.label] = link
 
     ####################### CALCULATIONS FOR OUTPUT ###########################
     # get electical hubs production
+
     el_buses = [b.label for b in buses.values()
                 if b.energy_sector == 'electricity']
-    elproduction = esplot.slice_by(bus_label=el_buses,
-                                   type='to_bus').unstack([0, 1, 2])
-    elproduction.columns = elproduction.columns.droplevel([0, 1, 2])
-    elproduction_daily_sum = elproduction.resample('1D', how='sum')
+    components = [n for n in energy_system.nodes if not isinstance(n, Bus)]
 
-    # slice fuel types, unstack components and sum by components
-    fossil_consumption = esplot.slice_by(bus_label=global_buses.keys(),
-                                         type='from_bus').unstack(2).sum(axis=1)
-    # drop level 'from_bus' that all rows have anyway
-    fossil_consumption.index = fossil_consumption.index.droplevel(1)
-    # turn index with fuel type to columns
-    fossil_consumption = fossil_consumption.unstack(0)
+    #plot_nodes = [c.label for c in components if c.type != 'transmission']
+    renewables = [c for c in components if isinstance(c, Source)]
+    wind = [c.label for c in renewables if c.fuel_type == 'wind']
+    solar = [c.label for c in renewables if c.fuel_type == 'solar']
 
-    fossil_emissions = fossil_consumption.copy()
+
+    wind_production =  esplot.slice_by(bus_label=el_buses, obj_label=wind,
+                                       type='to_bus').unstack(2).sum(axis=1)
+    wind_production.index = wind_production.index.droplevel(1)
+    wind_production = wind_production.unstack(0)
     #pdb.set_trace()
-    for col in fossil_consumption:
-        fossil_emissions[col] = fossil_consumption[col] * emission_factors[col]
+    if not wind_production.empty:
+        wind_production.columns = ['wind']
+    solar_production = esplot.slice_by(bus_label=el_buses, obj_label=solar,
+                                       type='to_bus').unstack(2).sum(axis=1)
+    solar_production.index = solar_production.index.droplevel(1)
+    solar_production = solar_production.unstack(0)
+    if not solar_production.empty:
+        solar_production.columns = ['solar']
+
+    # slice fuel types, unstack components and sum components by fuel type
+    fossil_production = esplot.slice_by(bus_label=global_buses.keys(), type='from_bus').unstack(2).sum(axis=1)
+    # drop level 'from_bus' that all rows have anyway
+    fossil_production.index = fossil_production.index.droplevel(1)
+    # turn index with fuel type to columns
+    fossil_production = fossil_production.unstack(0)
+
+    all_production = pd.concat([fossil_production,
+                                wind_production,
+                                solar_production], axis=1)
+    all_production = all_production.resample('1D', how='sum')
+
+    fossil_emissions = fossil_production.copy()
+    #pdb.set_trace()
+    for col in fossil_production:
+        fossil_emissions[col] = fossil_production[col] * emission_factors[col]
     # sum total emissions
     emission = fossil_emissions.sum(axis=1)
-    # resampling
     emission = emission.resample('1D', how='sum')
     # helpers for generating python-html ouput
-    help_fill = ['tozeroy'] + ['tonexty']*(len(elproduction_daily_sum.columns)-1)
-    fill_dict = dict(zip(elproduction_daily_sum.columns, help_fill))
+    help_fill = ['tozeroy'] + ['tonexty']*(len(all_production.columns)-1)
+    fill_dict = dict(zip(all_production.columns, help_fill))
 
 
     #pdb.set_trace()
@@ -243,10 +275,10 @@ def simulate(folder, **kwargs):
         "<script>" +
         "var traces = [" +
         ", ".join(["{{x: {0}, y: {1}, fill: '{fillarg}', name: '{name}'}}".format(
-                   list(range(len(elproduction_daily_sum.index.values))),
-                   list(elproduction_daily_sum[col].values),
+                   list(range(len(all_production.index.values))),
+                   list(all_production[col].values),
                    name=col,
-                   fillarg=fill_dict[col]) for col in elproduction_daily_sum]) + "];" +
+                   fillarg=fill_dict[col]) for col in all_production]) + "];" +
         "function stackedArea(traces) {" +
                 "for(var i=1; i<traces.length; i++) {" +
                     "for(var j=0; j<(Math.min(traces[i]['y'].length, traces[i-1]['y'].length)); j++) {" +
