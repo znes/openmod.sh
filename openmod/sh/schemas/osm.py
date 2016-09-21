@@ -243,3 +243,7 @@ class Timeseries(DB.Model):
     key = DB.Column(DB.String(255), nullable=False)
     values = DB.Column(ARRAY(DB.Float, dimensions=1), nullable=False)
 
+    def __init__(self, key, values):
+        self.key = key
+        self.values = values
+
