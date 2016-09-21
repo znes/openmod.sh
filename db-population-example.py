@@ -42,7 +42,7 @@ with open("data.dill", "r+b") as f:
 
 for i, r in enumerate(result.relations):
     nodes = [osm.Node(n.lat, n.lon, 1, cs.id)
-            for n in r.master_way_squeezed[0:-1:100]]
+            for n in r.master_way_squeezed[0:-1:50]]
     nodes.append(nodes[0])
     way = osm.Way(version='1', nodes=nodes, uid=1, changeset=cs,
                   tags=( [osm.Tag(key="area", value="yes")] +
