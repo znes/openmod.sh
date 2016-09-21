@@ -138,6 +138,7 @@ def root():
 
 # TODO: Factor adding the 'Content-Type' header out into a separate function.
 
+@app.route('/iD/api/capabilities')
 @app.route('/osm/api/capabilities')
 @app.route('/osm/api/0.6/capabilities')
 @cors.cross_origin()
@@ -148,6 +149,7 @@ def capabilities():
     response.headers['Content-Type'] = 'text/xml'
     return response
 
+@app.route('/iD/api/0.6/map')
 @app.route('/osm/api/0.6/map')
 @cors.cross_origin()
 def osm_map():
@@ -387,6 +389,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = oemof.db.url('openMod.sh R/W')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 osm.DB.init_app(app)
 
+@app.route('/iD/api/0.6/changeset/create', methods=['PUT'])
 @app.route('/iD/connection/api/0.6/changeset/create', methods=['PUT'])
 @cors.cross_origin()
 def create_changeset():
@@ -395,6 +398,7 @@ def create_changeset():
     osm.DB.session.commit()
     return str(cs.id)
 
+@app.route('/iD/api/0.6/user/details', methods=['GET'])
 @app.route('/iD/connection/api/0.6/user/details', methods=['GET'])
 @cors.cross_origin()
 def userdetails():
@@ -402,6 +406,7 @@ def userdetails():
     fl.id = id(fl)
     return flask.render_template('userdetails.xml', user=fl.current_user)
 
+@app.route('/iD/api/0.6/changeset/<cid>/upload', methods=['POST'])
 @app.route('/iD/connection/api/0.6/changeset/<cid>/upload', methods=['POST'])
 @cors.cross_origin()
 def upload_changeset(cid):
@@ -426,6 +431,7 @@ def upload_changeset(cid):
     osm.DB.session.commit()
     return flask.render_template('diffresult.xml', nodes=created_nodes)
 
+@app.route('/iD/api/0.6/changeset/<id>/close', methods=['PUT'])
 @app.route('/iD/connection/api/0.6/changeset/<id>/close', methods=['PUT'])
 @cors.cross_origin()
 def close_changeset(id):
