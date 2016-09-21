@@ -34,7 +34,7 @@ DB.flush()
 # Nodes
 nodes = [{'lon': 10.1,
           'lat': 54.1,
-          'hub': 'myhub1',
+          'hubs': ['myhub1'],
           'tags': {'name': 'mysink',
                    'type': 'demand',
                    'oemof_class': 'sink',
@@ -43,7 +43,7 @@ nodes = [{'lon': 10.1,
           'timeseries': [uniform(0,1) for x in range(8760)]},
          {'lon': 10.2,
           'lat': 54.1,
-          'hub': 'myhub1',
+          'hubs': ['myhub1'],
           'tags': {'name': 'mysource',
                    'type': 'volatile_generator',
                    'oemof_class': 'source',
@@ -52,7 +52,7 @@ nodes = [{'lon': 10.1,
           'timeseries': [uniform(0,1) for x in range(8760)]},
          {'lon': 10.5,
           'lat': 54.1,
-          'hub': 'myhub2',
+          'hubs': ['myhub2'],
           'tags': {'name': 'mytransformer',
                    'type': 'flexible_generator',
                    'oemof_class': 'linear_transformer',
@@ -63,7 +63,7 @@ nodes = [{'lon': 10.1,
                    'energy_sector': 'electricity'}},
          {'lon': 10.54,
           'lat': 54.15,
-          'hub': ['myhub2','myheathub1'],
+          'hubs': ['myhub2','myheathub1'],
           'tags': {'name': 'mychp',
                    'type': 'combined_flexible_generator',
                    'oemof_class': 'linear_transformer',
@@ -75,7 +75,7 @@ nodes = [{'lon': 10.1,
                    'energy_sector': 'powerheat'}},
          {'lon': 10.5,
           'lat': 54.2,
-          'hub': 'myhub2',
+          'hubs': ['myhub2'],
           'tags': {'name': 'mystorage',
                    'type': 'storage',
                    'oemof_class': 'storage',
@@ -96,7 +96,8 @@ for n in nodes:
                  referencing_relations = [myscenario])
     if 'timeseries' in n:
         x.timeseries['timeseries'] = n['timeseries']
-    hub_nodes[n['hub']] = hub_nodes.get(n['hub'], []) + [x]
+    for h in n['hubs']:
+        hub_nodes[h] = hub_nodes.get(h, []) + [x]
     DB.add(x)
 
 DB.flush()
@@ -138,7 +139,7 @@ for h in hubs:
                 tags = {'area': 'yes',
                         'name': hub_name+'_area',
                         'type':'hub_area',
-                        'energy_sector': 'electricity'},
+                        'energy_sector': h['tags']['energy_sector']},
                 referencing_relations = [myscenario])
     DB.add(w)
     r = osm.Relation(myid = hub_name,
