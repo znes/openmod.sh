@@ -190,9 +190,9 @@ def osm_map():
     # Limit nodes to the one's contained in the selected scenario.
     scenario = flask.session.get("scenario")
     if (scenario):
+        scenario = osm.Relation.query.filter_by(id=scenario).first()
         nodes = [ n for n in nodes
-                    for relation in n.referencing_relations
-                    if relation.tags.get('name') == scenario]
+                    for scenario in n.referencing_relations]
     # Get all ways referencing the above nodes.
     ways = set(way for node in nodes for way in node.ways)
     # Get all relations referencing the above ways.
@@ -237,28 +237,28 @@ def simulation(job):
 @app.route('/scenarios')
 @fl.login_required
 def scenarios():
-    relations = osm.Relation.query.all();
-    scenarios = [ r.tags.get('name')
-                  for r in relations
-                  if r.tags.get("type") == "scenario"]
+    scenarios = list(sorted(
+        [ {"value": r.tags['name'], "title": r.id}
+          for r in osm.Relation.query.all()
+          if r.tags.get("type") == "scenario"
+          if r.tags.get('name')],
+        key=lambda d: d['value']))
     if (flask.session.get("scenario")):
-        scenarios = (["Deselect selected scenario"] +
-                     list(sorted(set(
-                         [v for v in scenarios
-                            if (v != flask.session.get("scenario"))]))))
-    return json.dumps(sorted(scenarios))
+        scenarios = ([{"title": None, "value": "Deselect selected scenario"}] +
+                [s for s in scenarios
+                   if s['title'] != flask.session.get("scenario")])
+    return json.dumps(scenarios)
 
 @app.route('/scenario', defaults={"s": None}, methods=['GET'])
 @app.route('/scenario/<s>', methods=['PUT'])
 @fl.login_required
 def scenario(s):
     if flask.request.method == 'GET':
-        return flask.session.get("scenario", "")
-    elif ( (s == "Deselect selected scenario" or s == "") and
-           "scenario" in flask.session):
+        return str(flask.session.get("scenario", ""))
+    elif s and not json.loads(s) and "scenario" in flask.session:
         del flask.session["scenario"]
     else:
-        flask.session["scenario"] = s
+        flask.session["scenario"] = json.loads(s)
     return ""
 
 ##### OAuth1 provider code ####################################################

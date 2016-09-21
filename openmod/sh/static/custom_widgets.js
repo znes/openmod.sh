@@ -86,12 +86,11 @@ widgets.scenarios = function (parent, context) {
 
   d3.xhr('/scenarios')
     .on('load', function(xhr){
-      var data = JSON.parse(xhr.response).map(
-        function(e){ return {value: e}; });
+      var data = JSON.parse(xhr.response);
       input.call(d3.combobox()
         .data(data)
         .minItems(1)
-        .on('accept', function (e) { d3.xhr('/scenario/' + e.value)
+        .on('accept', function (e) { d3.xhr('/scenario/' + e.title)
                                        .on('load', function (_) {
                                          window.location.reload(true);})
                                        .send('PUT')}));
