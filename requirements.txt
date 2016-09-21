@@ -4,5 +4,5 @@ psycopg2
 sqlalchemy
 
 # oemof.db which is not yet a package on PyPI
--e git+https://github.com/oemof/oemof.db.git@dev#egg=oemof.db
+-e git+https://github.com/oemof/oemof.db.git@feature/select-db-to-connect-on#egg=oemof.db
 

@@ -16,7 +16,7 @@ Plant = schema.Plant
 Timeseries = schema.Timeseries
 Grid = schema.Grid
 
-engine = db.engine()
+engine = db.engine("openMod.sh")
 
 Session = sessionmaker(bind=engine)
 session = Session()
