@@ -158,7 +158,7 @@ def root():
 @app.route('/osm/api/0.6/capabilities')
 @cors.cross_origin()
 def capabilities():
-    template = flask.render_template('capabilities.xml', area={"max": 1},
+    template = flask.render_template('capabilities.xml', area={"max": 0.2},
                                      timeout=250)
     return xml_response(template)
 

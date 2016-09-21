@@ -28,7 +28,7 @@ result = ways_and_nodes
 def squeeze(way):
     if len(way) > 2000:
         f = int(np.ceil(len(way) / 2000))
-        squeezed = way[0:-1][::f] + [way[-1]]
+        squeezed = way[0:-1:f] + [way[-1]]
     else:
         return way
     return squeezed
@@ -53,3 +53,9 @@ for r in result.relations:
     x = [i for i,j in coords]
     y = [j for i,j in coords]
     plt.plot(x,y)
+
+import pickle
+
+with open("data.pickle", "w+b") as f:
+    pickle.dump(result, f)
+
