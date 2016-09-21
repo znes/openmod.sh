@@ -9,15 +9,10 @@ kind enough to [document][1].
 Initializing the application to work with flask-sqlalchemy is taken care
 of in the `openmod.sh` codebase, so all you have to do is import the
 right modules, push an application context, create the tables and commit
-the transaction. To do so, `cd` into the repository's directory and do:
+the transaction. To do so, `cd` into the repository's directory and run:
 
   ```
-  python
-  >>> import openmod.sh.schemas.osm as osm
-  >>> from openmod.sh import web
-  >>> web.app.app_context().push()
-  >>> osm.DB.create_all()
-  >>> osm.DB.session.commit()
+  python database-setup.py
   ```
 
 [0]: http://flask-sqlalchemy.pocoo.org/2.1/
