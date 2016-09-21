@@ -5,19 +5,15 @@
 The following python packages have to be installed in order to use this:
 
   * flask
-  * flask-sqlalchemy
-  * sqlachemy
   * geoalchemy2
+  * oemof.db
   * psycopg2
+  * sqlachemy
 
-Additionally there has to be a file called `uphpd` containing:
+As you can see, `openmod.sh` depends on `oemof.db`. Have a look at it's
+[README][0] for information on how to configure database access.
 
-  * the username with which to log into the database management system (DBMS),
-  * the password for the given username,
-  * the hostname at which the DBMS can be reached,
-  * the port on which the DBMS is listening for connections and
-  * the name of the database inside the DBMS from which to access data.
-
-Each of those should be on a line on it's own with nothing else in between.
 Once you installed those, you can just do `python openmod.sh.py`.
+
+[0]: https://github.com/oemof/oemof.db/blob/dev/README.rst#configuration
 
