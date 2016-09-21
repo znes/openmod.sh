@@ -24,6 +24,23 @@ app = flask.Flask(__name__)
 # See: http://flask.pocoo.org/docs/0.11/quickstart/#sessions
 app.secret_key = b"DON'T USE THIS IN PRODUCTION! " + b'\xdb\xcd\xb4\x8cp'
 
+##### Utility Functions #######################################################
+#
+# Some functions used throughout this module (and maybe even elsewhere.)
+#
+# This should probably go into it's own module but I'm putting it all here for
+# now, as some parts need to stay in this module while some parts can be
+# factored out later. The 'factoring out' part can be considered an open TODO.
+#
+###############################################################################
+
+def xml_response(template):
+    response = flask.make_response(template)
+    response.headers['Content-Type'] = 'text/xml'
+    return response
+
+##### Utility Functions end here ##############################################
+
 ##### Safe Redirects ##########################################################
 #
 # If we allow redirects after form submission, we want it to be safe. The code
@@ -136,8 +153,6 @@ def logout():
 def root():
     return flask.redirect('/static/iD/index.html')
 
-# TODO: Factor adding the 'Content-Type' header out into a separate function.
-
 @app.route('/iD/api/capabilities')
 @app.route('/osm/api/capabilities')
 @app.route('/osm/api/0.6/capabilities')
@@ -145,9 +160,7 @@ def root():
 def capabilities():
     template = flask.render_template('capabilities.xml', area={"max": 1},
                                      timeout=250)
-    response = flask.make_response(template)
-    response.headers['Content-Type'] = 'text/xml'
-    return response
+    return xml_response(template)
 
 @app.route('/iD/api/0.6/map')
 @app.route('/osm/api/0.6/map')
@@ -161,10 +174,7 @@ def osm_map():
     template = flask.render_template('map.xml', nodes=nodes,
                                           minlon=miny, maxlon=maxy,
                                           minlat=minx, maxlat=maxx)
-
-    response = flask.make_response(template)
-    response.headers['Content-Type'] = 'text/xml'
-    return response
+    return xml_response(template)
 
 ##### OAuth1 provider code ####################################################
 #
@@ -469,9 +479,7 @@ def get_node():
                       "user", "changeset_id", "id"]
             for v in (getattr(node, k),)}
     template = flask.render_template('node.xml', node=node)
-    response = flask.make_response(template)
-    response.headers['Content-Type'] = 'text/xml'
-    return response
+    return xml_response(template)
 
 ##### Persistence code ends here ##############################################
 
