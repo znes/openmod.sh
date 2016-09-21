@@ -28,7 +28,7 @@ myscenario = osm.Relation(myid='myscenario',
                           timestamp=ts,
                           tags={'type': 'scenario',
                                 'name': 'myscenario',
-                                'scneario_year': 2050,
+                                'scenario_year': 2050,
                                 'scenario_description':'My test scenario.'})
 DB.add(myscenario)
 DB.flush()
