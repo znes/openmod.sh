@@ -53,3 +53,9 @@ for r in result.relations:
     x = [i for i,j in coords]
     y = [j for i,j in coords]
     plt.plot(x,y)
+
+import pickle
+
+with open("data.pickle", "w+b") as f:
+    pickle.dump(result, f)
+
