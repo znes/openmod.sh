@@ -19,3 +19,12 @@ class Timeseries(declarative_base()):
     plant = db.Column("plantid", db.String(), primary_key=True)
     step = db.Column("timestep", db.Integer, primary_key=True)
     value = db.Column("value", db.Integer())
+    
+class Grid(declarative_base()):
+    __tablename__ = "grid"
+    __table_args__ = {"schema": "test"}
+    id = db.Column("osm_id", db.Integer(), primary_key=True)
+    type = db.Column("power", db.String())
+    geometry = db.Column("way", Geometry(geometry_type="LineString"))
+    voltage = db.Column("voltage", db.String())
+    
