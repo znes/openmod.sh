@@ -1,9 +1,7 @@
 import itertools
 import json
 
-# TODO: Change this to `import flask` so that it is easier to see what flast
-#       utilities are accessed.
-from flask import Flask, make_response, render_template, request
+import flask
 import flask_cors as cors # TODO: Check whether the `@cors.cross_origin()`
                           #       decorators are still necessary once 'iD' is
                           #       served from within this app.
@@ -16,7 +14,7 @@ import oemof.db as db
 from .schemas import dev as schema  # test as schema
 
 
-app = Flask(__name__)
+app = flask.Flask(__name__)
 
 Plant = schema.Plant
 Timeseries = schema.Timeseries
@@ -44,14 +42,14 @@ class Login(wtf.Form):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    form = Login(request.form)
-    return render_template('login.html', form=form)
+    form = Login(flask.request.form)
+    return flask.render_template('login.html', form=form)
 
 ##### User Management stuff ends here.
 
 @app.route('/')
 def root():
-    return render_template('index.html')
+    return flask.render_template('index.html')
 
 # TODO: Factor adding the 'Content-Type' header out into a separate function.
 
@@ -59,26 +57,27 @@ def root():
 @app.route('/osm/api/0.6/capabilities')
 @cors.cross_origin()
 def capabilities():
-    template = render_template('capabilities.xml', area={"max": 1}, timeout=250)
-    response = make_response(template)
+    template = flask.render_template('capabilities.xml', area={"max": 1},
+                                     timeout=250)
+    response = flask.make_response(template)
     response.headers['Content-Type'] = 'text/xml'
     return response
 
 @app.route('/osm/api/0.6/map')
 @cors.cross_origin()
 def osm_map():
-    left, bottom, right, top = map(float, request.args['bbox'].split(","))
+    left, bottom, right, top = map(float, flask.request.args['bbox'].split(","))
     minx, maxx = sorted([top, bottom])
     miny, maxy = sorted([left, right])
     nodes = [dict(id=id(n), **n)
             for n in osm_map.nodes
             for x, y in ((n["lat"], n["lon"]),)
             if minx <= x and  miny <= y and maxx >= x and maxy >= y]
-    template = render_template('map.xml', nodes=nodes,
+    template = flask.render_template('map.xml', nodes=nodes,
                                           minlon=miny, maxlon=maxy,
                                           minlat=minx, maxlat=maxx)
 
-    response = make_response(template)
+    response = flask.make_response(template)
     response.headers['Content-Type'] = 'text/xml'
     return response
 
@@ -178,7 +177,7 @@ def csv(ids):
     plants = plants.all()
     body = "\n".join([",".join([str(getattr(p, k)) for k in header])
                       for p in plants])
-    response = make_response(",".join(header) + "\n" + body)
+    response = flask.make_response(",".join(header) + "\n" + body)
     response.headers["Content-Disposition"] = ("attachment;" +
                                                "filename=eeg_extract.csv")
     return response
