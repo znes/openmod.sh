@@ -204,6 +204,8 @@ class Relation(DB.Model):
     superiors = association_proxy('referencing', 'relation')
     changeset = DB.relationship('Changeset', uselist=False)
     changeset_id = DB.Column(DB.Integer, DB.ForeignKey('changeset.id'))
+    nodes = association_proxy('referenced_nodes', 'node',
+        creator=lambda n: rs_and_nodes(node=n))
 
 class Changeset(DB.Model):
     id = DB.Column(DB.Integer, primary_key=True)
