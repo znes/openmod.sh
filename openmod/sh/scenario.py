@@ -14,7 +14,7 @@ import oemof.outputlib as output
 # Here you would now import the `oemof` modules and proceed to customize the
 # `simulate` function to generate objects and start the simulation.
 
-from openmod.sh.schemas import osm
+from .schemas import osm
 
 
 def simulate(**kwargs):
@@ -52,11 +52,11 @@ def simulate(**kwargs):
     #########################################################################
     # We need a datetimeindex for the optimization problem / energysystem
     datetimeindex = pd.date_range(scenario.tags.get('year', 2016),
-                                  periods=4, freq='H')
+                                  periods=24, freq='H')
 
     energy_system = EnergySystem(groupings=GROUPINGS, time_idx=datetimeindex)
 
-    ## CREATE NODES FROM RELATIONS OF TYPE "HUB ASSIGNMENT"
+    ## CREATE BUSES FROM RELATIONS OF TYPE "HUB RELATION"
     buses = {}
     for r in relations:
         if r.tags.get('type') is not None:
@@ -65,13 +65,18 @@ def simulate(**kwargs):
                  buses[name] = Bus(label=str(name))
                  buses[name].energy_sector = r.tags['energy_sector']
         else:
-            raise ValueError('Missing tag type of component with name {0}.'.format(r.tags['name']))
+            raise ValueError('Missing tag type of component with ' +
+                             'name {0}.'.format(r.tags['name']))
 
     ## GLOBAL FUEL BUSES FOR TRANSFORMER INPUTS (THAT ARE NOT IN RELATIONS)
-    global_buses = {n.tags['fuel_type']:Bus(label=n.tags['fuel_type'],
-                                            balanced=False)
-                    for n in nodes
-                    if n.tags.get('oemof_class') == 'linear_transformer'}
+    global_buses = {}
+    for n in nodes:
+        if n.tags.get('oemof_class') == 'linear_transformer':
+            # Only create global bus if not already exist
+            if global_buses.get(n.tags['fuel_type']) is None:
+                global_buses[n.tags['fuel_type']] =  Bus(
+                                    label=n.tags['fuel_type'], balanced=False)
+
 
     ## Create Nodes (added automatically to energysystem)
     for n in nodes:
@@ -95,34 +100,44 @@ def simulate(**kwargs):
                             fixed=True)})
         # CREATE TRANSFORMER OBJECTS
         if n.tags.get('oemof_class') == 'linear_transformer':
+            # CREATE LINEAR TRANSFORMER
             if n.tags.get('type') == 'flexible_generator':
-                # CREATE LINEAR TRANSFORMER
                 ins =  global_buses[n.tags['fuel_type']]
                 outs = buses[node_bus[0]]
                 LinearTransformer(label=n.tags['name'],
-                                  inputs={ins: Flow(variable_costs=float(n.tags.get('variable_costs', 0)))},
-                                  outputs={outs: Flow(nominal_value=float(n.tags['installed_power']))},
-                conversion_factors={outs:float(n.tags['efficiency'])})
+                                  inputs={
+                    ins: Flow(variable_costs=float(
+                                            n.tags.get('variable_costs', 0)))},
+                    outputs={outs: Flow(nominal_value=float(
+                                                  n.tags['installed_power']))},
+                conversion_factors={
+                    outs:float(n.tags['efficiency'])})
+            # CREATE COMBINED HEAT AND POWER AS LINEAR TRANSFORMER
             if n.tags.get('type') == 'combined_flexible_generator':
-                # CREATE COMBINED HEAT AND POWER AS LINEAR TRANSFORMER
                 ins =  global_buses[n.tags['fuel_type']]
                 heat_out = [buses[k] for k in node_bus
                             if buses[k].energy_sector == 'heat'][0]
                 power_out = [buses[k] for k in node_bus
                              if buses[k].energy_sector == 'electricity'][0]
                 LinearTransformer(label=n.tags['name'],
-                                  inputs={ins: Flow(variable_costs=float(n.tags.get('variable_costs', 0)))},
-                                  outputs={power_out: Flow(nominal_value=float(n.tags['installed_power'])),
+                                  inputs={
+                      ins: Flow(variable_costs=float(
+                                            n.tags.get('variable_costs', 0)))},
+                      outputs={power_out: Flow(nominal_value=float(
+                                                   n.tags['installed_power'])),
                                            heat_out: Flow()},
-                conversion_factors={heat_out:float(n.tags['thermal_efficiency']),
-                                    power_out:float(n.tags['electrical_efficiency'])})
+                conversion_factors={
+                    heat_out:float(n.tags['thermal_efficiency']),
+                    power_out:float(n.tags['electrical_efficiency'])})
 
         if n.tags.get('oemof_class') == 'storage':
             # CRAETE STORAGE OBJECTS
             # Oemof solph does not provide direct way to set power in/out of
             # storage hence, we need to caculate the needed ratios upfront
-            nicr = float(n.tags['installed_power']) / float(n.tags['installed_energy'])
-            nocr = float(n.tags['installed_power']) / float(n.tags['installed_energy'])
+            nicr = (float(n.tags['installed_power']) /
+                    float(n.tags['installed_energy']))
+            nocr = (float(n.tags['installed_power']) /
+                    float(n.tags['installed_energy']))
             Storage(label=n.tags['name'],
                     inputs={buses[node_bus[0]]:Flow()},
                     outputs={buses[node_bus[0]]:Flow()},
@@ -139,17 +154,23 @@ def simulate(**kwargs):
                 # the same technical parameters
                 ins = buses[way_bus[0]]
                 outs = buses[way_bus[1]]
+                # 1st transformer
                 LinearTransformer(label=w.tags['name']+'_1',
-                                  inputs={outs: Flow()},
-                                  outputs={ins: Flow(nominal_value=float(w.tags['installed_power']))},
+                                  inputs={
+                    outs: Flow()},
+                                  outputs={
+                    ins: Flow(nominal_value=float(w.tags['installed_power']))},
                 conversion_factors={ins:float(w.tags['efficiency'])})
+                # 2nd transformer
                 LinearTransformer(label=w.tags['name']+'_2',
-                                  inputs={ins: Flow()},
-                                  outputs={outs: Flow(nominal_value=float(w.tags['installed_power']))},
+                                  inputs={
+                    ins: Flow()},
+                                  outputs={
+                    outs: Flow(nominal_value=float(w.tags['installed_power']))},
                 conversion_factors={outs:float(w.tags['efficiency'])})
 
 
-    ## Create optimization model, solve it, wrtie back results
+    # Create optimization model, solve it, wrtie back results
     om = OperationalModel(es=energy_system)
     if 'solver' in kwargs.keys():
         solver = kwargs['solver']
@@ -159,12 +180,11 @@ def simulate(**kwargs):
              solve_kwargs={'tee': True, 'keepfiles': False})
     om.results()
 
-    # figure to html with mpld3 package ???
-    #esplot = output.DataFramePlot(energy_system=energy_system)
-    #unstack = esplot.slice_unstacked(bus_label=power_out.label,
-    #                                 type="to_bus",
-    #                                 date_from='2012-01-01 00:00:00',
-    #                                 date_to='2012-01-01 23:00:00')
+    esplot = output.DataFramePlot(energy_system=energy_system)
+    for b in buses.values():
+        b.label
+        unstack = esplot.slice_unstacked(unstacklevel=b.label)
+        unstack.to_csv('results_'+b.label+'.csv')
     #string = unstack.to_html()
 
     #########################################################################
