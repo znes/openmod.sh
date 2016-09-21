@@ -171,7 +171,9 @@ def osm_map():
     miny, maxy = sorted([left, right])
     nodes = osm.Node.query.filter(minx <= osm.Node.lat, miny <= osm.Node.lon,
                                   maxx >= osm.Node.lat, maxy >= osm.Node.lon)
-    template = flask.render_template('map.xml', nodes=nodes,
+    ways = set(way for node in nodes for way in node.ways)
+    nodes = set(itertools.chain([n for way in ways for n in way.nodes], nodes))
+    template = flask.render_template('map.xml', nodes=nodes, ways=ways,
                                           minlon=miny, maxlon=maxy,
                                           minlat=minx, maxlat=maxx)
     return xml_response(template)
@@ -474,11 +476,12 @@ def upload_changeset(cid):
                  {}).items())])
             for way in created_ways
             for att in (way.attrib,)}
+    for old_id, way in created_ways.items():
+        way.old_id = old_id
+        way.tag = "way"
+        osm.DB.session.add(way)
+        created_nodes.append(way)
     osm.DB.session.commit()
-    for k, w in created_ways.items():
-        w.old_id = k
-        w.tag = "way"
-        created_nodes.append(w)
     return flask.render_template('diffresult.xml', modifications=created_nodes)
 
 @app.route('/iD/api/0.6/changeset/<id>/close', methods=['PUT'])
