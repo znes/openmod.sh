@@ -2,6 +2,7 @@
 
 # First we have to import some code from openmod.sh so we can just work with
 # the models it declares.
+import pandas as pd
 import openmod.sh.schemas.osm as osm
 from openmod.sh import web
 
@@ -22,7 +23,7 @@ db.commit()
 # This assumes that you have stored the data you want to populate the database
 # with in a file called 'data.pickle'.
 import dill as pickle
-with open("data.dill", "r+b") as f:
+with open("/home/simon/data.dill", "r+b") as f:
   result = pickle.load(f)
 
 # The file format is as follows:
@@ -40,6 +41,11 @@ with open("data.dill", "r+b") as f:
 #
 # Let's see how easy it is to populate our database with data in this format.
 
+# The heat data is temporaly stored in data in root of the openmod repository
+heat = pd.read_csv('~/znes/projects/openmod.sh/data/heat_demand.csv',
+                   dtype={'region_key':str})
+heat.set_index('region_key', inplace=True)
+
 for i, r in enumerate(result.relations):
     nodes = [osm.Node(n.lat, n.lon, 1, cs.id)
             for n in r.master_way_squeezed[0:-1:50]]
@@ -48,7 +54,9 @@ for i, r in enumerate(result.relations):
                   tags=( [osm.Tag(key="area", value="yes")] +
                          ([osm.Tag(key="name", value=r.tags["name"])]
                                 if r.tags.get("name")
-                                else [])))
+                                else []) +
+                          ([osm.Tag(key="heat_demand",
+                                    value=heat.loc[r.tags['de:regionalschluessel'][0:5]]['demand'])])))
     db.add(way)
     print("Committing way #{}".format(i))
     db.commit()
