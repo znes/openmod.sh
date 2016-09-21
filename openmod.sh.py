@@ -7,12 +7,13 @@ from sqlalchemy.orm import sessionmaker
 
 import sqlalchemy as db
 
-from schemas import dev, test
+from schemas import test as schema  # dev as schema
+
 
 app = Flask(__name__)
 
-Plant = test.Plant
-Timeseries = test.Timeseries
+Plant = schema.Plant
+Timeseries = schema.Timeseries
 
 with open("uphpd") as f:
     config = {k: v for (k, v) in
@@ -33,6 +34,7 @@ def root():
     series = session.query(Timeseries).count()
     return render_template('index.html', plants=plants, series=series)
 
+
 @app.route('/series')
 def series():
     # TODO: Don't use a hardcoded limit. Use a parameter.
@@ -45,12 +47,12 @@ def series():
     # [Flot data format][0] documentation.
     #
     # [0]: https://github.com/flot/flot/blob/master/API.md#data-format
-    series_data = [ {"lines": {"show": False}, "lines": {"fill": True},
-                     "label": "P" + str(i),
-                     "data": [[t.step, t.value]
-                              for t in series.filter(Timeseries.plant ==
-                                                     plant.id)]}
-                    for i, plant in plants]
+    series_data = [{"lines": {"show": False}, "lines": {"fill": True},
+                    "label": "P" + str(i),
+                    "data": [[t.step, t.value]
+                             for t in series.filter(Timeseries.plant ==
+                                                    plant.id)]}
+                   for i, plant in plants]
     series_json = json.dumps(series_data)
     return series_json
 
@@ -68,4 +70,3 @@ def plant_coordinate_json():
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", debug=True)
-

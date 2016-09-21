@@ -14,7 +14,6 @@ $(document).ready(function() {
                         zoom: 7 })
   });
 
-
   $.ajax({ url: "plants-json",
            success: function (d, _, _) {
              var pped = JSON.stringify(d, null, 2);
