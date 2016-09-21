@@ -529,10 +529,11 @@ def upload_changeset(cid):
     for xml_node in modified_nodes:
         atts = xml_node.attrib
         tags = xml_node.findall('tag')
-        db_node = osm.Node.query.get(int(atts["id"]))
+        db_node = osm.Node.query.filter_by(id = int(atts["id"])).first()
         db_node.old_id = db_node.id
         db_node.version = atts["version"]
-        db_node.changeset = osm.Changeset.query.get(int(atts["changeset"]))
+        db_node.changeset = osm.Changeset.query.filter_by(
+                id = int(atts["changeset"])).first()
         db_node.tags.update({tag.attrib['k']: tag.attrib['v']
                              for tag in xml_node.findall('tag')})
     for element in modified_nodes:
@@ -543,10 +544,11 @@ def upload_changeset(cid):
                                      if  n not in modified_nodes}
     created_ways = itertools.chain(*[c.findall('way') for c in creations])
     created_ways = {int(att["id"]): osm.Way(
-        nodes=[temporary_id2node.get(node_id) or osm.Node.query.get(node_id)
+        nodes=[temporary_id2node.get(node_id) or
+               osm.Node.query.filter_by(id = node_id).first()
                for node_id in map(lambda nd: int(nd.attrib['ref']),
                                   way.findall('nd'))],
-        changeset=osm.Changeset.query.get(int(cid)),
+        changeset=osm.Changeset.query.filter_by(id = int(cid)).first(),
         user=fl.current_user,
         version=att['version'],
         tags={tag.attrib['k']: tag.attrib['v']
@@ -565,10 +567,11 @@ def upload_changeset(cid):
     for xml_way in modified_ways:
         atts = xml_way.attrib
         tags = xml_way.findall('tag')
-        db_way = osm.Way.query.get(int(atts["id"]))
+        db_way = osm.Way.query.filter_by(id = int(atts["id"])).first()
         db_way.old_id = db_way.id
         db_way.version = atts["version"]
-        db_way.changeset = osm.Changeset.query.get(int(atts["changeset"]))
+        db_way.changeset = osm.Changeset.query.filter_by(
+                id = int(atts["changeset"])).first()
         db_way.tags.update({tag.attrib['k']: tag.attrib['v']
                             for tag in xml_way.findall('tag')})
     for element in modified_ways:
@@ -621,10 +624,11 @@ def upload_changeset(cid):
             itertools.chain(*[c.findall('relation') for c in modifications]))
     for xml_node in modified_relations:
         atts = xml_node.attrib
-        relation = osm.Relation.query.get(int(atts["id"]))
+        relation = osm.Relation.query.filter_by(id = int(atts["id"])).first()
         relation.old_id = relation.id
         relation.version = atts["version"]
-        relation.changeset = osm.Changeset.query.get(int(atts["changeset"]))
+        relation.changeset = osm.Changeset.query.filter_by(
+                id = int(atts["changeset"])).first()
         relation.tags.update({tag.attrib['k']: tag.attrib['v']
                               for tag in xml_node.findall('tag')})
         members = xml_node.findall('member')
@@ -638,22 +642,22 @@ def upload_changeset(cid):
         for member in members:
             if member.attrib['type'] == 'node':
                 reference = nodes.get(member.attrib['ref'],
-                                      ERAs(element_id=osm.Node.get(
-                                              int(member.attrib['ref'])
-                                              ).element_id,
+                                      ERAs(element_id=osm.Node.query.filter_by(
+                                              id = int(member.attrib['ref'])
+                                              ).first().element_id,
                                           relation_id=relation.id))
             elif member.attrib['type'] == 'way':
                 reference = ways.get(member.attrib['ref'],
-                                     ERAs(element_id=osm.Way.get(
-                                             int(member.attrib['ref'])
-                                             ).element_id,
+                                     ERAs(element_id=osm.Way.query.filter_by(
+                                             id = int(member.attrib['ref'])
+                                             ).first().element_id,
                                          relation_id=relation.id))
             elif member.attrib['type'] == 'relation':
                 reference = relations.get(
                         member.attrib['ref'],
-                        ERAs(element_id=osm.Relation.get(
-                                int(member.attrib['ref'])
-                                ).element_id,
+                        ERAs(element_id=osm.Relation.query.filter_by(
+                                id = int(member.attrib['ref'])
+                                ).first().element_id,
                             relation_id=relation.id))
 
             if member.attrib['role']:
@@ -692,7 +696,8 @@ def attach_node_attribute_hash(node):
 def get_nodes():
     # TODO: See whether you can make this better by querying only once.
     #       Maybe 'in' works?
-    nodes = [attach_node_attribute_hash(osm.Node.query.get(int(node_id)))
+    nodes = [attach_node_attribute_hash(
+                osm.Node.query.filter_by(id = int(node_id)).first())
             for node_id in flask.request.args['nodes'].split(",")]
     template = flask.render_template('node.xml', nodes=nodes)
     return xml_response(template)
@@ -714,7 +719,8 @@ def attach_non_node_attribute_hash(non_node):
 def get_ways():
     # TODO: See whether you can make this better by querying only once.
     #       Maybe 'in' works?
-    ways = [attach_non_node_attribute_hash(osm.Way.query.get(int(way_id)))
+    ways = [attach_non_node_attribute_hash(
+                osm.Way.query.filter_by(id = int(way_id)).first())
            for way_id in flask.request.args['ways'].split(",")]
     template = flask.render_template('ways.xml', ways=ways)
     return xml_response(template)
@@ -723,7 +729,7 @@ def get_ways():
 def get_relations():
     relations = [
             attach_non_node_attribute_hash(
-                osm.Relation.query.get(int(relation_id)))
+                osm.Relation.query.filter_by(id = int(relation_id)).first())
             for relation_id in flask.request.args['relations'].split(",")]
     template = flask.render_template('relations.xml', relations=relations)
     return xml_response(template)
