@@ -163,6 +163,57 @@ app.config['OAUTH1_PROVIDER_KEY_LENGTH'] = (3, 127)
 
 oauth = OAuth1Provider(app)
 
+class Client:
+    def __init__(self):
+        self.client_key = "5A043yRSEugj4DJ5TljuapfnrflWDte8jTOcWLlT"
+        self.client_secret = "aB3jKq1TRsCOUrfOIZ6oQMEDmv2ptV76PA54NGLL"
+        self.redirect_uris = ["http://localhost:5000/oauth-redirected",
+                              # The [OAuthLib example][0] needs this redirect.
+                              #
+                              # [0]: https://oauthlib.readthedocs.io/en/latest/oauth1/server.html#try-your-provider-with-a-quick-cli-client
+                              "http://127.0.0.1/cb"]
+        self.default_redirect_uri = self.redirect_uris[0]
+        self.default_realms = []
+CLIENT = Client()
+
+class RequestToken:
+    known = []
+    def __init__(self, token, request):
+        self.known.append(self)
+        self.client = CLIENT
+        self.token = token['oauth_token']
+        self.secret = token['oauth_token_secret']
+        self.redirect_uri = request.redirect_uri
+        self.realms = request.realms if getattr(oauth, "realms", None) else []
+
+    @property
+    def client_key(self):
+        return self.client.client_key
+
+class Nonce:
+    known = []
+    def __init__(self, timestamp, nonce, request_token, access_token):
+        self.known.append(self)
+        self.client_key = CLIENT.client_key
+        self.timestamp = timestamp
+        self.nonce = nonce
+        self.request_token = request_token
+        self.access_token = access_token
+
+class AccessToken:
+    known = []
+    def __init__(self, token, request):
+        self.known.append(self)
+        self.client = request.client
+        self.user = request.user
+        self.token = token['oauth_token']
+        self.secret = token['oauth_token_secret']
+        self.realms = token['oauth_authorized_realms'].split()
+
+    @property
+    def client_key(self):
+        return self.client.client_key
+
 @oauth.clientgetter
 def load_client(client_key):
     return object()
