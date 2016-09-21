@@ -514,12 +514,8 @@ def upload_changeset(cid):
     created_nodes = [
             osm.Node(
               float(n["lat"]), float(n["lon"]), fl.current_user.id, int(cid),
-              tags=fun.reduce(
-                 lambda old, new: old.update(new) or old,
-                 [{k: v}
-                     for tag in node.findall('tag')
-                     for k, v in ((tag.attrib['k'], tag.attrib['v']),)],
-                 {}),
+              tags={tag.attrib['k']: tag.attrib['v']
+                    for tag in node.findall('tag')},
               old_id=int(n["id"]),
               tag="node")
             for node in created_nodes
@@ -536,9 +532,8 @@ def upload_changeset(cid):
         db_node.old_id = db_node.id
         db_node.version = atts["version"]
         db_node.changeset = osm.Changeset.query.get(int(atts["changeset"]))
-        db_node.tags.update({k: v
-                for tag in xml_node.findall('tag')
-                for k, v in ((tag.attrib['k'], tag.attrib['v']),)})
+        db_node.tags.update({tag.attrib['k']: tag.attrib['v']
+                             for tag in xml_node.findall('tag')})
     for element in modified_nodes:
         element.tag = "node"
         created_nodes.append(element)
@@ -553,11 +548,8 @@ def upload_changeset(cid):
         changeset=osm.Changeset.query.get(int(cid)),
         user=fl.current_user,
         version=att['version'],
-        tags=    fun.reduce(lambda old, new: old.update(new) or old,
-                            [{k: v}
-                             for tag in way.findall('tag')
-                             for k, v in ((tag.attrib['k'], tag.attrib['v']),)],
-                 {}))
+        tags={tag.attrib['k']: tag.attrib['v']
+              for tag in way.findall('tag')})
             for way in created_ways
             for att in (way.attrib,)}
     for old_id, way in created_ways.items():
@@ -576,9 +568,8 @@ def upload_changeset(cid):
         db_way.old_id = db_way.id
         db_way.version = atts["version"]
         db_way.changeset = osm.Changeset.query.get(int(atts["changeset"]))
-        db_way.tags.update({k: v
-                for tag in xml_way.findall('tag')
-                for k, v in ((tag.attrib['k'], tag.attrib['v']),)})
+        db_way.tags.update({tag.attrib['k']: tag.attrib['v']
+                            for tag in xml_way.findall('tag')})
     for element in modified_ways:
         element.tag = "way"
         created_nodes.append(element)
@@ -592,12 +583,8 @@ def upload_changeset(cid):
                     timestamp=datetime.now(tz.utc),
                     uid=fl.current_user.id,
                     changeset_id=cid,
-                    tags=fun.reduce(
-                        lambda old, new: old.update(new) or old,
-                        [ {k: v}
-                            for tag in node.findall('tag')
-                            for k, v in ((tag.attrib['k'], tag.attrib['v']),)],
-                        {}),
+                    tags={tag.attrib['k']: tag.attrib['v']
+                          for tag in node.findall('tag')},
                     version=1,
                     visible=True)
                 , node.findall('member'))
@@ -639,9 +626,8 @@ def upload_changeset(cid):
         relation.old_id = relation.id
         relation.version = atts["version"]
         relation.changeset = osm.Changeset.query.get(int(atts["changeset"]))
-        relation.tags.update({k: v
-                for tag in xml_node.findall('tag')
-                for k, v in ((tag.attrib['k'], tag.attrib['v']),)})
+        relation.tags.update({tag.attrib['k']: tag.attrib['v']
+                              for tag in xml_node.findall('tag')})
         members = xml_node.findall('member')
         nodes = {str(r.node_id): r.node for r in relation.referenced_nodes}
         ways = {str(r.way_id): r.way for r in relation.referenced_ways}
