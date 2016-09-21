@@ -457,7 +457,29 @@ def upload_changeset(cid):
                 for tag in xml_node.findall('tag')
                 for k, v in ((tag.attrib['k'], tag.attrib['v']),)]
     osm.DB.session.commit()
-    return flask.render_template('diffresult.xml', nodes=created_nodes)
+    temporary_id2node = {n.old_id: n for n in created_nodes}
+    created_ways = itertools.chain(*[c.findall('way') for c in creations])
+    created_ways = {int(att["id"]): osm.Way(
+        nodes=[temporary_id2node.get(node_id) or osm.Node.query.get(node_id)
+               for node_id in map(lambda nd: int(nd.attrib['ref']),
+                                  way.findall('nd'))],
+        changeset=osm.Changeset.query.get(int(cid)),
+        version=att['version'],
+        tags=[osm.Tag(key=k, value=v)
+              for k,v in list(
+                 fun.reduce(lambda old, new: old.update(new) or old,
+                            [{k: v}
+                             for tag in way.findall('tag')
+                             for k, v in ((tag.attrib['k'], tag.attrib['v']),)],
+                 {}).items())])
+            for way in created_ways
+            for att in (way.attrib,)}
+    osm.DB.session.commit()
+    for k, w in created_ways.items():
+        w.old_id = k
+        w.tag = "way"
+        created_nodes.append(w)
+    return flask.render_template('diffresult.xml', modifications=created_nodes)
 
 @app.route('/iD/api/0.6/changeset/<id>/close', methods=['PUT'])
 @app.route('/iD/connection/api/0.6/changeset/<id>/close', methods=['PUT'])
