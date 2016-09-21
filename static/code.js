@@ -51,5 +51,18 @@ $(document).ready(function() {
            },
            dataType: "json"});
 
+   $.ajax({ url: "grids-json",
+           success: function (d, _, _) {
+             var gjs = new ol.format.GeoJSON;
+             var projections = {dataProjection: 'EPSG:4326',
+                                featureProjection: 'EPSG:3857'};
+             var features = gjs.readFeatures(d, projections);
+             var layer = new ol.layer.Vector(
+                 {source: new ol.source.Vector({features: features})
+                  });
+             map.addLayer(layer, projections);
+           },
+           dataType: "json"});
+
 });
 
