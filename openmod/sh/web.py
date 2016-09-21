@@ -224,6 +224,7 @@ def simulate():
     fras = flask.request.args
     result = app.workers.apply_async(openmod.sh.scenario.simulate,
                                      #kwds=fras)
+                                     args=[app.static_folder],
                                      kwds={k: fras[k] for k in fras})
     key = str(id(result))
     app.results[key] = result
