@@ -90,10 +90,20 @@ widgets.scenarios = function (parent, context) {
       input.call(d3.combobox()
         .data(data)
         .minItems(1)
-        .on('accept', function (e) { d3.xhr('/scenario/' + e.title)
-                                       .on('load', function (_) {
-                                         window.location.reload(true);})
-                                       .send('PUT')}));
+        .on('accept', function (e) {
+          d3.xhr('/scenario/' + e.title)
+            .on('load', function (_) {
+              var s = window.location.hash;
+              if (s.indexOf('id=') == -1) {
+                if (s === ""){ s = '#' };
+                s = s + '&id=r' + e.title;
+              } else {
+                s = s.replace(/(#.*)(?=id=)id=[^&]*(&.*$)/,
+                              "$1id=r" + e.title + "$2");
+              }
+              window.location.hash = s;
+              window.location.reload(true);
+        }).send('PUT')}));
       input.attr("defaultValue", data[0]);
     })
     .send('GET');
