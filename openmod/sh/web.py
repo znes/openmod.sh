@@ -1,3 +1,6 @@
+from urllib.parse import urlparse, urljoin
+from xml.etree.ElementTree import XML
+import functools as fun
 import itertools
 import json
 
@@ -7,6 +10,7 @@ import flask_cors as cors # TODO: Check whether the `@cors.cross_origin()`
                           #       decorators are still necessary once 'iD' is
                           #       served from within this app.
 import flask_login as fl
+import flask_wtf as wtfl
 import wtforms as wtf
 from geoalchemy2.functions import ST_AsGeoJSON as geojson
 from sqlalchemy.orm import sessionmaker
@@ -30,6 +34,58 @@ engine = db.engine("openMod.sh")
 
 Session = sessionmaker(bind=engine)
 session = Session()
+
+##### Safe Redirects ##########################################################
+#
+# If we allow redirects after form submission, we want it to be safe. The code
+# in here is taken from a [flask snippet][0], with minor modifications.
+#
+# This should probably go into it's own module but I'm putting it all here for
+# now, as some parts need to stay in this module while some parts can be
+# factored out later. The 'factoring out' part can be considered an open TODO.
+#
+# [0]: http://flask.pocoo.org/snippets/63/
+#
+##############################################################################
+
+app.config['WTF_CSRF_CHECK_DEFAULT'] = False
+
+csrf = wtfl.csrf.CsrfProtect(app)
+
+def is_safe_url(target):
+    ref_url = urlparse(flask.request.host_url)
+    test_url = urlparse(urljoin(flask.request.host_url, target))
+    return ((test_url.scheme in ('http', 'https')) and
+            (ref_url.netloc == test_url.netloc))
+
+    # TODO: Remove the `redirect_arg` parameter. That was only needed to
+    #       redirect to the 'oauth_callback' URL parameter, which isn't needed
+    #       anymore as redirection seems to be handled by flask-oauthlib there.
+def get_redirect_target(redirect_arg):
+    for target in flask.request.args.get(redirect_arg), flask.request.referrer:
+        if not target:
+            continue
+        if is_safe_url(target):
+            return target
+
+class RedirectForm(wtfl.Form):
+    next = wtf.HiddenField()
+
+    def __init__(self, *args, redirect_arg='next', **kwargs):
+        super().__init__(*args, **kwargs)
+        self.redirect_arg = redirect_arg
+        if not self.next.data:
+            self.next.data = get_redirect_target(redirect_arg) or ''
+
+    def redirect(self, endpoint='root', **values):
+        if is_safe_url(self.next.data):
+            print("Redirecting to: {}".format(self.next.data))
+            return flask.redirect(self.next.data)
+        target = get_redirect_target(self.redirect_arg)
+        print("Redirecting to: {}".format(target))
+        return flask.redirect(target or flask.url_for(endpoint, **values))
+
+##### Safe Redirects end here #################################################
 
 ##### User Management #########################################################
 #
@@ -70,25 +126,32 @@ login_manager.init_app(app)
 def load_user(user_id):
     return User.known.get(user_id)
 
-class Login(wtf.Form):
+class Login(RedirectForm):
     username = wtf.StringField('Username', [wtf.validators.Length(min=3,
                                                                   max=79)])
-    password = wtf.StringField('Password', [wtf.validators.Length(min=3,
-                                                                  max=79)])
+    password = wtf.PasswordField(
+            'Password', [wtf.validators.Length(min=3, max=79)])
 
+@csrf.exempt
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    form = Login(flask.request.form)
-    if flask.request.method == 'POST' and form.validate():
+    form = Login()
+    print('Checking form validation/submission check.')
+    if form.validate_on_submit():
+        print("--> Login POSTed.")
         user = load_user(form.username.data)
         if user is not None:
+            print("--> User exists.")
             if user.pw == form.password.data:
+                print("--> Authenticated.")
                 fl.login_user(user)
                 #print("Current user: {}".format(fl.current_user))
             else:
+                print("--> Login unsuccessfull.")
                 flask.flash('Invalid username/password combination.')
                 return flask.redirect(flask.url_for('login'))
         else:
+            print("--> New user.")
             user = User(form.username.data, form.password.data)
             flask.flash('User "{}" created.'.format(user.name))
             fl.login_user(user)
@@ -96,8 +159,10 @@ def login():
         # TODO: Doesn't seem to work, as `flask.request.args.get('next')` is
         #       always none. Have a look at http://flask.pocoo.org/snippets/63/
         #       for pointers on how to make this work.
-        redirect = flask.request.args.get('next')
-        return flask.redirect(redirect or flask.url_for('login'))
+        print("Logged in. Redirecting.")
+        return form.redirect('login')
+    print('`validate_on_submit failed. Rendering template.')
+    print('errors: {}'.format(form.errors))
     return flask.render_template('login.html', form=form)
 
 @app.route('/logout')
@@ -125,16 +190,28 @@ def capabilities():
     response.headers['Content-Type'] = 'text/xml'
     return response
 
+# Store test OSM data as attributes on an object. In a real app that data would
+# be stored in/retrieved from the database.
+class OSMT: pass
+OSM = OSMT()
+OSM.nodes = [{"lat": 0.0075, "lon": -0.0025,
+              "tags": {"ele": 0, # stands for 'elevation' (usually)
+                       "name": "A Test Node"}}]
+OSM.changesets = []
+
 @app.route('/osm/api/0.6/map')
 @cors.cross_origin()
 def osm_map():
     left, bottom, right, top = map(float, flask.request.args['bbox'].split(","))
     minx, maxx = sorted([top, bottom])
     miny, maxy = sorted([left, right])
-    nodes = [dict(id=id(n), **n)
-            for n in osm_map.nodes
+    nodes = [dict(**n)
+            for n in OSM.nodes
             for x, y in ((n["lat"], n["lon"]),)
             if minx <= x and  miny <= y and maxx >= x and maxy >= y]
+    for node in nodes:
+        node['id'] = node.get('id', id(node))
+        node['tags'] = node.get('tags', {})
     template = flask.render_template('map.xml', nodes=nodes,
                                           minlon=miny, maxlon=maxy,
                                           minlat=minx, maxlat=maxx)
@@ -142,12 +219,6 @@ def osm_map():
     response = flask.make_response(template)
     response.headers['Content-Type'] = 'text/xml'
     return response
-
-# Put a test node on the osm.map function. In a real app that data would be
-# retrieved from the database.
-osm_map.nodes = [{"lat": 0.0075, "lon": -0.0025,
-                  "tags": {"ele": 0, # stands for 'elevation' (usually)
-                           "name": "A Test Node"}}]
 
 ##### OAuth1 provider code ####################################################
 #
@@ -188,7 +259,12 @@ class Client:
                               # The [OAuthLib example][0] needs this redirect.
                               #
                               # [0]: https://oauthlib.readthedocs.io/en/latest/oauth1/server.html#try-your-provider-with-a-quick-cli-client
-                              "http://127.0.0.1/cb"]
+                              "http://127.0.0.1/cb",
+                              # This one is needed by the iD editor. This is
+                              # where the user is redirected to after
+                              # authorizing iD, so that iD gets to know that it
+                              # can go on.
+                              "http://127.0.0.1:8000/land.html"]
         self.default_redirect_uri = self.redirect_uris[0]
         self.default_realms = []
 CLIENT = Client()
@@ -196,7 +272,7 @@ CLIENT = Client()
 class RequestToken:
     known = []
     def __init__(self, token, request):
-        #print("Creating request token.")
+        print("Creating request token.")
         self.known.append(self)
         self.client = CLIENT
         self.token = token['oauth_token']
@@ -268,8 +344,13 @@ def save_verifier(token, verifier, *args, **kwargs):
 
 @oauth.tokengetter
 def load_access_token(client_key, token, *args, **kwargs):
-    return [at for at in AccessToken.known
-               if at.client_key == client_key and at.token == token][0]
+    ats =  [at for at in AccessToken.known
+               if at.client_key == client_key and at.token == token]
+    print("KNWN: {}".format(AccessToken.known))
+    print("ARGS: k -> {}, t -> {}, args -> {}, kwgs: {}".format(
+        client_key, token, args, kwargs))
+    print("ACTS: {}".format(ats))
+    return (ats[0] if ats else None)
 
 @oauth.tokensetter
 def save_access_token(token, request):
@@ -317,13 +398,14 @@ def pre_request_debug_hook():
         "Endpt.: {0.endpoint}"]).format(flask.request, type(flask.request.data)))
 """
 
-class Authorize(wtf.Form):
+class Authorize(wtfl.Form):
      confirm = wtf.BooleanField('Authorize')
 
 @app.route('/iD/connection/oauth/authorize', methods=['GET', 'POST'])
 @fl.login_required
 @oauth.authorize_handler
 def authorize(*args, **kwargs):
+    print("wtf.Form")
     if flask.request.method == 'GET':
         form = Authorize()
         return """
@@ -337,8 +419,12 @@ def authorize(*args, **kwargs):
     return (flask.request.form.get('confirm', 'no') == 'y')
 
 @app.route('/iD/connection/oauth/access_token', methods=['GET', 'POST'])
+@cors.cross_origin()
 @oauth.access_token_handler
 def access_token():
+    print("Regular ATH.")
+    print("Request: {}".format(str(flask.request.headers) + "\n" +
+                               flask.request.data.decode('utf-8')))
     return {}
 
 @app.route('/oauth-protected')
@@ -353,12 +439,55 @@ def oauth_protected_test_endpoint():
 #
 # Persistence code to store changes done in iD on the server.
 #
+# TODO: Protect these via `@oauth.require_oauth()`. It doesn't work currently,
+#       so we are just ignoring the whole OAuth thing to get a working version.
 # This should probably go into it's own module but I'm putting it all here for
 # now, as some parts need to stay in this module while some parts can be
 # factored out later. The 'factoring out' part can be considered an open TODO.
 #
 ###############################################################################
 
+@app.route('/iD/connection/api/0.6/changeset/create', methods=['PUT'])
+@cors.cross_origin()
+def create_changeset():
+    cs = {}
+    OSM.changesets.append(cs)
+    return str(id(cs))
+
+@app.route('/iD/connection/api/0.6/user/details', methods=['GET'])
+@cors.cross_origin()
+def userdetails():
+    cu = fl.current_user
+    fl.id = id(fl)
+    return flask.render_template('userdetails.xml', user=fl.current_user)
+
+@app.route('/iD/connection/api/0.6/changeset/<cid>/upload', methods=['POST'])
+@cors.cross_origin()
+def upload_changeset(cid):
+    xml = XML(flask.request.data)
+    creations = xml.findall('create')
+    created_nodes = itertools.chain(*[c.findall('node') for c in creations])
+    created_nodes = [
+            {"lat": float(n["lat"]), "lon": float(n["lon"]),
+             "old_id": n["id"], "version": n["version"],
+             "tags": fun.reduce(
+                 lambda old, new: old.update(new) or old,
+                 [{k: float(v) if k in ["lat", "lon"] else v}
+                     for tag in node.findall('tag')
+                     for k, v in ((tag.attrib['k'], tag.attrib['v']),)],
+                 {})}
+            for node in created_nodes
+            for n in (node.attrib,)]
+    for n in created_nodes:
+        n["new_id"] = id(n)
+        n["id"] = id(n)
+    OSM.nodes.extend(created_nodes)
+    return flask.render_template('diffresult.xml', nodes=created_nodes)
+
+@app.route('/iD/connection/api/0.6/changeset/<id>/close', methods=['PUT'])
+@cors.cross_origin()
+def close_changeset(id):
+    return ""
 
 ##### Persistence code ends here ##############################################
 
