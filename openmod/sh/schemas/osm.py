@@ -90,7 +90,8 @@ Tag_Associations = DB.Table('tag_associations',
 Element_Timeseries_Associations = DB.Table(
         'element_timeseries_associations',
         DB.Column('timeseries_id', DB.Integer, DB.ForeignKey('timeseries.id')),
-        DB.Column('element_id', DB.Integer, DB.ForeignKey('node.id')))
+        DB.Column('element_id', DB.Integer,
+            DB.ForeignKey('element.element_id')))
 
 # No association tables anymore. These are regular models.
 
