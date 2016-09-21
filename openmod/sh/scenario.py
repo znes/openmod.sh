@@ -58,32 +58,28 @@ def simulate(**kwargs):
     ## Create Nodes (added automatically to energysystem)
     bel = Bus(label='bel')
     bgas = Bus(label='bgas', balanced=False)
-    Sink(label="demand_el",
-         inputs={bel: Flow(nominal_value=200,
-                            actual_value=np.random.rand(24),
-                            fixed=True)})
-    LinearTransformer(label='pp_gas',
-                      inputs={bgas: Flow()},
-                      outputs={bel: Flow(nominal_value=200,
-                                          variable_costs=40)},
-                      conversion_factors={bel: 0.50})
+
     # sources from ID input """(i,n) in enumerate(nodes)"""
     for n in nodes:
         tags = {}
         for t in n.node.tags:
             tags.update({t.key: t.value})
-            if tags['type'] == 'source':
-                Source(label=tags['name'],
-                       outputs={bel:Flow(actual_value=np.random.rand(24),
-                                         nominal_value=tags['power'],
-                                         fixed=True)})
-
-#    [Source(
-#        label=n.name,
-#        outputs={bel:Flow(
-#                    n.actual_value=n.timeseries,
-#                    nominal_value=n.nominal_power,
-#                    fixed=True)}) for n in nodes if node.tag == 'source']
+        if tags.get('type') == 'source':
+            Source(label=tags['name'],
+                   outputs={bel:Flow(actual_value=np.random.rand(24),
+                            nominal_value=float(tags['power']),
+                            fixed=True)})
+        if tags.get('type') == 'powerplant':
+            LinearTransformer(label=tags['name'],
+                              inputs={bgas: Flow()},
+                              outputs={bel: Flow(nominal_value=float(tags['power']),
+                              variable_costs=40)},
+                              conversion_factors={bel: 0.50})
+        if tags.get('type') == 'demand':
+            Sink(label=tags['name'],
+                 inputs={bel: Flow(nominal_value=float(tags['amount']),
+                         actual_value=np.random.rand(24),
+                         fixed=True)})
 
     ## Create optimization model, solve it, wrtie back results
     om = OperationalModel(es=energy_system)
@@ -96,8 +92,13 @@ def simulate(**kwargs):
     om.results()
 
     # figure to html with mpld3 package ???
-#    esplot = output.DataFramePlot(energy_system=energy_system)
-#    esplot.slice_unstacked(bus_label="bel", type="to_bus")
+    esplot = output.DataFramePlot(energy_system=energy_system)
+    unstack = esplot.slice_unstacked(bus_label="bel", type="to_bus",
+                                    date_from='2012-01-01 00:00:00',
+                                    date_to='2012-01-01 23:00:00')
+    string = unstack.to_html()
+
+
 #    fig = plt.figure()
 #    esplot.plot(title="January 2012", stacked=True, width=1, lw=0.1,
 #                kind='bar')
@@ -108,7 +109,7 @@ def simulate(**kwargs):
     #########################################################################
     # Generate a response so that we see something is actually happening.
     lengths = [len(l) for l in [nodes, ways, relations]]
-    response = (
+    response = string + (
             "Done running scenario: '{scenario}'.<br />" +
             "Contents:<br />" +
             "  {0[0]:>5} nodes<br />" +
