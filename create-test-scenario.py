@@ -143,7 +143,7 @@ for h in hubs:
                 referencing_relations = [myscenario])
     DB.add(w)
     r = osm.Relation(myid = hub_name,
-                    timestamp = datetime.now(tz.utc),
+                    timestamp = ts,
                     uid = uid,
                     changeset_id = csid,
                     elements = hub_nodes[hub_name] + [w],
