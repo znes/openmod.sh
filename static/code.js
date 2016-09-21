@@ -32,7 +32,8 @@ $(document).ready(function() {
                         zoom: 7 })
   });
 
-  $.ajax({ url: "plants-json",
+  $.each(types, function (type_index, type) {
+  $.ajax({ url: "plants-json/" + type,
            success: function (d, _, _) {
              var gjs = new ol.format.GeoJSON;
              var projections = {dataProjection: 'EPSG:4326',
@@ -82,8 +83,11 @@ $(document).ready(function() {
                  overlay.setPosition(position);
                })});
              map.addLayer(layer, projections);
+             layers[type] = layer;
+             layer.setVisible(false);
            },
            dataType: "json"});
+  });
 
    $.ajax({ url: "grids-json",
            success: function (d, _, _) {
