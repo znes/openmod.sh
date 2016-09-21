@@ -225,6 +225,23 @@ def simulation(job):
         del app.results[job]
         return result
 
+@app.route('/scenarios')
+@fl.login_required
+def scenarios():
+    relations = osm.Relation.query.all();
+    scenarios = [ v
+                  for r in relations
+                  for kvs in [[(t.key, t.value) for t in r.tags]]
+                  if ("type", "Scenario") in kvs
+                  for (k, v) in kvs
+                  if k == "name" ]
+    if (flask.session.get("scenario")):
+        scenarios = (["Deselect selected scenario"] +
+                     list(sorted(set(
+                         [v for v in scenarios
+                            if (v != flask.session.get("scenario"))]))))
+    return json.dumps(sorted(scenarios))
+
 ##### OAuth1 provider code ####################################################
 #
 # In order to talk to the iD editor, we need to implement and OAuth1 provider.
