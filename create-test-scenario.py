@@ -5,7 +5,7 @@
 from datetime import datetime, timezone as tz
 from openmod.sh.schemas import osm as osm
 from openmod.sh import web
-from random import randint
+from random import uniform
 
 # This line is necessary so that flask-sqlalchemy creates a database session
 # for us.
@@ -17,40 +17,42 @@ DB = osm.DB.session
 cs = osm.Changeset()
 DB.add(cs)
 DB.flush()
-cs = cs.id
 
+uid = '1'
+csid = cs.id
+ts= datetime.now(tz.utc)
 
 myscenario = osm.Relation(myid='myscenario',
-                          uid='1',
-                          changeset_id=cs,
-                          timestamp=datetime.now(tz.utc),
+                          uid=uid,
+                          changeset_id=csid,
+                          timestamp=ts,
                           tags={'type': 'scenario',
                                 'name': 'myscenario'})
 DB.add(myscenario)
 DB.flush()
 
 # Nodes
-nodes = [{'lon': 10,
-          'lat': 53.5,
-          'hub': 'hub1',
+nodes = [{'lon': 10.1,
+          'lat': 54.1,
+          'hub': 'myhub1',
           'tags': {'name': 'mysink',
                    'type': 'demand',
                    'oemof_class': 'sink',
                    'energy_amount': 100,
                    'energy_sector': 'electricity'},
-          'timeseries': [randint(0,10) for x in range(8760)]},
-         {'lon': 10.25,
-          'lat': 53.75,
-          'hub': 'hub1',
+          'timeseries': [uniform(0,1) for x in range(8760)]},
+         {'lon': 10.2,
+          'lat': 54.1,
+          'hub': 'myhub1',
           'tags': {'name': 'mysource',
                    'type': 'volatile_generator',
                    'oemof_class': 'source',
                    'installed_power': 10,
                    'energy_sector': 'electricity'},
-          'timeseries': [randint(0,10) for x in range(8760)]},
+          'timeseries': [uniform(0,1) for x in range(8760)]},
          {'lon': 10.5,
-          'lat': 54,
-          'hub': 'hub2',
+          'lat': 54.1,
+          'hub': 'myhub2',
           'tags': {'name': 'mytransformer',
                    'type': 'flexibile_generator',
                    'oemof_class': 'linear_transformer',
@@ -60,14 +62,12 @@ nodes = [{'lon': 10,
                    'variable_costs': 2,
                    'energy_sector': 'electricity'}}]
 
-# create nodes from data dictionary
 hub_nodes = {}
 for n in nodes:
     x = osm.Node(myid=n['tags']['name'],
-                 user_id='1',
-                 changeset_id=cs,
-                 timestamp=datetime.now(tz.utc),
-                 version=1,
+                 uid=uid,
+                 changeset_id=csid,
+                 timestamp=ts,
                  lon=n['lon'],
                  lat=n['lat'],
                  tags=n['tags'],
@@ -77,25 +77,88 @@ for n in nodes:
     hub_nodes[n['hub']] = hub_nodes.get(n['hub'], []) + [x]
     DB.add(x)
 
-## Hubs
-#hub_tags ={'hub1': {'type': 'hub1', 'balanced': True, 'name':'hub112'},
-#           'hub2': {'type': 'hub2', 'balanced': True, 'name': 'hub211'}}
+DB.flush()
 
-## create relations from
-#relations = []
-#for k,v in hub_tags.items():
-#    r = osm.Relation(myid=k,
-#                    timestamp=datetime.now(tz.utc),
-#                    visible=True,
-#                    elements=nodes[k],
-#                    tags=v)
-#    relations.append(r)
-#    DB.add(r)
+# Hubs
+hubs =[{'area_nodes': [(10,54),(10.3,54),(10.3,54.2),(10,54.2),(10,54)],
+        'tags': {'name': 'myhub1',
+                 'type': 'hub_relation',
+                 'energy_sector': 'electricity'}},
+       {'area_nodes': [(10.4,54),(10.6,54),(10.6,54.2),(10.4,54.2),(10.4,54)],
+        'tags': {'name': 'myhub2',
+                 'type': 'hub_relation',
+                 'energy_sector': 'electricity'}}]
 
+hub_relations = {}
+for h in hubs:
+    hub_name = h['tags']['name']
+    area_nodes = []
+    for a in h['area_nodes']:
+        x = osm.Node(myid = hub_name,
+                     uid = uid,
+                     timestamp = ts,
+                     changeset_id = csid,
+                     lon = a[0],
+                     lat = a[1],
+                     referencing_relations = [myscenario])
+        DB.add(x)
+        area_nodes.append(x)
+    DB.flush()
+    w = osm.Way(myid = hub_name,
+                changeset_id = csid,
+                uid = uid,
+                timestamp = ts,
+                nodes = area_nodes,
+                tags = {'area': 'yes',
+                        'name': hub_name+'_area',
+                        'type':'hub_area',
+                        'energy_sector': 'electricity'},
+                referencing_relations = [myscenario])
+    DB.add(w)
+    r = osm.Relation(myid = hub_name,
+                    timestamp = datetime.now(tz.utc),
+                    uid = uid,
+                    changeset_id = csid,
+                    elements = hub_nodes[hub_name] + [w],
+                    tags = h['tags'],
+                    referencing_relations = [myscenario])
+    hub_relations[hub_name] = r
+    DB.add(r)
 
+# Transmissions
+trans =[{'area_nodes': [(10.3,54.1),(10.4,54.1)],
+         'hubs': ['myhub1', 'myhub2'],
+        'tags': {'name': 'mytrans',
+                 'type': 'transmission',
+                 'line': 'yes',
+                 'oemof_class': 'linear_transformer',
+                 'installed_power': 10,
+                 'efficiency': 0.95,
+                 'energy_sector': 'electricity'}}]
+
+for t in trans:
+    trans_name = t['tags']['name']
+    hub_ids = t['hubs']
+    area_nodes = []
+    for a in t['area_nodes']:
+        x = osm.Node(myid = trans_name,
+                     uid = uid,
+                     timestamp = ts,
+                     changeset_id = csid,
+                     lon = a[0],
+                     lat = a[1],
+                     referencing_relations = [myscenario])
+        DB.add(x)
+        area_nodes.append(x)
+    DB.flush()
+    w = osm.Way(myid = trans_name,
+                changeset_id = csid,
+                uid = uid,
+                timestamp = ts,
+                nodes = area_nodes,
+                tags = t['tags'],
+                referencing_relations = [myscenario] + [hub_relations[i] for i in hub_ids])
+    DB.add(w)
 
 DB.commit()
-
-
-
 
