@@ -14,7 +14,7 @@ $(document).ready(function() {
   var map = new ol.Map({
     target: 'map',
     layers: [
-      new ol.layer.Tile({source: new ol.source.OSM()})
+      new ol.layer.Tile({source: new ol.source.Stamen({layer: 'watercolor'})})
     ],
     view: new ol.View({ // Center the viewport somewhere around the middle of SH.
                         center: ol.proj.transform([9.78, 54.17],
