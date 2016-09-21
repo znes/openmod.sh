@@ -105,7 +105,7 @@ class rs_and_rs(DB.Model):
 
 tag_associations = DB.Table('tag_associations',
         DB.Column('tag_id', DB.Integer, DB.ForeignKey('tag.id')),
-        DB.Column('tagged_id', DB.Integer, DB.ForeignKey('tagged.object_id')))
+        DB.Column('tagged_id', DB.Integer, DB.ForeignKey('tagged.tagged_id')))
 
 # Define timeseries association tables
 
@@ -143,7 +143,7 @@ class Tagged(DB.Model):
 
     [0]: Except tags itself. Duh.
     """
-    object_id = DB.Column(DB.Integer, primary_key=True)
+    tagged_id = DB.Column(DB.Integer, primary_key=True)
     typename = DB.Column(DB.String(79))
     tag_objects = DB.relationship(Tag, secondary=tag_associations,
                                        collection_class=amc('key'))
@@ -163,7 +163,7 @@ class Element(Tagged):
     __mapper_args__ = {'polymorphic_identity': 'element'}
 
     element_id = DB.Column(DB.Integer, primary_key=True)
-    tagged_id = DB.Column(DB.Integer, DB.ForeignKey(Tagged.object_id))
+    tagged_id = DB.Column(DB.Integer, DB.ForeignKey(Tagged.tagged_id))
     myid = DB.Column(DB.String(255))
     version = DB.Column(DB.Integer, nullable=False)
     timestamp = DB.Column(DB.DateTime, nullable=False)
@@ -224,7 +224,7 @@ class Relation(Element):
 class Changeset(Tagged):
     __mapper_args__ = {'polymorphic_identity': 'changeset'}
     id = DB.Column(DB.Integer, primary_key=True)
-    tagged_id = DB.Column(DB.Integer, DB.ForeignKey(Tagged.object_id))
+    tagged_id = DB.Column(DB.Integer, DB.ForeignKey(Tagged.tagged_id))
 
 class Timeseries(DB.Model):
     id = DB.Column(DB.Integer, primary_key=True)
