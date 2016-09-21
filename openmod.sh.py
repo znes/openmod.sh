@@ -35,11 +35,13 @@ def root():
     return render_template('index.html', plants=plants, series=series)
 
 
-@app.route('/series')
-def series():
-    # TODO: Don't use a hardcoded limit. Use a parameter.
-    plants = zip(itertools.count(), session.query(Plant).limit(5))
-    series = session.query(Timeseries)
+@app.route('/series/<path:ids>')
+def series(ids):
+    ids = ids.split("/")
+    series = session.query(Timeseries).order_by(Timeseries.plant,
+                                                Timeseries.step)
+    if ids:
+        series = series.filter(Timeseries.plant.in_(ids))
     # Better but still improvable. Now generates one query per plant, which
     # incurs the time overhead of a database request for each plant. But at
     # least we no longer have quadratic complexity.
@@ -48,11 +50,11 @@ def series():
     #
     # [0]: https://github.com/flot/flot/blob/master/API.md#data-format
     series_data = [{"lines": {"show": False}, "lines": {"fill": True},
-                    "label": "P" + str(i),
+                    "label": plant,
                     "data": [[t.step, t.value]
-                             for t in series.filter(Timeseries.plant ==
-                                                    plant.id)]}
-                   for i, plant in plants]
+                             for t in ts]}
+                   for plant, ts in itertools.groupby(series,
+                                                      lambda s: s.plant)]
     series_json = json.dumps(series_data)
     return series_json
 
