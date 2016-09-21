@@ -437,7 +437,7 @@ def upload_changeset(cid):
                      for tag in node.findall('tag')
                      for k, v in ((tag.attrib['k'], tag.attrib['v']),)],
                  {}).items()),
-              old_id=n["id"])
+              old_id=int(n["id"]))
             for node in created_nodes
             for n in (node.attrib,)]
     for node in created_nodes:
