@@ -97,10 +97,9 @@ def grid():
                           Grid.voltage, Grid.id).all()
     return json.dumps({"features": [{"type": "Feature",
                                      "geometry": json.loads(g.gjson),
-                                     "properties": {
-                                         "grids": [{"id": g.id,
-                                                     "voltage": g.voltage}]
-                                     }}
+                                     "properties": {"id": g.id,
+                                                    "voltage": g.voltage
+                                                    }}
                                     for g in grids],
                        "type": "FeatureCollection"})
 
