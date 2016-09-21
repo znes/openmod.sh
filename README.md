@@ -3,7 +3,7 @@
 ## Requirements
 
 The packages that `openmod.sh` depends on are listed in `requirements.txt`.
-So until `openmod.sh` is properly packaged, them it's best to just do:
+So until `openmod.sh` is properly packaged, it's best to just do:
 
   ```
   pip install -r requirements.txt
@@ -25,8 +25,8 @@ to find it, I can't tell you just yet. Just one hint: it's
 `Openmod.sh` depends on `oemof.db`. Have a look at it's [README][0] for
 information on how to configure database access. Note that `openMod.sh`
 expects its database configuration to be in a `config.ini` section named
-`openMod.sh R/W`. Be careful. As the 'R/W' suggests, have the iD editor
-expects read and write access.
+`openMod.sh R/W`. Be careful. As the 'R/W' suggests, the iD editor expects
+read and write access.
 
 ## Installation and Execution
 

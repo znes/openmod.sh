@@ -14,7 +14,7 @@ the transaction. To do so, `cd` into the repository's directory and do:
   ```
   python
   >>> import openmod.sh.schemas.osm as osm
-  >>> from openmod.sh  import web
+  >>> from openmod.sh import web
   >>> web.app.app_context().push()
   >>> osm.DB.create_all()
   >>> osm.DB.session.commit()
