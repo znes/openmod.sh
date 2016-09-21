@@ -79,8 +79,10 @@ class RedirectForm(wtfl.Form):
 
     def redirect(self, endpoint='root', **values):
         if is_safe_url(self.next.data):
+            print("Redirecting to: {}".format(self.next.data))
             return flask.redirect(self.next.data)
         target = get_redirect_target(self.redirect_arg)
+        print("Redirecting to: {}".format(target))
         return flask.redirect(target or flask.url_for(endpoint, **values))
 
 ##### Safe Redirects end here #################################################
@@ -134,16 +136,22 @@ class Login(RedirectForm):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = Login()
+    print('Checking form validation/submission check.')
     if form.validate_on_submit():
+        print("--> Login POSTed.")
         user = load_user(form.username.data)
         if user is not None:
+            print("--> User exists.")
             if user.pw == form.password.data:
+                print("--> Authenticated.")
                 fl.login_user(user)
                 #print("Current user: {}".format(fl.current_user))
             else:
+                print("--> Login unsuccessfull.")
                 flask.flash('Invalid username/password combination.')
                 return flask.redirect(flask.url_for('login'))
         else:
+            print("--> New user.")
             user = User(form.username.data, form.password.data)
             flask.flash('User "{}" created.'.format(user.name))
             fl.login_user(user)
@@ -151,7 +159,10 @@ def login():
         # TODO: Doesn't seem to work, as `flask.request.args.get('next')` is
         #       always none. Have a look at http://flask.pocoo.org/snippets/63/
         #       for pointers on how to make this work.
+        print("Logged in. Redirecting.")
         return form.redirect('login')
+    print('`validate_on_submit failed. Rendering template.')
+    print('errors: {}'.format(form.errors))
     return flask.render_template('login.html', form=form)
 
 @app.route('/logout')
@@ -261,7 +272,7 @@ CLIENT = Client()
 class RequestToken:
     known = []
     def __init__(self, token, request):
-        #print("Creating request token.")
+        print("Creating request token.")
         self.known.append(self)
         self.client = CLIENT
         self.token = token['oauth_token']
@@ -335,6 +346,10 @@ def save_verifier(token, verifier, *args, **kwargs):
 def load_access_token(client_key, token, *args, **kwargs):
     ats =  [at for at in AccessToken.known
                if at.client_key == client_key and at.token == token]
+    print("KNWN: {}".format(AccessToken.known))
+    print("ARGS: k -> {}, t -> {}, args -> {}, kwgs: {}".format(
+        client_key, token, args, kwargs))
+    print("ACTS: {}".format(ats))
     return (ats[0] if ats else None)
 
 @oauth.tokensetter
@@ -390,6 +405,7 @@ class Authorize(wtfl.Form):
 @fl.login_required
 @oauth.authorize_handler
 def authorize(*args, **kwargs):
+    print("wtf.Form")
     if flask.request.method == 'GET':
         form = Authorize()
         return """
@@ -406,6 +422,9 @@ def authorize(*args, **kwargs):
 @cors.cross_origin()
 @oauth.access_token_handler
 def access_token():
+    print("Regular ATH.")
+    print("Request: {}".format(str(flask.request.headers) + "\n" +
+                               flask.request.data.decode('utf-8')))
     return {}
 
 @app.route('/oauth-protected')
