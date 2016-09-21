@@ -162,6 +162,10 @@ def capabilities():
                                      timeout=250)
     return xml_response(template)
 
+# See:
+#   * http://wiki.openstreetmap.org/wiki/API_v0.6#Retrieving_map_data_by_bounding_box:_GET_.2Fapi.2F0.6.2Fmap
+# for notes on how exctly to do this.
+
 @app.route('/iD/api/0.6/map')
 @app.route('/osm/api/0.6/map')
 @cors.cross_origin()
