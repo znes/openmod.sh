@@ -2,6 +2,9 @@ import itertools
 import json
 
 from flask import Flask, make_response, render_template
+import flask_cors as cors # TODO: Check whether the `@cors.cross_origin()`
+                          #       decorators are still necessary once 'iD' is
+                          #       served from within this app.
 from geoalchemy2.functions import ST_AsGeoJSON as geojson
 from sqlalchemy.orm import sessionmaker
 
@@ -26,6 +29,14 @@ session = Session()
 def root():
     return render_template('index.html')
 
+@app.route('/osm/api/capabilities')
+@app.route('/osm/api/0.6/capabilities')
+@cors.cross_origin()
+def capabilities():
+    template = render_template('capabilities.xml', area={"max": 1}, timeout=250)
+    response = make_response(template)
+    response.headers['Content-Type'] = 'text/xml'
+    return response
 
 @app.route('/series/<path:ids>')
 def series(ids):
