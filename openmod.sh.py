@@ -59,12 +59,34 @@ def series():
 
 @app.route('/plants-json')
 def plant_coordinate_json():
-    plants = session.query(geojson(Plant.geometry)).all()
+    # TODO: Maybe SQLAlchemy's "relationship"s can be used to do this in a
+    #       simpler or more efficient way. The only problem is, that here,
+    #       there is a one-to-many relationship from points/locations to
+    #       powerplants, but points do not have a separate/dedicated table and
+    #       therefore no uid (create a view maybe?).
+    #       BUT: Using groupby on an ordered collection is already very
+    #            efficient because:
+    #
+    #              * there is only one query (yeah, it's ordered, but thats
+    #                what the DBMS is for),
+    #              * the queryset is only traversed once,
+    #              * 'groupby' is written in C (i.e. lightning fast) and MEANT
+    #                for exactly this scenario.
+    #
+    #            So even if we figure out a way to do this via SQLAlchemy
+    #            relationships, it's questionable whether those are faster.
+    plants = session.query(geojson(Plant.geometry).label("gjson"),
+                           Plant.capacity, Plant.id
+                           ).order_by(Plant.geometry).all()
     return json.dumps({"features": [{"type": "Feature",
-                                     "geometry": json.loads(p[0]),
-                                     "properties": None
-                                     }
-                                    for p in plants],
+                                     "geometry": json.loads(k),
+                                     "properties": {
+                                         "plants": [{"id": p.id,
+                                                     "capacity": p.capacity}
+                                                    for p in ps]
+                                     }}
+                                    for k, ps in itertools.groupby(
+                                        plants, lambda p: p.gjson)],
                        "type": "FeatureCollection"})
 
 
