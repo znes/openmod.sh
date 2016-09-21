@@ -19,6 +19,7 @@ import wtforms as wtf
 import oemof.db
 
 from .schemas import osm
+from .schemas.osm import Element_Relation_Associations as ERAs
 import openmod.sh.scenario
 
 
@@ -200,9 +201,9 @@ def osm_map():
     # the ways retrieved above.
     nodes = set(itertools.chain([n for way in ways for n in way.nodes], nodes))
     relations = set(itertools.chain((r for n in nodes
-                                       for r in n.relations),
+                                       for r in n.referencing_relations),
                                     (s for r in relations
-                                       for s in r.superiors),
+                                       for s in r.referencing_relations),
                                     relations))
     template = flask.render_template('map.xml', nodes=nodes, ways=ways,
                                           relations=relations,
@@ -597,17 +598,15 @@ def upload_changeset(cid):
         relation.old_id = old_id
         relation.tag = "relation"
         for member in members:
-            if member.attrib['type'] == 'node':
-                reference = osm.rs_and_nodes(node_id=int(member.attrib['ref']),
-                                             relation_id=relation.id)
-            elif member.attrib['type'] == 'way':
-                reference = osm.rs_and_ways(way_id=int(member.attrib['ref']),
-                                            relation_id=relation.id)
-            elif member.attrib['type'] == 'relation':
-                reference = osm.rs_and_rs(
-                        referenced_id=int(member.attrib['ref']),
-                        referencing_id=relation.id)
-
+            typename = member.attrib['type']
+            member_type = (osm.Node
+                           if typename == 'node'
+                           else (osm.Way if typename == 'way'
+                           else osm.Relation))
+            reference = ERAs(
+                    element_id=member_type.query.filter_by(
+                        id = int(member.attrib['ref'])).first().element_id,
+                    relation_id=relation.id)
             if member.attrib['role']:
                 reference.role = member.attrib['role']
 
@@ -629,26 +628,33 @@ def upload_changeset(cid):
         relation.tags.update({tag.attrib['k']: tag.attrib['v']
                               for tag in xml_node.findall('tag')})
         members = xml_node.findall('member')
-        nodes = {str(r.node_id): r.node for r in relation.referenced_nodes}
-        ways = {str(r.way_id): r.way for r in relation.referenced_ways}
-        relations = {str(r.referenced_id): r.referenced
-                     for r in relation.referenced}
+        nodes = {str(element.id): element for element in relation.elements
+                                          if element.typename == 'node'}
+        ways = {str(element.id): element for element in relation.elements
+                                         if element.typename == 'way'}
+        relations = {str(element.id): element
+                for element in relation.elements
+                if element.typename == 'relation'}
         for member in members:
             if member.attrib['type'] == 'node':
                 reference = nodes.get(member.attrib['ref'],
-                                      osm.rs_and_nodes(
-                                          node_id=int(member.attrib['ref']),
+                                      ERAs(element_id=osm.Node.get(
+                                              int(member.attrib['ref'])
+                                              ).element_id,
                                           relation_id=relation.id))
             elif member.attrib['type'] == 'way':
                 reference = ways.get(member.attrib['ref'],
-                                     osm.rs_and_ways(
-                                         way_id=int(member.attrib['ref']),
+                                     ERAs(element_id=osm.Way.get(
+                                             int(member.attrib['ref'])
+                                             ).element_id,
                                          relation_id=relation.id))
             elif member.attrib['type'] == 'relation':
                 reference = relations.get(
                         member.attrib['ref'],
-                        osm.rs_and_rs(referenced_id=int(member.attrib['ref']),
-                                      referencing_id=relation.id))
+                        ERAs(element_id=osm.Relation.get(
+                                int(member.attrib['ref'])
+                                ).element_id,
+                            relation_id=relation.id))
 
             if member.attrib['role']:
                 reference.role = member.attrib['role']

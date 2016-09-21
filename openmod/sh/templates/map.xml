@@ -24,13 +24,15 @@
        changeset="{{relation.changeset.id}}">
     {{ tags(relation) }}
     {% for reference in relation.referenced_nodes %}
-    <member type="node" ref="{{reference.node.id}}" role="{{reference.role}}"/>
+    <member type="node" ref="{{reference.element.id}}"
+            role="{{reference.role}}"/>
     {% endfor %}
     {% for reference in relation.referenced_ways %}
-    <member type="way" ref="{{reference.way.id}}" role="{{reference.role}}"/>
+    <member type="way" ref="{{reference.element.id}}"
+            role="{{reference.role}}"/>
     {% endfor %}
     {% for reference in relation.referenced %}
-    <member type="relation" ref="{{reference.relation.id}}"
+    <member type="relation" ref="{{reference.element.id}}"
             role="{{reference.role}}"/>
     {% endfor %}
   </relation>

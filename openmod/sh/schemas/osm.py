@@ -70,38 +70,16 @@ class Node_Way_Associations(DB.Model):
         node = DB.relationship('Node', backref='nodes_way')
         way = DB.relationship('Way')
 
-class rs_and_nodes(DB.Model):
-        __tablename__ = 'relations_and_nodes'
+class Element_Relation_Associations(DB.Model):
+        __tablename__ = 'Element_Relation_Associations'
         id = DB.Column(DB.Integer, primary_key=True)
         role = DB.Column(DB.String(255))
         relation_id = DB.Column(DB.Integer, DB.ForeignKey('relation.id'))
-        node_id = DB.Column(DB.Integer, DB.ForeignKey('node.id'))
-        node = DB.relationship('Node', backref='referencing_relations')
-        relation = DB.relationship('Relation', backref='referenced_nodes')
-
-class rs_and_ways(DB.Model):
-        __tablename__ = 'relations_and_ways'
-        id = DB.Column(DB.Integer, primary_key=True)
-        role = DB.Column(DB.String(255))
-        relation_id = DB.Column(DB.Integer, DB.ForeignKey('relation.id'))
-        way_id = DB.Column(DB.Integer, DB.ForeignKey('way.id'))
-        way = DB.relationship('Way', backref='referencing_relations')
-        relation = DB.relationship('Relation', backref='referenced_ways')
-
-class rs_and_rs(DB.Model):
-        __tablename__ = 'relations_and_relations'
-        id = DB.Column(DB.Integer, primary_key=True)
-        role = DB.Column(DB.String(255))
-        referencing_id = DB.Column(DB.Integer, DB.ForeignKey('relation.id'),
-            primary_key=True)
-        referenced_id = DB.Column(DB.Integer, DB.ForeignKey('relation.id'),
-            primary_key=True)
-        referenced = DB.relationship('Relation',
-                primaryjoin=("rs_and_rs.referenced_id == Relation.id"),
-                backref='referencing')
-        referencing = DB.relationship('Relation',
-                primaryjoin=("rs_and_rs.referencing_id == Relation.id"),
-                backref='referenced')
+        element_id = DB.Column(DB.Integer, DB.ForeignKey('element.element_id'))
+        element = DB.relationship('Element', backref='relation_associations',
+                foreign_keys=[element_id])
+        relation = DB.relationship('Relation', backref='element_associations',
+                foreign_keys=[relation_id])
 
 tag_associations = DB.Table('tag_associations',
         DB.Column('tag_id', DB.Integer, DB.ForeignKey('tag.id')),
@@ -173,6 +151,8 @@ class Element(Tagged):
     changeset_id = DB.Column(DB.Integer, DB.ForeignKey('changeset.id'))
     changeset = DB.relationship('Changeset', uselist=False,
             foreign_keys=[changeset_id])
+    referencing_relations = association_proxy('relation_associations',
+                                              'relation')
 
     def __init__(self, **kwargs):
         self.version = 1
@@ -196,7 +176,6 @@ class Node(Element):
     lat = DB.Column(DB.Float, nullable=False)
     lon = DB.Column(DB.Float, nullable=False)
 
-    relations = association_proxy('referencing_relations', 'relation')
     ways = association_proxy('nodes_way', 'way')
 
     def __init__(self, lat, lon, user_id, changeset_id, **kwargs):
@@ -208,18 +187,30 @@ class Way(Element):
     __mapper_args__ = {'polymorphic_identity': 'way'}
     id = DB.Column(DB.Integer, primary_key=True)
     element_id = DB.Column(DB.Integer, DB.ForeignKey(Element.element_id))
-    way_nodes = DB.relationship('node_way_associations',
-                                order_by='node_way_associations.position',
+    way_nodes = DB.relationship(Node_Way_Associations,
+                                order_by=Node_Way_Associations.position,
                                 collection_class=ordering_list('position'))
     nodes = association_proxy('way_nodes', 'node',
                               creator=lambda n: Nodes_Way_Associations(node=n))
-    relations = association_proxy('referencing_relations', 'relation')
 
 class Relation(Element):
     __mapper_args__ = {'polymorphic_identity': 'relation'}
     id = DB.Column(DB.Integer, primary_key=True)
     element_id = DB.Column(DB.Integer, DB.ForeignKey(Element.element_id))
-    superiors = association_proxy('referencing', 'relation')
+    elements = association_proxy('element_associations', 'element')
+
+    @property
+    def referenced_nodes(self):
+        return (x for x in self.element_associations
+                  if x.element.typename == 'node')
+    @property
+    def referenced_ways(self):
+        return (x for x in self.element_associations
+                  if x.element.typename == 'way')
+    @property
+    def referenced(self):
+        return (x for x in self.element_associations
+                  if x.element.typename == 'relation')
 
 class Changeset(Tagged):
     __mapper_args__ = {'polymorphic_identity': 'changeset'}
