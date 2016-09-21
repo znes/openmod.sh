@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <diffResult generator="openmod.sh" version="0.6">
-{% for node in nodes %}
-  <node old_id="{{node.old_id}}" new_id="{{node.new_id}}"
-        new_version="{{node.version}}" />
+{% for m in modifications %}
+  <{{m.tag}} old_id="{{m.old_id}}" new_id="{{m.new_id}}"
+             new_version="{{m.version}}" />
 {% endfor %}
 </diffResult>
