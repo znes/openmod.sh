@@ -80,9 +80,10 @@ def login():
     form = Login(flask.request.form)
     return flask.render_template('login.html', form=form)
 
-##### User Management stuff ends here.
+##### User Management stuff ends here (except for the `@fl.login_required`).
 
 @app.route('/')
+@fl.login_required
 def root():
     return flask.render_template('index.html')
 
