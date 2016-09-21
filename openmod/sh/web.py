@@ -485,6 +485,24 @@ def upload_changeset(cid):
         osm.DB.session.add(way)
         created_nodes.append(way)
     osm.DB.session.commit()
+
+    modified_ways = itertools.chain(*[c.findall('way')
+        for c in modifications])
+    for xml_way in modified_ways:
+        atts = xml_way.attrib
+        tags = xml_way.findall('tag')
+        db_way = osm.Way.query.get(int(atts["id"]))
+        db_way.old_id = db_way.id
+        db_way.version = atts["version"]
+        db_way.changeset = osm.Changeset.query.get(int(atts["changeset"]))
+        db_way.tags = db_way.tags + [osm.Tag(key=k, value=v)
+                for tag in xml_way.findall('tag')
+                for k, v in ((tag.attrib['k'], tag.attrib['v']),)]
+    for element in modified_ways:
+        element.tag = "way"
+        created_nodes.append(element)
+    osm.DB.session.commit()
+
     return flask.render_template('diffresult.xml', modifications=created_nodes)
 
 @app.route('/iD/api/0.6/changeset/<id>/close', methods=['PUT'])
