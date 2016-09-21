@@ -1,4 +1,5 @@
 flask
+flask-login
 geoalchemy2
 oemof
 psycopg2

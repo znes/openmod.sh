@@ -5,6 +5,7 @@ import flask
 import flask_cors as cors # TODO: Check whether the `@cors.cross_origin()`
                           #       decorators are still necessary once 'iD' is
                           #       served from within this app.
+import flask_login as fl
 import wtforms as wtf
 from geoalchemy2.functions import ST_AsGeoJSON as geojson
 from sqlalchemy.orm import sessionmaker
@@ -60,6 +61,13 @@ class User:
         self.is_anonymous = False
 
     def get_id(self): return str(id(self))
+
+login_manager = fl.LoginManager()
+login_manager.login_view = 'login'
+login_manager.init_app(app)
+@login_manager.user_loader
+def load_user(user_id):
+    return User.known.get(user_id)
 
 class Login(wtf.Form):
     username = wtf.StringField('Username', [wtf.validators.Length(min=3,
