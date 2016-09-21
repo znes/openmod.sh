@@ -35,8 +35,8 @@ class TemperatureStation(DB.Model):
         """
         """
         self.station_id = station_id
-        self.lon = lat
-        self.lat = lon
+        self.lon = lon
+        self.lat = lat
         self.name = name
 
 
