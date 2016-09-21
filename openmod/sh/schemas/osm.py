@@ -1,4 +1,5 @@
 from datetime import datetime, timezone as tz
+from itertools import chain, groupby
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -221,6 +222,26 @@ class Relation(Element):
     element_id = DB.Column(DB.Integer, DB.ForeignKey(Element.element_id))
     elements = association_proxy('element_associations', 'element',
             creator=lambda e: Element_Relation_Associations(element=e))
+
+    def reachable_nodes(self, visited=None):
+        """ Recursively enumerates all nodes reachable from this relation.
+
+        Note: does not have set semantics. Nodes may be yielded more than once.
+        """
+
+        key = lambda e: e.typename
+        typename = sorted(self.elements, key=key)
+        groups = {key: list(iterator)
+                  for (key, iterator) in groupby(typename, key=key)}
+        visited = visited if visited is not None else set()
+        visited.add(self)
+        return chain(groups.get('node', ()),
+                     (n for w in groups.get('way', ())
+                        if (w not in visited or visited.add(w))
+                        for n in w.nodes),
+                     (n for r in groups.get('relation', ())
+                        if r not in visited
+                        for n in r.reachable_nodes(visited)))
 
     @property
     def referenced_nodes(self):

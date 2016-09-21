@@ -187,12 +187,19 @@ def osm_map():
     # Get all nodes in the given bounding box.
     nodes = osm.Node.query.filter(minx <= osm.Node.lat, miny <= osm.Node.lon,
                                   maxx >= osm.Node.lat, maxy >= osm.Node.lon)
+    if nodes.count() == 0:
+        template = flask.render_template('map.xml', nodes=(), ways=(),
+                                                    relations=(),
+                                                    minlon=miny, maxlon=maxy,
+                                                    minlat=minx, maxlat=maxx)
+        return xml_response(template)
+
     # Limit nodes to the one's contained in the selected scenario.
     scenario = flask.session.get("scenario")
     if (scenario):
         scenario = osm.Relation.query.filter_by(id=scenario).first()
-        nodes = [ n for n in nodes
-                    for scenario in n.referencing_relations]
+        nodes = set(nodes).intersection(scenario.reachable_nodes())
+
     # Get all ways referencing the above nodes.
     ways = set(way for node in nodes for way in node.ways)
     # Get all relations referencing the above ways.
@@ -253,8 +260,13 @@ def scenarios():
 @app.route('/scenario/<s>', methods=['PUT'])
 @fl.login_required
 def scenario(s):
+    scenario_id = flask.session.get('scenario')
     if flask.request.method == 'GET':
-        return str(flask.session.get("scenario", ""))
+        if not scenario_id:
+            return ""
+        scenario = osm.Relation.query.filter_by(id=scenario_id).first()
+        return json.dumps({'value': getattr(scenario, 'tags', {}).get('name'),
+                           'title': scenario_id})
     elif s and not json.loads(s) and "scenario" in flask.session:
         del flask.session["scenario"]
     else:
@@ -510,6 +522,12 @@ def userdetails():
 @app.route('/iD/connection/api/0.6/changeset/<cid>/upload', methods=['POST'])
 @cors.cross_origin()
 def upload_changeset(cid):
+    scenario = flask.session.get("scenario")
+    scenario = osm.Relation.query.filter_by(id=scenario).first()
+    def attach_scenario(scenario, element):
+        if scenario and 'type' in element.tags:
+            element.referencing_relations.append(scenario)
+        return element
     xml = XML(flask.request.data)
     creations = xml.findall('create')
     created_nodes = itertools.chain(*[c.findall('node') for c in creations])
@@ -524,7 +542,7 @@ def upload_changeset(cid):
             for node in created_nodes
             for n in (node.attrib,)]
     for node in created_nodes:
-        osm.DB.session.add(node)
+        osm.DB.session.add(attach_scenario(scenario, node))
     modifications = xml.findall('modify')
     modified_nodes = list(
             itertools.chain(*[c.findall('node') for c in modifications]))
@@ -560,7 +578,7 @@ def upload_changeset(cid):
     for old_id, way in created_ways.items():
         way.old_id = old_id
         way.tag = "way"
-        osm.DB.session.add(way)
+        osm.DB.session.add(attach_scenario(scenario, way))
         created_nodes.append(way)
     osm.DB.session.flush()
 
@@ -598,7 +616,7 @@ def upload_changeset(cid):
             for atts in (node.attrib,)}
 
     for old_id, (relation, members) in created_relations.items():
-        osm.DB.session.add(relation)
+        osm.DB.session.add(attach_scenario(scenario, relation))
         osm.DB.session.flush()
         relation.old_id = old_id
         relation.tag = "relation"
