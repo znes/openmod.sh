@@ -148,7 +148,8 @@ class Tagged(DB.Model):
     tag_objects = DB.relationship(Tag, secondary=tag_associations,
                                        collection_class=amc('key'))
     tags = association_proxy('tag_objects', 'value')
-    __mapper_args__ = {'polymorphic_on': typename}
+    __mapper_args__ = {'polymorphic_identity': 'tagged',
+                       'polymorphic_on': typename}
 
 
 class Node(Tagged):
