@@ -59,7 +59,8 @@ def series(ids):
 
 
 @app.route('/plants-json')
-def plant_coordinate_json():
+@app.route('/plants-json/<t>')
+def plant_coordinate_json(t=None):
     # TODO: Maybe SQLAlchemy's "relationship"s can be used to do this in a
     #       simpler or more efficient way. The only problem is, that here,
     #       there is a one-to-many relationship from points/locations to
@@ -78,7 +79,9 @@ def plant_coordinate_json():
     #            relationships, it's questionable whether those are faster.
     plants = session.query(geojson(Plant.geometry).label("gjson"),
                            Plant.capacity, Plant.id
-                           ).order_by(Plant.geometry).all()
+                           ).order_by(Plant.geometry)
+    if t:
+        plants = plants.filter(Plant.type == t)
     return json.dumps({"features": [{"type": "Feature",
                                      "geometry": json.loads(k),
                                      "properties": {
