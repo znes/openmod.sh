@@ -61,7 +61,7 @@ class User:
         self.is_active = True
         self.is_anonymous = False
 
-    def get_id(self): return str(id(self))
+    def get_id(self): return self.name
 
 login_manager = fl.LoginManager()
 login_manager.login_view = 'login'
