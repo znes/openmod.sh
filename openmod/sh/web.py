@@ -158,6 +158,42 @@ osm_map.nodes = [{"lat": 0.0075, "lon": -0.0025,
 
 oauth = OAuth1Provider(app)
 
+@oauth.clientgetter
+def load_client(client_key):
+    return object()
+
+@oauth.grantgetter
+def load_request_token(token):
+    return object()
+
+@oauth.grantsetter
+def save_request_token(token, request):
+    return object()
+
+@oauth.verifiergetter
+def load_verifier(verifier, token):
+    return object()
+
+@oauth.verifiersetter
+def save_verifier(token, verifier, *args, **kwargs):
+    return object()
+
+@oauth.tokengetter
+def load_access_token(client_key, token, *args, **kwargs):
+    return object()
+
+@oauth.tokensetter
+def save_access_token(token, request):
+    return object()
+
+@oauth.noncegetter
+def load_nonce(client_key, timestamp, nonce, request_token, access_token):
+    return object()
+
+@oauth.noncesetter
+def save_nonce(client_key, timestamp, nonce, request_token, access_token):
+    return object()
+
 @app.route('/iD/connection/oauth/request_token')#, methods=['GET', 'POST'])
 @oauth.request_token_handler
 @cors.cross_origin()
