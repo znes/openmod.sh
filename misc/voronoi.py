@@ -14,10 +14,19 @@ UPDATE voronoi.temperature_station\
 x = engine.execute(sql)
 print(x)
 
+
+sql =  "\
+ALTER TABLE voronoi.temperature_station\
+    ALTER COLUMN geom_point TYPE geometry(MultiPoint,4326) USING ST_Multi(geom_point);"
+
+x = engine.execute(sql)
+print(x)
+
 sql = "\
 ALTER TABLE voronoi.temperature_station\
  ADD COLUMN geom_polygon geometry(MultiPolygon,4326); \
 UPDATE voronoi.temperature_station\
- SET geom_polygon = ST_SetSRID(ST_CollectionExtract(ST_Voronoi(geom_point, null, 0.0, true),3), 4326);"
+ SET geom_polygon = ST_SetSRID(ST_CollectionExtract(ST_Voronoi(geom_point, null, 0.0, true), 3), 4326);"
+
 x = engine.execute(sql)
 print(x)
