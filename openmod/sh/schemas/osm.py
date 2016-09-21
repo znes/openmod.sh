@@ -173,13 +173,6 @@ class Node(Element):
     ways = association_proxy('nodes_way', 'way')
 
     def __init__(self, lat, lon, changeset_id, **kwargs):
-        if 'user_id' in kwargs:
-            if (('uid' in kwargs) and (kwargs['user_id'] != kwargs['uid'])):
-                raise ValueError(
-                        'Trying to construct a `Node` with both, ' +
-                        " `user_id` and `uid`.\nWhich one's correct?")
-            kwargs['uid'] = kwargs['user_id']
-            del kwargs['user_id']
         super().__init__(changeset_id=changeset_id, **kwargs)
         self.lat = lat
         self.lon = lon
