@@ -149,7 +149,8 @@ class Element(Tagged):
                                               'relation')
     timeseries_objects = DB.relationship('Timeseries',
             secondary=Element_Timeseries_Associations,
-            collection_class=amc('key'))
+            collection_class=amc('key'),
+            cascade="all, delete-orphan")
     timeseries = association_proxy('timeseries_objects', 'values')
 
     def __init__(self, **kwargs):
