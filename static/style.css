@@ -3,4 +3,5 @@
 .popup { background: #eee8d5; color: #93a1a1; }
 .plot { height: 233px; width: 377px; }
 #title { color: #586e75; position: absolute; left: 1.9em; top: 0; }
+#types { position: absolute; top: 2ex; right: 1em; display: inline; }
 

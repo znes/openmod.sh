@@ -7,6 +7,25 @@ $(document).ready(function() {
     return result;
   };
 
+  // TODO: Remove hardcoded values in favor of request result
+  var types = ["Gas", "Wasserkraft", "Windkraft", "Biomasse", "Solarstrom"];
+  var layers = {};
+  $.ajax({ url: "types",
+           success: function (d, _, _) {
+             //$.each(JSON.parse(d), function (i,e) {types.push(e);});
+             $.each(types, function (i, x) {
+               $('#types').append($(
+                     '<label for="check-' + x + '">' +
+                     '<input type="checkbox" name="' + x + '" value="' + x +
+                     '" id="check-' + x + '">' + x + '</label><br />'));
+             });
+               $.each(types, function (i, t) {
+                 $('#check-' + t).on("change", function (e) {
+                     layers[t].setVisible(this.checked);
+                 }); });
+           }
+  });
+
   var plot = $.plot($("#timeseries-plot"), []);
   $('#timeseries-plot').hide();
 
