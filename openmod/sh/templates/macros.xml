@@ -11,3 +11,9 @@
   </dd>
 {% endmacro %}
 
+{% macro tags(element) %}
+  {% for tag in element.tags %}
+    <tag k="{{tag.key}}" v="{{tag.value}}"/>
+  {% endfor %}
+{% endmacro %}
+

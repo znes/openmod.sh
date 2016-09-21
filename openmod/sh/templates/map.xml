@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+{% from "macros.xml" import tags %}
 <osm version="0.6" generator="openmod.sh">
   <bounds minlat="{{minlat}}" minlon="{{minlon}}"
           maxlat="{{maxlat}}" maxlon="{{maxlon}}"/>
@@ -8,22 +9,20 @@
   {% for node in nodes %}
     <node id="{{node.id}}" visible="{{node.visible}}" version="{{node.version}}"
           lat="{{node.lat}}" lon="{{node.lon}}">
-      {% for tag in node.tags %} <tag k="{{tag.key}}" v="{{tag.value}}"/>
-      {% endfor %}
+      {{ tags(node) }}
     </node>
   {% endfor %}
   {% for way in ways %}
   <way id="{{way.id}}" version="{{way.version}}"
        changeset="{{way.changeset.id}}">
     {% for node in way.nodes %}<nd ref="{{node.id}}"/>{% endfor %}
-    {% for tag in way.tags %}<tag k="{{tag.key}}" v="{{tag.value}}"/>{% endfor %}
+    {{ tags(way) }}
   </way>
   {% endfor %}
   {% for relation in relations %}
   <relation id="{{relation.id}}" version="{{relation.version}}"
        changeset="{{relation.changeset.id}}">
-    {% for tag in relation.tags %}<tag k="{{tag.key}}" v="{{tag.value}}"/>
-    {% endfor %}
+    {{ tags(relation) }}
     {% for reference in relation.referenced_nodes %}
     <member type="node" ref="{{reference.node.id}}" role="{{reference.role}}"/>
     {% endfor %}
