@@ -48,7 +48,7 @@ $(document).ready(function() {
     view: new ol.View({ // Center the viewport somewhere around the middle of SH.
                         center: ol.proj.transform([9.78, 54.17],
                                                   'EPSG:4326', 'EPSG:3857'),
-                        zoom: 7 })
+                        zoom: 8 })
   });
 
   $.each(types, function (type_index, type) {
