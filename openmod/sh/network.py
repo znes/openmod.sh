@@ -20,7 +20,7 @@ def from_db(debug=False):
     nrg = "Energie"
     buses = {t: Bus(uid=t, type=t) for t in ["Gas", "Biomasse", nrg]}
     q = session.query(schema.Plant)
-    n = session.query(schema.Plant).count()
+    n = q.count()
     for i, p in enumerate(q.all()):
         stdout.write("\r{0:5}: {1:6.2%}".format(i, i/n)) if debug else None
         if p.type in ["Wasserkraft", "Windkraft", "Solarstrom"]:
