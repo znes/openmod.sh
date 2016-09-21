@@ -13,8 +13,9 @@ to install all necessary requirements.
 
 The only additional requirement is a version of the [iD][2] editor that
 is modified to work with `openmod.sh` instead of [openstreetmap][1]. We
-have a fork for this. It's not public yet, so if you don't know where
-to find it, I can't tell you just yet. Just one hint: it's
+have a fork for this, which, currently, you have to clone manually. It's not
+public yet, so if you don't know where to find it, I can't tell you just yet.
+Just one hint, it's:
 
   ```
   openmod.sh/repository/url/../iD
@@ -31,21 +32,38 @@ expects read and write access.
 ## Installation and Execution
 
 As `openmod.sh` is not a full fledged python package yet, there's really
-nothing to install. You just clone the repository, `cd` into the
-directory and issue a:
+nothing to install, you'll have to clone the repository manually. As mentioned
+in [Requirements](#requirements), you also have to clone our fork of the iD
+editor. After you have done this, you should have directories containing the
+source code for `openmod.sh` and our iD for, respectively. Let's call them
+OPENMOD.SH and ID for the reminder of this section.
+
+First do:
+
+  ```sh
+  cd ID
+  make
+  ```
+
+That bundles iD into a servable state under its 'dist' subdirectory. Now we
+have to enable serving the iD editor via `openmod.sh`:
+
+  ```
+  cd OPENMOD.SH
+  ln -s ID/dist OPENMOD.SH/openmod/sh/static/iD
+  ```
+
+Please note that ID **has** to be specified as an absolute path here or
+things **will not work**.
+
+Now you're ready to start `openmod.sh` which is as simple as
 
   ```
   python openmod.sh.py
   ```
 
-After that, you have to serve our iD fork. So clone the corresponding
-repository and run:
-
-  ```
-  python -m http.server
-  ```
-
-Then open your browser and point it to port 5000.
+Note that you should still be residing in OPENMOD.SH, obviously.
+Then open your browser and point it to port 8000.
 Enjoy.
 
 [0]: https://github.com/oemof/oemof.db/blob/dev/README.rst#configuration
