@@ -240,7 +240,7 @@ def scenarios():
     relations = osm.Relation.query.all();
     scenarios = [ r.tags.get('name')
                   for r in relations
-                  if r.tags.get("type") == "Scenario"]
+                  if r.tags.get("type") == "scenario"]
     if (flask.session.get("scenario")):
         scenarios = (["Deselect selected scenario"] +
                      list(sorted(set(
