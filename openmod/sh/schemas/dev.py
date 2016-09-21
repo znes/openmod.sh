@@ -1,40 +1,78 @@
 from geoalchemy2 import Geometry
-from sqlalchemy.ext.declarative import declarative_base
-
 import sqlalchemy as db
-import sqlalchemy.orm as orm
+from flask_sqlalchemy import SQLAlchemy
+from oemof.db import config as cfg
+
+metadata = db.MetaData(schema=cfg.get('openMod.sh R/W', 'schema'))
+DB = SQLAlchemy(metadata=metadata)
+
+class Region(DB.Model):
+    __tablename__ = 'region'
+    region_id = DB.Column("region_id", DB.String(), primary_key=True)
+    #temperature_station_id = DB.Column("temperature_station_id", DB.String())
+    geom_polygon = DB.Column("geom_polygon",
+                             Geometry(geometry_type="MULTIPOLYGON", srid=4326))
+    geom_point = DB.Column("geom_point",
+                           Geometry(geometry_type="POINT", srid=4326))
+    #heatdemand = DB.relationship("AnnualHeatDemand", uselist=False)
+    #heatpattern = DB.relationship("HeatDemandPattern", uselist=False)
+
+    def __init__(self, region_id, geom_point, geom_polygon):
+        """
+        """
+        self.region_id = region_id
+        #self.temperature_station_id = temperature_station_id
+        self.geom_polygon = geom_polygon
+        self.geom_point = geom_point
+
+class TemperatureStation(DB.Model):
+    __tablename__ = "temperature_station"
+    station_id = DB.Column("station_id", DB.String(), primary_key=True)
+    lon = DB.Column("lon", DB.Float())
+    lat = DB.Column("lat", DB.Float())
+    name = DB.Column("name", DB.String())
+    def __init__(self, station_id, lon, lat, name):
+        """
+        """
+        self.station_id = station_id
+        self.lon = lat
+        self.lat = lon
+        self.name = name
 
 
-class Plant(declarative_base()):
-    __tablename__ = "eeg_register"
-    __table_args__ = {"schema": "dev"}
-    id = db.Column("id", db.String(), primary_key=True)
-    type = db.Column("type", db.String())
-    geometry = db.Column("geom", Geometry(geometry_type="POINT"))
-    capacity = db.Column("capacity", db.Integer())
-
-    @property
-    def feedin(self):
-        return (x.value for x in self.timeseries)
-
-
-class Timeseries(declarative_base()):
-    __tablename__ = "feed_in"
-    __table_args__ = {"schema": "dev"}
-    plant = db.Column("id", db.String(), db.ForeignKey(Plant.id),
-                      primary_key=True)
-    step = db.Column("hour", db.Integer, primary_key=True)
-    value = db.Column("feed", db.Float())
-
-
-class Grid(declarative_base()):
-    __tablename__ = "grid"
-    __table_args__ = {"schema": "dev"}
-    id = db.Column("osm_id", db.Integer(), primary_key=True)
-    type = db.Column("power", db.String())
-    geometry = db.Column("way", Geometry(geometry_type="LineString"))
-    voltage = db.Column("voltage", db.String())
-
-
-Plant.timeseries = orm.relationship(Timeseries, order_by=Timeseries.step)
-
+#class AnnualHeatDemand(DB.Model):
+#    __tablename__ = 'annual_heat_demand'
+#    region_id = DB.Column(DB.String(), DB.ForeignKey('regions.region_id'))
+#    sector = DB.Column(DB.String())
+#    year = DB.Column(DB.Integer())
+#    value = DB.Column(DB.Float(), nullable=False)
+#    regions = DB.relationship('Regions')
+#    __table_args__ = (
+#        DB.PrimaryKeyConstraint('region_id', 'sector', 'year'), {},)
+#
+#    def __init__(self, region_id, sector, year, value):
+#        """
+#        """
+#        self.region_id = region_id
+#        self.sector = sector
+#        self.year = year
+#        self.value = value
+#
+#class HeatDemandPattern(DB.Model):
+#    __tablename__ = 'heat_demand_pattern'
+#    region_id = DB.Column(DB.String(), DB.ForeignKey('regions.region_id'))
+#    sector = DB.Column(DB.String())
+#    value = DB.Column(DB.Float(), nullable=False)
+#    hour = DB.Column(DB.Float(), nullable=False)
+#    regions = DB.relationship('Regions')
+#
+#    __table_args__ = (
+#        DB.PrimaryKeyConstraint('region_id', 'sector', 'hour'), {},)
+#
+#    def __init__(self, region_id, sector, hour, value):
+#        """
+#        """
+#        self.region_id = region_id
+#        self.sector = sector
+#        self.hour = hour
+#        self.value = value
