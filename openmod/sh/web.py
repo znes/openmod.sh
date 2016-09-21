@@ -569,7 +569,7 @@ def attach_non_node_attribute_hash(non_node):
 def get_ways():
     # TODO: See whether you can make this better by querying only once.
     #       Maybe 'in' works?
-    ways = [attach_non_node_attribute_hash(osm.Node.query.get(int(way_id)))
+    ways = [attach_non_node_attribute_hash(osm.Way.query.get(int(way_id)))
            for way_id in flask.request.args['ways'].split(",")]
     template = flask.render_template('ways.xml', ways=ways)
     return xml_response(template)
