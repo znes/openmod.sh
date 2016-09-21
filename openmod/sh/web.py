@@ -288,6 +288,11 @@ def authorize(*args, **kwargs):
                        form.confirm)
     return (flask.request.form.get('confirm', 'no') == 'y')
 
+@app.route('/iD/connection/oauth/access_token', methods=['GET', 'POST'])
+@oauth.access_token_handler
+def access_token():
+    return {}
+
 ##### Persistence code ends here ##############################################
 
 @app.route('/series/<path:ids>')
