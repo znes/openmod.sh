@@ -23,7 +23,7 @@ db.commit()
 # This assumes that you have stored the data you want to populate the database
 # with in a file called 'data.pickle'.
 import dill as pickle
-with open("/home/simon/data.dill", "r+b") as f:
+with open("data.dill", "r+b") as f:
   result = pickle.load(f)
 
 # The file format is as follows:
@@ -42,8 +42,7 @@ with open("/home/simon/data.dill", "r+b") as f:
 # Let's see how easy it is to populate our database with data in this format.
 
 # The heat data is temporaly stored in data in root of the openmod repository
-heat = pd.read_csv('~/znes/projects/openmod.sh/data/heat_demand.csv',
-                   dtype={'region_key':str})
+heat = pd.read_csv('../data/heat_demand.csv', dtype={'region_key':str})
 heat.set_index('region_key', inplace=True)
 
 for i, r in enumerate(result.relations):

@@ -12,10 +12,12 @@ x = pd.read_csv("eeg-sh.csv")
 
 for i, r in x.iterrows():
     node = osm.Node(r['lat'], r['lon'], 1, cs.id,
-                    tags=[("area", "yes"), ("type", r["generation"]), ("installed_capacity",r["electrical"])])
+                    tags=[("area", "yes"),
+                          ("type", r["generation"]),
+                           ("installed_capacity", r["electrical"])])
     db.add(node)
     db.commit()
     print(i)
 
 
-                      
+
