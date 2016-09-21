@@ -430,9 +430,8 @@ def upload_changeset(cid):
     creations = xml.findall('create')
     created_nodes = itertools.chain(*[c.findall('node') for c in creations])
     created_nodes = [
-            osm.Node( # TODO: Replace hardcoded user_ and changeset_id values
-                      #       with computed (and correct) ones.
-              float(n["lat"]), float(n["lon"]), 1, 1,
+            osm.Node(
+              float(n["lat"]), float(n["lon"]), fl.current_user.id, int(cid),
               tags=list(fun.reduce(
                  lambda old, new: old.update(new) or old,
                  [{k: v}
@@ -466,6 +465,7 @@ def upload_changeset(cid):
                for node_id in map(lambda nd: int(nd.attrib['ref']),
                                   way.findall('nd'))],
         changeset=osm.Changeset.query.get(int(cid)),
+        user=fl.current_user,
         version=att['version'],
         tags=[osm.Tag(key=k, value=v)
               for k,v in list(

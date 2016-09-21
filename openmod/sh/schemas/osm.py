@@ -1,6 +1,8 @@
 from datetime import datetime, timezone as tz
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
+from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.ext.orderinglist import ordering_list
 import werkzeug.security as ws
 from oemof.db import config as cfg
 
@@ -48,9 +50,22 @@ class User(DB.Model):
 # Association tables for many-to-many relationships.
 # Tags can appear just about anywhere...
 
-nodes_and_ways = DB.Table('nodes_and_ways',
-        DB.Column('node_id', DB.Integer, DB.ForeignKey('node.id')),
-        DB.Column('way_id', DB.Integer, DB.ForeignKey('way.id')))
+# This one is necessary to keep track of the additional ordering information.
+# See:
+#
+#   * http://stackoverflow.com/questions/21292726/how-to-properly-use-association-proxy-and-ordering-list-together-with-sqlalchemy
+#   * http://docs.sqlalchemy.org/en/latest/orm/extensions/associationproxy.html#simplifying-association-objects
+#   * http://docs.sqlalchemy.org/en/latest/orm/extensions/orderinglist.html#module-sqlalchemy.ext.orderinglist
+#
+# for pointers on how this works.
+class nodes_and_ways(DB.Model):
+        __tablename__ = 'nodes_and_ways'
+        id = DB.Column(DB.Integer, primary_key=True)
+        node_id = DB.Column(DB.Integer, DB.ForeignKey('node.id'))
+        way_id = DB.Column(DB.Integer, DB.ForeignKey('way.id'))
+        position = DB.Column(DB.Integer)
+        node = DB.relationship('Node', backref='nodes_way')
+        way = DB.relationship('Way')
 
 tags_and_nodes = DB.Table('tags_and_nodes',
         DB.Column('tag_id', DB.Integer, DB.ForeignKey('tag.id')),
@@ -86,6 +101,7 @@ class Node(DB.Model):
     tags = DB.relationship(Tag, secondary=tags_and_nodes)
     uid = DB.Column(DB.Integer, DB.ForeignKey(User.id))
     user = DB.relationship(User, uselist=False)
+    ways = association_proxy('nodes_way', 'way')
     changeset = DB.relationship('Changeset', uselist=False)
     changeset_id = DB.Column(DB.Integer, DB.ForeignKey('changeset.id'))
 
@@ -106,8 +122,13 @@ class Way(DB.Model):
     myid = DB.Column(DB.String(255))
     version = DB.Column(DB.String)
     tags = DB.relationship(Tag, secondary=tags_and_ways)
-    nodes = DB.relationship(Node, secondary=nodes_and_ways,
-                            backref=DB.backref('ways'))
+    way_nodes = DB.relationship('nodes_and_ways',
+                                order_by='nodes_and_ways.position',
+                                collection_class=ordering_list('position'))
+    nodes = association_proxy('way_nodes', 'node',
+                              creator=lambda n: nodes_and_ways(node=n))
+    uid = DB.Column(DB.Integer, DB.ForeignKey(User.id))
+    user = DB.relationship(User, uselist=False)
     changeset = DB.relationship('Changeset', uselist=False)
     changeset_id = DB.Column(DB.Integer, DB.ForeignKey('changeset.id'))
 
