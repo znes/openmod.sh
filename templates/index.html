@@ -4,20 +4,23 @@
 <html xmlns="http://www.w3.org/TR/xhtml1/strict" >
 
 <head> <title>openMod.SH</title>
+
 <script src="//code.jquery.com/jquery-2.1.4.js"
         type="text/javascript"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.js"
+<script src="//cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.js"
         type="text/javascript"></script>
+<script src="//openlayers.org/en/v3.8.2/build/ol.js"
+        type="text/javascript"></script>
+<script src="/static/code.js" type="text/javascript"></script>
 
 <link rel="stylesheet" href="http://openlayers.org/en/v3.8.2/css/ol.css"
       type="text/css" />
 <link rel="stylesheet" href="/static/style.css" type="text/css" />
-<script src="http://openlayers.org/en/v3.8.2/build/ol.js"
-        type="text/javascript"></script>
-<script src="/static/code.js" type="text/javascript"></script>
+
 </head>
 
 <body>
+
 <h1>Welcome to the openMod.sh landing page</h1>
 
 <div id="marker"></div>
@@ -27,6 +30,7 @@
   <tr><td>Plants</td><td> {{ plants | count }} </td></tr>
   <tr><td>Timeseries</td><td> {{ series | count }} </td></tr>
 </table>
+
 <div id="timeseries-plot" class="plot"></div>
 
 <div id="map" class="map"></div>
