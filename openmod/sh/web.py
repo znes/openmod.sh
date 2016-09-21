@@ -134,7 +134,7 @@ def logout():
 @app.route('/')
 @fl.login_required
 def root():
-    return flask.redirect('http://127.0.0.1:8000')
+    return flask.redirect('/static/iD/index.html')
 
 # TODO: Factor adding the 'Content-Type' header out into a separate function.
 
