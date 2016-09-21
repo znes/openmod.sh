@@ -21,7 +21,7 @@ class User():
                         name))
         self.known[name] = self
         self.name = name
-        self.pw_hash = ws.generate_password_hash(pw)
+        self.password_hash = ws.generate_password_hash(pw)
         self.is_authenticated = True
         self.is_active = True
         self.is_anonymous = False
@@ -29,5 +29,5 @@ class User():
     def get_id(self): return self.name
 
     def check_pw(self, pw):
-        return ws.check_password_hash(self.pw_hash, pw)
+        return ws.check_password_hash(self.password_hash, pw)
 
