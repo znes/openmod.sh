@@ -515,7 +515,8 @@ def upload_changeset(cid):
     created_nodes = itertools.chain(*[c.findall('node') for c in creations])
     created_nodes = [
             osm.Node(
-              float(n["lat"]), float(n["lon"]), fl.current_user.id, int(cid),
+              float(n["lat"]), float(n["lon"]), int(cid),
+              uid=fl.current_user.id,
               tags={tag.attrib['k']: tag.attrib['v']
                     for tag in node.findall('tag')},
               old_id=int(n["id"]),
