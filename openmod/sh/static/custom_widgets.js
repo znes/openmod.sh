@@ -78,7 +78,8 @@ widgets.scenarios = function (parent, context) {
       if (xhr.response === '') {
         input.attr('placeholder', 'Select a scenario');
       } else {
-        prepend('span', outer).text('Selected scenario: ' + xhr.response);
+        var e = JSON.parse(xhr.response);
+        prepend('span', outer).text('Selected scenario: ' + e.value);
         input.attr('placeholder', 'Change selected scenario');
       };
     })
