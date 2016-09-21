@@ -396,7 +396,7 @@ def oauth_protected_test_endpoint():
 
 app.config['SQLALCHEMY_DATABASE_URI'] = oemof.db.url('openMod.sh R/W')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = osm.DB.init_app(app)
+osm.DB.init_app(app)
 
 @app.route('/iD/connection/api/0.6/changeset/create', methods=['PUT'])
 @cors.cross_origin()
