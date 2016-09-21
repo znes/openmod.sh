@@ -1,5 +1,6 @@
 flask
 flask-login
+flask-oauthlib
 geoalchemy2
 oemof
 psycopg2

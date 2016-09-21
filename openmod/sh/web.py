@@ -1,6 +1,7 @@
 import itertools
 import json
 
+from flask_oauthlib.provider import OAuth1Provider
 import flask
 import flask_cors as cors # TODO: Check whether the `@cors.cross_origin()`
                           #       decorators are still necessary once 'iD' is
@@ -60,7 +61,7 @@ class User:
         self.is_active = True
         self.is_anonymous = False
 
-    def get_id(self): return str(id(self))
+    def get_id(self): return self.name
 
 login_manager = fl.LoginManager()
 login_manager.login_view = 'login'
@@ -83,7 +84,7 @@ def login():
         if user is not None:
             if user.pw == form.password.data:
                 fl.login_user(user)
-                return flask.redirect('http://localhost:8000')
+                #print("Current user: {}".format(fl.current_user))
             else:
                 flask.flash('Invalid username/password combination.')
                 return flask.redirect(flask.url_for('login'))
@@ -91,7 +92,12 @@ def login():
             user = User(form.username.data, form.password.data)
             flask.flash('User "{}" created.'.format(user.name))
             fl.login_user(user)
-            return flask.redirect('http://localhost:8000')
+        # From now on: user logged in.
+        # TODO: Doesn't seem to work, as `flask.request.args.get('next')` is
+        #       always none. Have a look at http://flask.pocoo.org/snippets/63/
+        #       for pointers on how to make this work.
+        redirect = flask.request.args.get('next')
+        return flask.redirect(redirect or flask.url_for('login'))
     return flask.render_template('login.html', form=form)
 
 @app.route('/logout')
@@ -105,9 +111,7 @@ def logout():
 @app.route('/')
 @fl.login_required
 def root():
-    # TODO: Actually use this by using the `flask.request.args.get('next')` in
-    #       the `login` endpoint instead of hardcoding the redirect there too.
-    return flask.redirect('http://localhost:8000')
+    return flask.redirect('http://127.0.0.1:8000')
 
 # TODO: Factor adding the 'Content-Type' header out into a separate function.
 
@@ -144,6 +148,219 @@ def osm_map():
 osm_map.nodes = [{"lat": 0.0075, "lon": -0.0025,
                   "tags": {"ele": 0, # stands for 'elevation' (usually)
                            "name": "A Test Node"}}]
+
+##### OAuth1 provider code ####################################################
+#
+# In order to talk to the iD editor, we need to implement and OAuth1 provider.
+#
+# The code in this section does so by following the flask-oauthlib
+# [tutorial][0] pretty closely. The only exception is that we don't involve a
+# database since we store everything in memor. One can also always check that
+# it works by going through the [oauthlib CLI trial][1].
+#
+# This should probably go into it's own module but I'm putting it all here for
+# now, as some parts need to stay in this module while some parts can be
+# factored out later. The 'factoring out' part can be considered an open TODO.
+#
+# [0]: http://flask-oauthlib.readthedocs.io/en/latest/oauth1.html#oauth1-server
+# [1]: https://oauthlib.readthedocs.io/en/latest/oauth1/server.html#try-your-provider-with-a-quick-cli-client
+#
+###############################################################################
+
+"""
+import logging
+import sys
+log = logging.getLogger('flask_oauthlib')
+log.addHandler(logging.StreamHandler(sys.stdout))
+log.setLevel(logging.DEBUG)
+"""
+
+app.config['OAUTH1_PROVIDER_ENFORCE_SSL'] = False
+app.config['OAUTH1_PROVIDER_KEY_LENGTH'] = (3, 127)
+
+oauth = OAuth1Provider(app)
+
+class Client:
+    def __init__(self):
+        self.client_key = "5A043yRSEugj4DJ5TljuapfnrflWDte8jTOcWLlT"
+        self.client_secret = "aB3jKq1TRsCOUrfOIZ6oQMEDmv2ptV76PA54NGLL"
+        self.redirect_uris = ["http://localhost:5000/oauth-redirected",
+                              # The [OAuthLib example][0] needs this redirect.
+                              #
+                              # [0]: https://oauthlib.readthedocs.io/en/latest/oauth1/server.html#try-your-provider-with-a-quick-cli-client
+                              "http://127.0.0.1/cb"]
+        self.default_redirect_uri = self.redirect_uris[0]
+        self.default_realms = []
+CLIENT = Client()
+
+class RequestToken:
+    known = []
+    def __init__(self, token, request):
+        #print("Creating request token.")
+        self.known.append(self)
+        self.client = CLIENT
+        self.token = token['oauth_token']
+        self.secret = token['oauth_token_secret']
+        self.redirect_uri = request.redirect_uri
+        self.realms = request.realms if getattr(oauth, "realms", None) else []
+
+    @property
+    def client_key(self):
+        return self.client.client_key
+
+class Nonce:
+    known = []
+    def __init__(self, timestamp, nonce, request_token, access_token):
+        self.known.append(self)
+        self.client_key = CLIENT.client_key
+        self.timestamp = timestamp
+        self.nonce = nonce
+        self.request_token = request_token
+        self.access_token = access_token
+
+class AccessToken:
+    known = []
+    def __init__(self, token, request):
+        self.known.append(self)
+        self.client = request.client
+        self.user = request.user
+        self.token = token['oauth_token']
+        self.secret = token['oauth_token_secret']
+        self.realms = token['oauth_authorized_realms'].split()
+
+    @property
+    def client_key(self):
+        return self.client.client_key
+
+@oauth.clientgetter
+def load_client(client_key):
+    return CLIENT
+
+@oauth.grantgetter
+def load_request_token(token):
+    rts = [rt for rt in RequestToken.known if rt.token == token]
+    return (rts[0] if rts else None)
+
+@oauth.grantsetter
+def save_request_token(token, request):
+    return RequestToken(token, request)
+
+@oauth.verifiergetter
+def load_verifier(verifier, token):
+    #print("Verifiers on known rts: {}".format(
+    #    [rt.verifier for rt in RequestToken.known]))
+    #print("Verifier: {}".format(verifier))
+    #print("Tokens on known rts: {}".format(
+    #    [rt.token for rt in RequestToken.known]))
+    #print("Token: {}".format(token))
+    rt = [rt for rt in RequestToken.known
+             if rt.token == token
+             if rt.verifier == verifier]
+    #print("rt: {}".format(rt))
+    return (rt[0] if rt else None)
+
+@oauth.verifiersetter
+def save_verifier(token, verifier, *args, **kwargs):
+    rt = [rt for rt in RequestToken.known if rt.token == token][0]
+    rt.verifier = verifier['oauth_verifier']
+    rt.user = fl.current_user
+    return rt
+
+@oauth.tokengetter
+def load_access_token(client_key, token, *args, **kwargs):
+    return [at for at in AccessToken.known
+               if at.client_key == client_key and at.token == token][0]
+
+@oauth.tokensetter
+def save_access_token(token, request):
+    return AccessToken(token, request)
+
+@oauth.noncegetter
+def load_nonce(client_key, timestamp, nonce, request_token, access_token):
+    """
+    print('\n  '.join([
+        "In `load_nonce`. Arguments:",
+        "client_key: {}", "timestamp: {}", "nonce: {}", "request_token: {}",
+        "access_token: {}"]).format(
+            client_key, timestamp, nonce, request_token, access_token))
+    print(Nonce.known)
+    """
+    filtered = [n for n in Nonce.known if (n.client_key == client_key and
+                                           n.timestamp == timestamp and
+                                           n.nonce == nonce and
+                                           n.request_token == request_token and
+                                           n.access_token == access_token)]
+    return (filtered[0] if filtered else None)
+
+@oauth.noncesetter
+def save_nonce(client_key, timestamp, nonce, request_token, access_token):
+    #print("Setting nonce.")
+    return Nonce(timestamp, nonce, request_token, access_token)
+
+@app.route('/iD/connection/oauth/request_token', methods=['GET', 'POST'])
+@cors.cross_origin()
+@oauth.request_token_handler
+def oauth_request_token():
+    #print("request_token_handler: {}".format(flask.request.method))
+    return {}
+
+"""
+@app.before_request
+def pre_request_debug_hook():
+    print("\n  ".join([
+        "Got request: ",
+        "Method: {0.method}",
+        "Path  : {0.path}",
+        "Rule  : {0.url_rule}",
+        "Data  : {0.data}",
+        "T(D)  : {1}",
+        "Endpt.: {0.endpoint}"]).format(flask.request, type(flask.request.data)))
+"""
+
+class Authorize(wtf.Form):
+     confirm = wtf.BooleanField('Authorize')
+
+@app.route('/iD/connection/oauth/authorize', methods=['GET', 'POST'])
+@fl.login_required
+@oauth.authorize_handler
+def authorize(*args, **kwargs):
+    if flask.request.method == 'GET':
+        form = Authorize()
+        return """
+            <p> "{}" : "{}" </p>
+            <form action="" method="post">
+                <input type=submit value="Confirm authorization">
+                {}
+            </form>
+            """.format(CLIENT.client_key, kwargs.get('resource_owner_key'),
+                       form.confirm)
+    return (flask.request.form.get('confirm', 'no') == 'y')
+
+@app.route('/iD/connection/oauth/access_token', methods=['GET', 'POST'])
+@oauth.access_token_handler
+def access_token():
+    return {}
+
+@app.route('/oauth-protected')
+@oauth.require_oauth()
+def oauth_protected_test_endpoint():
+    return "Successfully accessed an oauth protected resource as {}.".format(
+            flask.request.oauth.user)
+
+##### OAuth1 provider code ends here ##########################################
+
+##### Persisting changes from iD ##############################################
+#
+# Persistence code to store changes done in iD on the server.
+#
+# This should probably go into it's own module but I'm putting it all here for
+# now, as some parts need to stay in this module while some parts can be
+# factored out later. The 'factoring out' part can be considered an open TODO.
+#
+###############################################################################
+
+
+##### Persistence code ends here ##############################################
 
 @app.route('/series/<path:ids>')
 def series(ids):
