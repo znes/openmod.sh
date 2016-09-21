@@ -90,7 +90,8 @@ Tag_Associations = DB.Table('tag_associations',
 Element_Timeseries_Associations = DB.Table(
         'element_timeseries_associations',
         DB.Column('timeseries_id', DB.Integer, DB.ForeignKey('timeseries.id')),
-        DB.Column('element_id', DB.Integer, DB.ForeignKey('node.id')))
+        DB.Column('element_id', DB.Integer,
+            DB.ForeignKey('element.element_id')))
 
 # No association tables anymore. These are regular models.
 
@@ -145,8 +146,13 @@ class Element(Tagged):
     changeset = DB.relationship('Changeset', uselist=False,
             foreign_keys=[changeset_id])
     referencing_relations = association_proxy('relation_associations',
-                                              'relation',
-                                              creator=lambda r: Element_Relation_Associations(relation=r))
+            'relation',
+            creator=lambda r: Element_Relation_Associations(relation=r))
+    timeseries_objects = DB.relationship('Timeseries',
+            secondary=Element_Timeseries_Associations,
+            collection_class=amc('key'),
+            cascade="all")
+    timeseries = association_proxy('timeseries_objects', 'values')
 
     def __init__(self, **kwargs):
         self.version = 1
@@ -161,6 +167,28 @@ class Element(Tagged):
         # This shoule be cleaned up when `upload_changeset` gets refactored.
         for k in kwargs:
             setattr(self, k, kwargs[k])
+
+    @DB.validates('timeseries_objects', include_removes=True)
+    def timeseries_tag_hook(self, key, tso, is_remove):
+        """ Hackily abuse a validator to manage timeseries tags.
+
+        This validator doesn't really do validation, but is used as a hook to
+        intercept addition and removal of `timeseries_objects` on `Element`s
+        and modify the `Element`'s timeseries tag accordingly.
+        """
+
+        # tso: timeseries object
+        ttags = (self.tags['timeseries'].split(", ")
+                 if 'timeseries' in self.tags else [])
+        if is_remove:
+            self.tags['timeseries'] = ", ".join(t for t in ttags
+                                                  if t != tso.key)
+        else:
+            ttags.append(tso.key)
+            self.tags['timeseries'] = ", ".join(t for t in ttags)
+        if self.tags['timeseries'] == '':
+            del self.tags['timeseries']
+        return tso
 
 class Node(Element):
     __mapper_args__ = {'polymorphic_identity': 'node'}
@@ -215,5 +243,9 @@ class Changeset(Tagged):
 class Timeseries(DB.Model):
     id = DB.Column(DB.Integer, primary_key=True)
     key = DB.Column(DB.String(255), nullable=False)
-    value = DB.Column(ARRAY(DB.Float, dimensions=1), nullable=False)
+    values = DB.Column(ARRAY(DB.Float, dimensions=1), nullable=False)
+
+    def __init__(self, key, values):
+        self.key = key
+        self.values = values
 
