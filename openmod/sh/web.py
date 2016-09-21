@@ -1,6 +1,8 @@
 import itertools
 import json
 
+# TODO: Change this to `import flask` so that it is easier to see what flast
+#       utilities are accessed.
 from flask import Flask, make_response, render_template, request
 import flask_cors as cors # TODO: Check whether the `@cors.cross_origin()`
                           #       decorators are still necessary once 'iD' is
@@ -28,6 +30,8 @@ session = Session()
 @app.route('/')
 def root():
     return render_template('index.html')
+
+# TODO: Factor adding the 'Content-Type' header out into a separate function.
 
 @app.route('/osm/api/capabilities')
 @app.route('/osm/api/0.6/capabilities')
