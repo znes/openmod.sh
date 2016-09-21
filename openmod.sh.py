@@ -31,10 +31,7 @@ session = Session()
 
 @app.route('/')
 def root():
-    plants = session.query(Plant).count()
-    series = session.query(Timeseries).count()
-    grids = session.query(Grid).count()
-    return render_template('index.html', plants=plants, series=series, grids=grids)
+    return render_template('index.html')
 
 
 @app.route('/series/<path:ids>')
