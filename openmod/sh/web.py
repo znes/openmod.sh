@@ -178,6 +178,7 @@ def capabilities():
 @app.route('/iD/api/0.6/map')
 @app.route('/osm/api/0.6/map')
 @cors.cross_origin()
+@fl.login_required
 def osm_map():
     left, bottom, right, top = map(float, flask.request.args['bbox'].split(","))
     minx, maxx = sorted([top, bottom])
@@ -185,6 +186,14 @@ def osm_map():
     # Get all nodes in the given bounding box.
     nodes = osm.Node.query.filter(minx <= osm.Node.lat, miny <= osm.Node.lon,
                                   maxx >= osm.Node.lat, maxy >= osm.Node.lon)
+    # Limit nodes to the one's contained in the selected scenario.
+    scenario = flask.session.get("scenario")
+    if (scenario):
+        nodes = [ n for n in nodes
+                    for reference in n.referencing_relations
+                    for kvs in [ (t.key, t.value)
+                                 for t in reference.relation.tags
+                                 if (t.key == "name" and t.value == scenario)]]
     # Get all ways referencing the above nodes.
     ways = set(way for node in nodes for way in node.ways)
     # Get all relations referencing the above ways.
