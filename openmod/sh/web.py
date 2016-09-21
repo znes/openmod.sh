@@ -12,6 +12,7 @@ import flask_cors as cors # TODO: Check whether the `@cors.cross_origin()`
 import flask_login as fl
 import flask_wtf as wtfl
 import wtforms as wtf
+import werkzeug.security as ws
 
 
 
@@ -97,12 +98,15 @@ class User:
                         name))
         self.known[name] = self
         self.name = name
-        self.pw = pw
+        self.pw_hash = ws.generate_password_hash(pw)
         self.is_authenticated = True
         self.is_active = True
         self.is_anonymous = False
 
     def get_id(self): return self.name
+
+    def check_pw(self, pw):
+        return ws.check_password_hash(self.pw_hash, pw)
 
 login_manager = fl.LoginManager()
 login_manager.login_view = 'login'
@@ -124,7 +128,7 @@ def login():
     if form.validate_on_submit():
         user = load_user(form.username.data)
         if user is not None:
-            if user.pw == form.password.data:
+            if user.check_pw(form.password.data):
                 fl.login_user(user)
                 #print("Current user: {}".format(fl.current_user))
             else:
