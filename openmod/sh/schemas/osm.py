@@ -8,7 +8,8 @@ from sqlalchemy.orm.collections import attribute_mapped_collection as amc
 import werkzeug.security as ws
 from oemof.db import config as cfg
 
-metadata = MetaData(schema=cfg.get('openMod.sh R/W', 'schema'))
+configsection = 'openMod.sh R/W'
+metadata = MetaData(schema=cfg.get(configsection, 'schema'))
 DB = SQLAlchemy(metadata=metadata)
 
 class User(DB.Model):
@@ -60,8 +61,8 @@ class User(DB.Model):
 #   * http://docs.sqlalchemy.org/en/latest/orm/extensions/orderinglist.html#module-sqlalchemy.ext.orderinglist
 #
 # for pointers on how this works.
-class nodes_and_ways(DB.Model):
-        __tablename__ = 'nodes_and_ways'
+class Node_Way_Associations(DB.Model):
+        __tablename__ = 'node_way_associations'
         id = DB.Column(DB.Integer, primary_key=True)
         node_id = DB.Column(DB.Integer, DB.ForeignKey('node.id'))
         way_id = DB.Column(DB.Integer, DB.ForeignKey('way.id'))
@@ -69,68 +70,27 @@ class nodes_and_ways(DB.Model):
         node = DB.relationship('Node', backref='nodes_way')
         way = DB.relationship('Way')
 
-class rs_and_nodes(DB.Model):
-        __tablename__ = 'relations_and_nodes'
+class Element_Relation_Associations(DB.Model):
+        __tablename__ = 'element_relation_associations'
         id = DB.Column(DB.Integer, primary_key=True)
         role = DB.Column(DB.String(255))
         relation_id = DB.Column(DB.Integer, DB.ForeignKey('relation.id'))
-        node_id = DB.Column(DB.Integer, DB.ForeignKey('node.id'))
-        node = DB.relationship('Node', backref='referencing_relations')
-        relation = DB.relationship('Relation', backref='referenced_nodes')
+        element_id = DB.Column(DB.Integer, DB.ForeignKey('element.element_id'))
+        element = DB.relationship('Element', backref='relation_associations',
+                foreign_keys=[element_id])
+        relation = DB.relationship('Relation', backref='element_associations',
+                foreign_keys=[relation_id])
 
-class rs_and_ways(DB.Model):
-        __tablename__ = 'relations_and_ways'
-        id = DB.Column(DB.Integer, primary_key=True)
-        role = DB.Column(DB.String(255))
-        relation_id = DB.Column(DB.Integer, DB.ForeignKey('relation.id'))
-        way_id = DB.Column(DB.Integer, DB.ForeignKey('way.id'))
-        way = DB.relationship('Way', backref='referencing_relations')
-        relation = DB.relationship('Relation', backref='referenced_ways')
-
-class rs_and_rs(DB.Model):
-        __tablename__ = 'relations_and_relations'
-        id = DB.Column(DB.Integer, primary_key=True)
-        role = DB.Column(DB.String(255))
-        referencing_id = DB.Column(DB.Integer, DB.ForeignKey('relation.id'),
-            primary_key=True)
-        referenced_id = DB.Column(DB.Integer, DB.ForeignKey('relation.id'),
-            primary_key=True)
-        referenced = DB.relationship('Relation',
-                primaryjoin=("rs_and_rs.referenced_id == Relation.id"),
-                backref='referencing')
-        referencing = DB.relationship('Relation',
-                primaryjoin=("rs_and_rs.referencing_id == Relation.id"),
-                backref='referenced')
-
-tags_and_nodes = DB.Table('tags_and_nodes',
+Tag_Associations = DB.Table('tag_associations',
         DB.Column('tag_id', DB.Integer, DB.ForeignKey('tag.id')),
-        DB.Column('node_id', DB.Integer, DB.ForeignKey('node.id')))
-
-tags_and_ways = DB.Table('tags_and_ways',
-        DB.Column('tag_id', DB.Integer, DB.ForeignKey('tag.id')),
-        DB.Column('way_id', DB.Integer, DB.ForeignKey('way.id')))
-
-tags_and_changesets = DB.Table('tags_and_changesets',
-        DB.Column('tag_id', DB.Integer, DB.ForeignKey('tag.id')),
-        DB.Column('changeset_id', DB.Integer, DB.ForeignKey('changeset.id')))
-
-tags_and_rs = DB.Table('tags_and_relations',
-        DB.Column('tag_id', DB.Integer, DB.ForeignKey('tag.id')),
-        DB.Column('relation_id', DB.Integer, DB.ForeignKey('relation.id')))
+        DB.Column('tagged_id', DB.Integer, DB.ForeignKey('tagged.tagged_id')))
 
 # Define timeseries association tables
 
-ts_and_nodes = DB.Table('timeseries_and_nodes',
+Element_Timeseries_Associations = DB.Table(
+        'element_timeseries_associations',
         DB.Column('timeseries_id', DB.Integer, DB.ForeignKey('timeseries.id')),
-        DB.Column('node_id', DB.Integer, DB.ForeignKey('node.id')))
-
-ts_and_ways = DB.Table('timeseries_and_ways',
-        DB.Column('timeseries_id', DB.Integer, DB.ForeignKey('timeseries.id')),
-        DB.Column('way_id', DB.Integer, DB.ForeignKey('way.id')))
-
-ts_and_rs = DB.Table('timeseries_and_relations',
-        DB.Column('timeseries_id', DB.Integer, DB.ForeignKey('timeseries.id')),
-        DB.Column('relation_id', DB.Integer, DB.ForeignKey('relation.id')))
+        DB.Column('element_id', DB.Integer, DB.ForeignKey('node.id')))
 
 # No association tables anymore. These are regular models.
 
@@ -143,75 +103,112 @@ class Tag(DB.Model):
         self.key = key
         self.value = value
 
-class Node(DB.Model):
-    id = DB.Column(DB.Integer, primary_key=True)
+class Tagged(DB.Model):
+    """ Base model/table for all objects which can have tags.
+
+    Nearly everything in OSM can have associated tags[0]. Most importantly,
+    elements, i.e. nodes, ways and/or relations, have nothing in common with
+    changesets, except having tags. Therefore being tagged is the only
+    commonality which can be factored out into a class that is a base for
+    elements as well as changesets.
+
+    [0]: Except tags itself. Duh.
+    """
+    tagged_id = DB.Column(DB.Integer, primary_key=True)
+    typename = DB.Column(DB.String(79))
+    tag_objects = DB.relationship(Tag, secondary=Tag_Associations,
+                                       collection_class=amc('key'))
+    tags = association_proxy('tag_objects', 'value')
+    __mapper_args__ = {'polymorphic_identity': 'tagged',
+                       'polymorphic_on': typename}
+
+
+class Element(Tagged):
+    """ Common base class of OSM elements.
+
+    This class collects attributes shared by all OSM elements, i.e. nodes, ways
+    and/or relations. It also acts as a target for polymorphic relationships to
+    more than one type of OSM element.
+    """
+
+    __mapper_args__ = {'polymorphic_identity': 'element'}
+
+    element_id = DB.Column(DB.Integer, primary_key=True)
+    tagged_id = DB.Column(DB.Integer, DB.ForeignKey(Tagged.tagged_id))
     myid = DB.Column(DB.String(255))
-    lat = DB.Column(DB.Float, nullable=False)
-    lon = DB.Column(DB.Float, nullable=False)
     version = DB.Column(DB.Integer, nullable=False)
     timestamp = DB.Column(DB.DateTime, nullable=False)
     visible = DB.Column(DB.Boolean, nullable=False)
-    tag_objects = DB.relationship(Tag, secondary=tags_and_nodes,
-                                       collection_class=amc('key'))
-    tags = association_proxy('tag_objects', 'value')
     uid = DB.Column(DB.Integer, DB.ForeignKey(User.id))
     user = DB.relationship(User, uselist=False)
-    ways = association_proxy('nodes_way', 'way')
-    relations = association_proxy('referencing_relations', 'relation')
-    changeset = DB.relationship('Changeset', uselist=False)
     changeset_id = DB.Column(DB.Integer, DB.ForeignKey('changeset.id'))
+    changeset = DB.relationship('Changeset', uselist=False,
+            foreign_keys=[changeset_id])
+    referencing_relations = association_proxy('relation_associations',
+                                              'relation')
 
-    def __init__(self, lat, lon, user_id, changeset_id, **kwargs):
-        self.lat = lat
-        self.lon = lon
+    def __init__(self, **kwargs):
         self.version = 1
         self.timestamp = datetime.now(tz.utc)
         self.visible = True
-        self.uid = user_id
-        self.changeset_id = changeset_id
+        # Can't do this:
+        #
+        #   super().__init__(**kwargs)
+        #
+        # since we put non-mapped attributes on created elements during
+        # `upload_changeset`.
+        # This shoule be cleaned up when `upload_changeset` gets refactored.
         for k in kwargs:
             setattr(self, k, kwargs[k])
 
-class Way(DB.Model):
+class Node(Element):
+    __mapper_args__ = {'polymorphic_identity': 'node'}
     id = DB.Column(DB.Integer, primary_key=True)
-    myid = DB.Column(DB.String(255))
-    version = DB.Column(DB.String)
-    tag_objects = DB.relationship(Tag, secondary=tags_and_ways,
-                                       collection_class=amc('key'))
-    tags = association_proxy('tag_objects', 'value')
-    way_nodes = DB.relationship('nodes_and_ways',
-                                order_by='nodes_and_ways.position',
+    element_id = DB.Column(DB.Integer, DB.ForeignKey(Element.element_id))
+
+    lat = DB.Column(DB.Float, nullable=False)
+    lon = DB.Column(DB.Float, nullable=False)
+
+    ways = association_proxy('nodes_way', 'way')
+
+    def __init__(self, lat, lon, user_id, changeset_id, **kwargs):
+        super().__init__(uid=user_id, changeset_id=changeset_id, **kwargs)
+        self.lat = lat
+        self.lon = lon
+
+class Way(Element):
+    __mapper_args__ = {'polymorphic_identity': 'way'}
+    id = DB.Column(DB.Integer, primary_key=True)
+    element_id = DB.Column(DB.Integer, DB.ForeignKey(Element.element_id))
+    way_nodes = DB.relationship(Node_Way_Associations,
+                                order_by=Node_Way_Associations.position,
                                 collection_class=ordering_list('position'))
     nodes = association_proxy('way_nodes', 'node',
-                              creator=lambda n: nodes_and_ways(node=n))
-    relations = association_proxy('referencing_relations', 'relation')
-    uid = DB.Column(DB.Integer, DB.ForeignKey(User.id))
-    user = DB.relationship(User, uselist=False)
-    changeset = DB.relationship('Changeset', uselist=False)
-    changeset_id = DB.Column(DB.Integer, DB.ForeignKey('changeset.id'))
+                              creator=lambda n: Nodes_Way_Associations(node=n))
 
-class Relation(DB.Model):
+class Relation(Element):
+    __mapper_args__ = {'polymorphic_identity': 'relation'}
     id = DB.Column(DB.Integer, primary_key=True)
-    myid = DB.Column(DB.String(255))
-    version = DB.Column(DB.String)
-    timestamp = DB.Column(DB.DateTime, nullable=False)
-    visible = DB.Column(DB.Boolean, nullable=False)
-    tag_objects = DB.relationship(Tag, secondary=tags_and_rs,
-                                       collection_class=amc('key'))
-    tags = association_proxy('tag_objects', 'value')
-    uid = DB.Column(DB.Integer, DB.ForeignKey(User.id))
-    user = DB.relationship(User, uselist=False)
-    superiors = association_proxy('referencing', 'relation')
-    changeset = DB.relationship('Changeset', uselist=False)
-    changeset_id = DB.Column(DB.Integer, DB.ForeignKey('changeset.id'))
-    nodes = association_proxy('referenced_nodes', 'node',
-        creator=lambda n: rs_and_nodes(node=n))
+    element_id = DB.Column(DB.Integer, DB.ForeignKey(Element.element_id))
+    elements = association_proxy('element_associations', 'element')
 
-class Changeset(DB.Model):
+    @property
+    def referenced_nodes(self):
+        return (x for x in self.element_associations
+                  if x.element.typename == 'node')
+    @property
+    def referenced_ways(self):
+        return (x for x in self.element_associations
+                  if x.element.typename == 'way')
+    @property
+    def referenced(self):
+        return (x for x in self.element_associations
+                  if x.element.typename == 'relation')
+
+class Changeset(Tagged):
+    __mapper_args__ = {'polymorphic_identity': 'changeset'}
     id = DB.Column(DB.Integer, primary_key=True)
-    tag_objects = DB.relationship(Tag, secondary=tags_and_changesets,
-                                       collection_class=amc('key'))
-    tags = association_proxy('tag_objects', 'value')
+    tagged_id = DB.Column(DB.Integer, DB.ForeignKey(Tagged.tagged_id))
 
 class Timeseries(DB.Model):
     id = DB.Column(DB.Integer, primary_key=True)
