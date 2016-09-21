@@ -88,8 +88,8 @@ login_manager.login_view = 'login'
 login_manager.init_app(app)
 @login_manager.user_loader
 def load_user(user_id):
-    user = osm.User.query.get(user_id)
-    return (user_id and user)
+    user = osm.User.query.get(user_id) if user_id else None
+    return user
 
 class Login(RedirectForm):
     username = wtf.StringField('Username', [wtf.validators.Length(min=3,
