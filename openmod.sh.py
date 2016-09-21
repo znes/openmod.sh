@@ -43,8 +43,8 @@ class Timeseries(Base):
 
 @app.route('/')
 def root():
-    plants = session.query(Plant).all()
-    series = session.query(Timeseries).all()
+    plants = session.query(Plant).count()
+    series = session.query(Timeseries).count()
     return render_template('index.html', plants=plants, series=series)
 
 @app.route('/series')
