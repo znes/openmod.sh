@@ -17,7 +17,7 @@ def from_db(debug=False):
 
     es = ES()
 
-    nrg = "Nrg"
+    nrg = "Energie"
     buses = {t: Bus(uid=t, type=t) for t in ["Gas", "Biomasse", nrg]}
     q = session.query(schema.Plant)
     n = session.query(schema.Plant).count()
