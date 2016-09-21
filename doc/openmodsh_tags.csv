@@ -1,0 +1,34 @@
+GUI-name,Tag key,Tag value,fields,category,timeseries,„geometry“,Python,type
+,,,,,,,,
+Demand,type,demand,energy_amount,"electricity, heat",sink,point,Sink,Oemof class
+,demand,"electricity, heat",,,,,,
+,,,,,,,,
+Volatile Generator,type,source,installed_power,"electricity, heat",source,point,Source,Oemof class
+,source,"wind, pv, solar",dispatchable,,,,,
+,,,,,,,,
+Flexible Generator,type,transformer,installed_power,"electricity, heat",transformer,point,LinearTransformer,Oemof class
+,transformer,"electricity, heat, chp",efficiency,,,,,
+,,,dispatchable,,,,,
+,,,costs,,,,,
+,,,,,,,,
+Storage,type,storage,installed_power,"electricity, heat",%,point,Storage,Oemof class
+,,,installed_energy,,,,,
+,,,,,,,,
+Transmission,type,transmission,installed_power,"electricity, heat",%,Relation + way,LinearTransformer,Oemof class
+,,,efficiency,,,,,
+,,,,,,,,
+Hub,type,bus,,"electricity, heat",%,Relation + closed way,Bus,Oemof class
+,,,,,,,,
+Scenario,type,scenario,,,,Relation,,
+,,,,,,,,
+Fields,,,,,,,,
+energy_amount,,,,,,,,
+installed_power,,,,,,,,
+installed_energy,,,,,,,,
+efficiency,"thernal, elctric",,,,,,conversion_factor,dict
+dispatchable,,,,,,,,
+costs,,,,,,,,
+,,,,,,,,
+Categories,,,,,,,,
+electricity,"demand, wind, pv…",,,,,,,
+heat,"demand, solar…",,,,,,,

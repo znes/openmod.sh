@@ -8,3 +8,8 @@ osm.DB.session.commit()
 
 dev.DB.create_all()
 dev.DB.session.commit()
+
+username = 'admin'
+user = osm.User(username, username)
+osm.DB.session.commit()
+

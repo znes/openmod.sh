@@ -188,7 +188,7 @@ class Way(Element):
                                 order_by=Node_Way_Associations.position,
                                 collection_class=ordering_list('position'))
     nodes = association_proxy('way_nodes', 'node',
-                              creator=lambda n: Nodes_Way_Associations(node=n))
+                              creator=lambda n: Node_Way_Associations(node=n))
 
 class Relation(Element):
     __mapper_args__ = {'polymorphic_identity': 'relation'}
