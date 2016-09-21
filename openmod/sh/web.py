@@ -293,6 +293,12 @@ def authorize(*args, **kwargs):
 def access_token():
     return {}
 
+@app.route('/oauth-protected')
+@oauth.require_oauth()
+def oauth_protected_test_endpoint():
+    return "Successfully accessed an oauth protected resource as {}.".format(
+            flask.request.oauth.user)
+
 ##### Persistence code ends here ##############################################
 
 @app.route('/series/<path:ids>')
