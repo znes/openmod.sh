@@ -7,6 +7,7 @@ from flask import Flask, make_response, render_template, request
 import flask_cors as cors # TODO: Check whether the `@cors.cross_origin()`
                           #       decorators are still necessary once 'iD' is
                           #       served from within this app.
+import wtforms as wtf
 from geoalchemy2.functions import ST_AsGeoJSON as geojson
 from sqlalchemy.orm import sessionmaker
 
@@ -26,6 +27,27 @@ engine = db.engine("openMod.sh")
 Session = sessionmaker(bind=engine)
 session = Session()
 
+##### User Management #########################################################
+#
+# User management code. This should probably go into it's own module but I'm
+# putting it all here for now, as some parts need to stay in this module while
+# some parts can be factored out later.
+# The 'factoring out' part can be considered an open TODO.
+#
+##############################################################################
+
+class Login(wtf.Form):
+    username = wtf.StringField('Username', [wtf.validators.Length(min=3,
+                                                                  max=79)])
+    password = wtf.StringField('Password', [wtf.validators.Length(min=3,
+                                                                  max=79)])
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    form = Login(request.form)
+    return render_template('login.html', form=form)
+
+##### User Management stuff ends here.
 
 @app.route('/')
 def root():
