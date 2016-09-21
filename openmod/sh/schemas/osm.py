@@ -26,9 +26,7 @@ class User(DB.Model):
     def __init__(self, name, pw):
         self.name = name
         self.password_hash = ws.generate_password_hash(pw)
-        self.is_authenticated = True
         self.is_active = True
-        self.is_anonymous = False
 
     @property
     def is_authenticated(self):
