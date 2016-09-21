@@ -1,8 +1,11 @@
 from datetime import datetime, timezone as tz
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import MetaData
 import werkzeug.security as ws
+from oemof.db import config as cfg
 
-DB = SQLAlchemy()
+metadata = MetaData(schema=cfg.get('openMod.sh R/W', 'schema'))
+DB = SQLAlchemy(metadata=metadata)
 
 class User(DB.Model):
     """ Required by flask-login.

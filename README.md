@@ -27,7 +27,8 @@ Just one hint, it's:
 information on how to configure database access. Note that `openMod.sh`
 expects its database configuration to be in a `config.ini` section named
 `openMod.sh R/W`. Be careful. As the 'R/W' suggests, the iD editor expects
-read and write access.
+read and write access. Additionaly to the standard `oemof.db` options, `schema`
+has to be specified as well, e.g. `public`.
 
 ## Installation and Execution
 
