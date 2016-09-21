@@ -81,7 +81,7 @@ class Element_Relation_Associations(DB.Model):
         relation = DB.relationship('Relation', backref='element_associations',
                 foreign_keys=[relation_id])
 
-tag_associations = DB.Table('tag_associations',
+Tag_Associations = DB.Table('tag_associations',
         DB.Column('tag_id', DB.Integer, DB.ForeignKey('tag.id')),
         DB.Column('tagged_id', DB.Integer, DB.ForeignKey('tagged.tagged_id')))
 
@@ -123,7 +123,7 @@ class Tagged(DB.Model):
     """
     tagged_id = DB.Column(DB.Integer, primary_key=True)
     typename = DB.Column(DB.String(79))
-    tag_objects = DB.relationship(Tag, secondary=tag_associations,
+    tag_objects = DB.relationship(Tag, secondary=Tag_Associations,
                                        collection_class=amc('key'))
     tags = association_proxy('tag_objects', 'value')
     __mapper_args__ = {'polymorphic_identity': 'tagged',
