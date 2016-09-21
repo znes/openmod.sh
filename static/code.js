@@ -61,7 +61,7 @@ $(document).ready(function() {
              var layer = new ol.layer.Vector(
                  {source: new ol.source.Vector({features: features}),
                   style: new ol.style.Style({image: new ol.style.Icon({
-                    src: "/static/dot.svg",
+                    src: "/static/" + type + ".svg",
                     anchorXUnits: 'pixel',
                     anchorYUnits: 'pixel',
                     scale: 1
