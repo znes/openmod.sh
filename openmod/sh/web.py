@@ -437,6 +437,25 @@ def upload_changeset(cid):
 def close_changeset(id):
     return ""
 
+@app.route('/osm/api/0.6/nodes')
+@cors.cross_origin()
+def get_node():
+    # TODO: Handle multiple, comma separated node ids
+    node = osm.Node.query.get(int(flask.request.args['nodes']))
+    node.attributes = {
+            ("changeset" if k == "changeset_id" else k):
+            (v.name if k == "user" else (
+             v.replace(microsecond=0).isoformat() if k == "timestamp" else (
+             str(v).lower() if k == "visible" else
+             v)))
+            for k in ["lat", "lon", "version", "timestamp", "visible", "uid",
+                      "user", "changeset_id", "id"]
+            for v in (getattr(node, k),)}
+    template = flask.render_template('node.xml', node=node)
+    response = flask.make_response(template)
+    response.headers['Content-Type'] = 'text/xml'
+    return response
+
 ##### Persistence code ends here ##############################################
 
 
