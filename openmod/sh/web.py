@@ -457,6 +457,9 @@ def upload_changeset(cid):
         db_node.tags = db_node.tags + [osm.Tag(key=k, value=v)
                 for tag in xml_node.findall('tag')
                 for k, v in ((tag.attrib['k'], tag.attrib['v']),)]
+    for element in modified_nodes:
+        element.tag = "node"
+        created_nodes.append(element)
     osm.DB.session.commit()
     temporary_id2node = {n.old_id: n for n in created_nodes}
     created_ways = itertools.chain(*[c.findall('way') for c in creations])
