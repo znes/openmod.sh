@@ -2,13 +2,17 @@ import itertools
 import json
 
 from flask import Flask, render_template
-from geoalchemy2 import Geometry
-from sqlalchemy.ext.declarative import declarative_base
+from geoalchemy2.functions import ST_AsGeoJSON as geojson
 from sqlalchemy.orm import sessionmaker
 
 import sqlalchemy as db
 
+from schemas import dev, test
+
 app = Flask(__name__)
+
+Plant = test.Plant
+Timeseries = test.Timeseries
 
 with open("uphpd") as f:
     config = {k: v for (k, v) in
@@ -21,25 +25,6 @@ engine = db.create_engine(
 
 Session = sessionmaker(bind=engine)
 session = Session()
-
-Base = declarative_base()
-
-
-class Plant(Base):
-    __tablename__ = "plants"
-    __table_args__ = {"schema": "test"}
-    id = db.Column("id", db.String(), primary_key=True)
-    type = db.Column("type", db.String())
-    geometry = db.Column("geom", Geometry("POINT"))
-    capacity = db.Column("capacity", db.Integer())
-
-
-class Timeseries(Base):
-    __tablename__ = "timeseries"
-    __table_args__ = {"schema": "test"}
-    plant = db.Column("plantid", db.String(), primary_key=True)
-    step = db.Column("timestep", db.Integer, primary_key=True)
-    value = db.Column("value", db.Integer())
 
 
 @app.route('/')
