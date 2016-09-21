@@ -41,6 +41,12 @@ $(document).ready(function() {
                     anchorYUnits: 'pixel',
                     scale: 1
                   })})});
+             // I wasn't able to get ol.interaction.Select to work the way it
+             // should so I settlet for this.
+             map.on("click", function(e) {
+               map.forEachFeatureAtPixel(e.pixel, function (feature, layer) {
+                 console.log("Clicked: " + feature);
+               })});
              map.addLayer(layer, projections);
            },
            dataType: "json"});
