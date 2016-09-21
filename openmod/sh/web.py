@@ -216,39 +216,52 @@ class AccessToken:
 
 @oauth.clientgetter
 def load_client(client_key):
-    return object()
+    return CLIENT
 
 @oauth.grantgetter
 def load_request_token(token):
-    return object()
+    rts = [rt for rt in RequestToken.known if rt.token == token]
+    return (rts[0] if rts else None)
 
 @oauth.grantsetter
 def save_request_token(token, request):
-    return object()
+    return RequestToken(token, request)
 
 @oauth.verifiergetter
 def load_verifier(verifier, token):
-    return object()
+    rt = [rt for rt in RequestToken.known
+             if rt.token == token
+             if rt.verifier == verifier]
+    return (rt[0] if rt else None)
 
 @oauth.verifiersetter
 def save_verifier(token, verifier, *args, **kwargs):
-    return object()
+    rt = [rt for rt in RequestToken.known if rt.token == token][0]
+    rt.verifier = verifier['oauth_verifier']
+    rt.user = fl.current_user
+    return rt
 
 @oauth.tokengetter
 def load_access_token(client_key, token, *args, **kwargs):
-    return object()
+    return [at for at in AccessToken.known
+               if at.client_key == client_key and at.token == token][0]
 
 @oauth.tokensetter
 def save_access_token(token, request):
-    return object()
+    return AccessToken(token, request)
 
 @oauth.noncegetter
 def load_nonce(client_key, timestamp, nonce, request_token, access_token):
-    return object()
+    filtered = [n for n in Nonce.known if (n.client_key == client_key and
+                                           n.timestamp == timestamp and
+                                           n.nonce == nonce and
+                                           n.request_token == request_token and
+                                           n.access_token == access_token)]
+    return (filtered[0] if filtered else None)
 
 @oauth.noncesetter
 def save_nonce(client_key, timestamp, nonce, request_token, access_token):
-    return object()
+    return Nonce(timestamp, nonce, request_token, access_token)
 
 @app.route('/iD/connection/oauth/request_token')#, methods=['GET', 'POST'])
 @oauth.request_token_handler
