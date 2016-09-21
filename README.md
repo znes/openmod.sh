@@ -2,12 +2,13 @@
 
 ## Requirements
 
-The following packages have to be installed in order to use this:
+The following python packages have to be installed in order to use this:
 
   * flask
   * flask-sqlalchemy
   * sqlachemy
-  * geoalchemy
+  * geoalchemy2
+  * psycopg2
 
 Once you installed those, you can just do `python openmod.sh.py`.
 
