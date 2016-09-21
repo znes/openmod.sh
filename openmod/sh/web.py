@@ -5,7 +5,7 @@ from flask import Flask, make_response, render_template
 from geoalchemy2.functions import ST_AsGeoJSON as geojson
 from sqlalchemy.orm import sessionmaker
 
-import sqlalchemy as db
+import oemof.db as db
 
 from .schemas import dev as schema  # test as schema
 
@@ -16,14 +16,7 @@ Plant = schema.Plant
 Timeseries = schema.Timeseries
 Grid = schema.Grid
 
-with open("uphpd") as f:
-    config = {k: v for (k, v) in
-              zip(["user", "password", "host", "port", "database"],
-                  filter(bool, f.read().splitlines()))}
-
-engine = db.create_engine(
-    "postgresql+psycopg2://{user}:{password}@{host}:{port}/{database}".format(
-        **config))
+engine = db.engine()
 
 Session = sessionmaker(bind=engine)
 session = Session()
