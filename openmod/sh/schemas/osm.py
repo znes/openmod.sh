@@ -61,8 +61,8 @@ class User(DB.Model):
 #   * http://docs.sqlalchemy.org/en/latest/orm/extensions/orderinglist.html#module-sqlalchemy.ext.orderinglist
 #
 # for pointers on how this works.
-class nodes_and_ways(DB.Model):
-        __tablename__ = 'nodes_and_ways'
+class Node_Way_Associations(DB.Model):
+        __tablename__ = 'node_way_associations'
         id = DB.Column(DB.Integer, primary_key=True)
         node_id = DB.Column(DB.Integer, DB.ForeignKey('node.id'))
         way_id = DB.Column(DB.Integer, DB.ForeignKey('way.id'))
@@ -208,11 +208,11 @@ class Way(Element):
     __mapper_args__ = {'polymorphic_identity': 'way'}
     id = DB.Column(DB.Integer, primary_key=True)
     element_id = DB.Column(DB.Integer, DB.ForeignKey(Element.element_id))
-    way_nodes = DB.relationship('nodes_and_ways',
-                                order_by='nodes_and_ways.position',
+    way_nodes = DB.relationship('node_way_associations',
+                                order_by='node_way_associations.position',
                                 collection_class=ordering_list('position'))
     nodes = association_proxy('way_nodes', 'node',
-                              creator=lambda n: nodes_and_ways(node=n))
+                              creator=lambda n: Nodes_Way_Associations(node=n))
     relations = association_proxy('referencing_relations', 'relation')
 
 class Relation(Element):
