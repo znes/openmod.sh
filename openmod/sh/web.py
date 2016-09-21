@@ -191,8 +191,8 @@ def osm_map():
     scenario = flask.session.get("scenario")
     if (scenario):
         nodes = [ n for n in nodes
-                    for reference in n.referencing_relations
-                    if reference.relation.tags.get('name') == scenario]
+                    for relation in n.referencing_relations
+                    if relation.tags.get('name') == scenario]
     # Get all ways referencing the above nodes.
     ways = set(way for node in nodes for way in node.ways)
     # Get all relations referencing the above ways.
