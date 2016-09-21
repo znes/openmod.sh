@@ -214,5 +214,5 @@ class Changeset(Tagged):
 class Timeseries(DB.Model):
     id = DB.Column(DB.Integer, primary_key=True)
     key = DB.Column(DB.String(255), nullable=False)
-    value = DB.Column(ARRAY(DB.Float, dimensions=1), nullable=False)
+    values = DB.Column(ARRAY(DB.Float, dimensions=1), nullable=False)
 
