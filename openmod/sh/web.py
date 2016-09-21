@@ -149,13 +149,21 @@ osm_map.nodes = [{"lat": 0.0075, "lon": -0.0025,
                   "tags": {"ele": 0, # stands for 'elevation' (usually)
                            "name": "A Test Node"}}]
 
-##### Persisting changes from iD ##############################################
+##### OAuth1 provider code ####################################################
 #
-# Persistence code to store changes done in iD on the server.
+# In order to talk to the iD editor, we need to implement and OAuth1 provider.
+#
+# The code in this section does so by following the flask-oauthlib
+# [tutorial][0] pretty closely. The only exception is that we don't involve a
+# database since we store everything in memor. One can also always check that
+# it works by going through the [oauthlib CLI trial][1].
 #
 # This should probably go into it's own module but I'm putting it all here for
 # now, as some parts need to stay in this module while some parts can be
 # factored out later. The 'factoring out' part can be considered an open TODO.
+#
+# [0]: http://flask-oauthlib.readthedocs.io/en/latest/oauth1.html#oauth1-server
+# [1]: https://oauthlib.readthedocs.io/en/latest/oauth1/server.html#try-your-provider-with-a-quick-cli-client
 #
 ###############################################################################
 
@@ -338,6 +346,19 @@ def access_token():
 def oauth_protected_test_endpoint():
     return "Successfully accessed an oauth protected resource as {}.".format(
             flask.request.oauth.user)
+
+##### OAuth1 provider code ends here ##########################################
+
+##### Persisting changes from iD ##############################################
+#
+# Persistence code to store changes done in iD on the server.
+#
+# This should probably go into it's own module but I'm putting it all here for
+# now, as some parts need to stay in this module while some parts can be
+# factored out later. The 'factoring out' part can be considered an open TODO.
+#
+###############################################################################
+
 
 ##### Persistence code ends here ##############################################
 
