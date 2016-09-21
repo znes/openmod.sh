@@ -5,11 +5,10 @@ flask-oauthlib
 flask-sqlalchemy
 geoalchemy2
 keyrings.alt
-oemof
 psycopg2
 Flask-WTF
 WTForms
 
 # oemof.db which is not yet a package on PyPI
 -e git+https://github.com/oemof/oemof.db.git@dev#egg=oemof.db
-
+-e git+https://github.com/oemof/oemof.git@v0.1-beta#egg=oemof
