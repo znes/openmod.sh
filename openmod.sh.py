@@ -106,7 +106,9 @@ def grid():
 
 @app.route('/types')
 def types():
-    return str(session.query(Plant.type).distinct().all())
+    return json.dumps([p.type for p in
+                       session.query(Plant.type).distinct().all()])
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", debug=True)
