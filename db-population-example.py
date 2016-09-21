@@ -56,7 +56,7 @@ for i, r in enumerate(result.relations):
                                 if r.tags.get("name")
                                 else []) +
                           ([osm.Tag(key="heat_demand",
-                                    value=heat.loc[r.tags['de:regionalschluessel'][0:5]]['demand'])])))
+                                    value=int(heat.loc[r.tags['de:regionalschluessel'][0:5]]['demand']))])))
     db.add(way)
     print("Committing way #{}".format(i))
     db.commit()
