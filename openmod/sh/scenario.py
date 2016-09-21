@@ -45,6 +45,8 @@ def simulate(**kwargs):
     relations = scenario.referenced # Make sure to traverse these recursively.
 
 
+
+
     #########################################################################
     # OEMOF SOLPH
     #########################################################################
@@ -56,10 +58,6 @@ def simulate(**kwargs):
     ## Create Nodes (added automatically to energysystem)
     bel = Bus(label='bel')
     bgas = Bus(label='bgas', balanced=False)
-    Source(label="pv",
-           outputs={bel: Flow(actual_value=np.random.rand(24),
-                               nominal_value=65.3,
-                               fixed=False)})
     Sink(label="demand_el",
          inputs={bel: Flow(nominal_value=200,
                             actual_value=np.random.rand(24),
@@ -69,6 +67,17 @@ def simulate(**kwargs):
                       outputs={bel: Flow(nominal_value=200,
                                           variable_costs=40)},
                       conversion_factors={bel: 0.50})
+    # sources from ID input """(i,n) in enumerate(nodes)"""
+    for n in nodes:
+        tags = {}
+        for t in n.node.tags:
+            tags.update({t.key: t.value})
+            if tags['type'] == 'source':
+                Source(label=tags['name'],
+                       outputs={bel:Flow(actual_value=np.random.rand(24),
+                                         nominal_value=tags['power'],
+                                         fixed=True)})
+
 #    [Source(
 #        label=n.name,
 #        outputs={bel:Flow(
