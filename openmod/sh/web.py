@@ -88,7 +88,8 @@ login_manager.login_view = 'login'
 login_manager.init_app(app)
 @login_manager.user_loader
 def load_user(user_id):
-    return osm.User.known.get(user_id)
+    user = osm.User.query.get(user_id)
+    return (user_id and user)
 
 class Login(RedirectForm):
     username = wtf.StringField('Username', [wtf.validators.Length(min=3,
@@ -101,7 +102,7 @@ class Login(RedirectForm):
 def login():
     form = Login()
     if form.validate_on_submit():
-        user = load_user(form.username.data)
+        user = load_user(osm.User.name2id(form.username.data))
         if user is not None:
             if user.check_pw(form.password.data):
                 fl.login_user(user)
@@ -111,6 +112,8 @@ def login():
                 return flask.redirect(flask.url_for('login'))
         else:
             user = osm.User(form.username.data, form.password.data)
+            osm.DB.session.add(user)
+            osm.DB.session.commit()
             flask.flash('User "{}" created.'.format(user.name))
             fl.login_user(user)
         # From now on: user logged in.
