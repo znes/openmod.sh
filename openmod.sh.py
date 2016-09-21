@@ -54,6 +54,18 @@ def series():
     series_json = json.dumps(series_data)
     return series_json
 
+
+@app.route('/plants-json')
+def plant_coordinate_json():
+    plants = session.query(geojson(Plant.geometry)).all()
+    return json.dumps({"features": [{"type": "Feature",
+                                     "geometry": json.loads(p[0]),
+                                     "properties": None
+                                     }
+                                    for p in plants],
+                       "type": "FeatureCollection"})
+
+
 if __name__ == '__main__':
     app.run(host="0.0.0.0", debug=True)
 
