@@ -269,6 +269,25 @@ def save_nonce(client_key, timestamp, nonce, request_token, access_token):
 def oauth_request_token():
     return {}
 
+class Authorize(wtf.Form):
+     confirm = wtf.BooleanField('Authorize')
+
+@app.route('/iD/connection/oauth/authorize', methods=['GET', 'POST'])
+@fl.login_required
+@oauth.authorize_handler
+def authorize(*args, **kwargs):
+    if flask.request.method == 'GET':
+        form = Authorize()
+        return """
+            <p> "{}" : "{}" </p>
+            <form action="" method="post">
+                <input type=submit value="Confirm authorization">
+                {}
+            </form>
+            """.format(CLIENT.client_key, kwargs.get('resource_owner_key'),
+                       form.confirm)
+    return (flask.request.form.get('confirm', 'no') == 'y')
+
 ##### Persistence code ends here ##############################################
 
 @app.route('/series/<path:ids>')
