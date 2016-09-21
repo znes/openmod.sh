@@ -77,7 +77,7 @@ class Tag(DB.Model):
 
 class Node(DB.Model):
     id = DB.Column(DB.Integer, primary_key=True)
-    myid = DB.Column(DB.String(255), unique=True)
+    myid = DB.Column(DB.String(255))
     lat = DB.Column(DB.Float, nullable=False)
     lon = DB.Column(DB.Float, nullable=False)
     version = DB.Column(DB.Integer, nullable=False)
@@ -103,7 +103,7 @@ class Node(DB.Model):
 
 class Way(DB.Model):
     id = DB.Column(DB.Integer, primary_key=True)
-    myid = DB.Column(DB.String(255), unique=True)
+    myid = DB.Column(DB.String(255))
     tags = DB.relationship(Tag, secondary=tags_and_ways)
     nodes = DB.relationship(Node, secondary=nodes_and_ways)
 
