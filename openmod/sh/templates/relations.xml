@@ -6,21 +6,21 @@
       {% for tag in relation.tags %}<tag k="{{tag.key}}" v="{{tag.value}}"/>
       {% endfor %}
       {% for reference in relation.referenced_nodes %}
-        <member type="node" ref="{{reference.node.id}}"
+        <member type="node" ref="{{reference.element_id}}"
           {% if reference.role %}
                 role="{{reference.role}}"
           {% endif %}
         />
       {% endfor %}
       {% for reference in relation.referenced_ways %}
-        <member type="way" ref="{{reference.way.id}}"
+        <member type="way" ref="{{reference.element_id}}"
           {% if reference.role %}
                 role="{{reference.role}}"
           {% endif %}
         />
       {% endfor %}
       {% for reference in relation.referenced %}
-        <member type="relation" ref="{{reference.referenced_id}}"
+        <member type="relation" ref="{{reference.element_id}}"
           {% if reference.role %}
                 role="{{reference.role}}"
           {% endif %}
