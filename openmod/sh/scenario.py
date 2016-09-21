@@ -3,9 +3,14 @@
 import time
 
 from sqlalchemy.orm import sessionmaker
-
+import matplotlib.pyplot as plt, mpld3
+import pandas as pd
+import numpy as np
+# solph imports
+from oemof.solph import (Sink, Source, LinearTransformer, Bus, Flow,
+                         OperationalModel, EnergySystem, GROUPINGS)
 import oemof.db as db
-
+import oemof.outputlib as output
 # Here you would now import the `oemof` modules and proceed to customize the
 # `simulate` function to generate objects and start the simulation.
 
@@ -39,6 +44,59 @@ def simulate(**kwargs):
     ways = scenario.referenced_ways
     relations = scenario.referenced # Make sure to traverse these recursively.
 
+
+    #########################################################################
+    # OEMOF SOLPH
+    #########################################################################
+    # We need a datetimeindex for the optimization problem / energysystem
+    # TODO: Replace date and period with arguments from scenario
+    datetimeindex = pd.date_range('1/1/2012', periods=24, freq='H')
+    energy_system = EnergySystem(groupings=GROUPINGS, time_idx=datetimeindex)
+
+    ## Create Nodes (added automatically to energysystem)
+    bel = Bus(label='bel')
+    bgas = Bus(label='bgas', balanced=False)
+    Source(label="pv",
+           outputs={bel: Flow(actual_value=np.random.rand(24),
+                               nominal_value=65.3,
+                               fixed=False)})
+    Sink(label="demand_el",
+         inputs={bel: Flow(nominal_value=200,
+                            actual_value=np.random.rand(24),
+                            fixed=True)})
+    LinearTransformer(label='pp_gas',
+                      inputs={bgas: Flow()},
+                      outputs={bel: Flow(nominal_value=200,
+                                          variable_costs=40)},
+                      conversion_factors={bel: 0.50})
+#    [Source(
+#        label=n.name,
+#        outputs={bel:Flow(
+#                    n.actual_value=n.timeseries,
+#                    nominal_value=n.nominal_power,
+#                    fixed=True)}) for n in nodes if node.tag == 'source']
+
+    ## Create optimization model, solve it, wrtie back results
+    om = OperationalModel(es=energy_system)
+    if 'solver' in kwargs.keys():
+        solver = kwargs['solver']
+    else:
+        solver = 'glpk'
+    om.solve(solver=solver,
+             solve_kwargs={'tee': True, 'keepfiles': False})
+    om.results()
+
+    # figure to html with mpld3 package ???
+#    esplot = output.DataFramePlot(energy_system=energy_system)
+#    esplot.slice_unstacked(bus_label="bel", type="to_bus")
+#    fig = plt.figure()
+#    esplot.plot(title="January 2012", stacked=True, width=1, lw=0.1,
+#                kind='bar')
+#    string = mpld3.fig_to_html(fig)
+
+    #########################################################################
+    # END OF OEMOF SOLPH
+    #########################################################################
     # Generate a response so that we see something is actually happening.
     lengths = [len(l) for l in [nodes, ways, relations]]
     response = (
@@ -51,8 +109,7 @@ def simulate(**kwargs):
             "<br />  ".join(["{}: {}".format(*x) for x in kwargs.items()])
             ).format(lengths,
                      scenario={t.key: t.value for t in scenario.tags}['name'])
-
     # Now sleep for 5 minutes to pretend we are doing something.
-    time.sleep(300)
+    time.sleep(0.5)
     return response
 
