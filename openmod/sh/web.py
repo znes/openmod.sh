@@ -547,7 +547,8 @@ def upload_changeset(cid):
         element.tag = "node"
         created_nodes.append(element)
     osm.DB.session.flush()
-    temporary_id2node = {n.old_id: n for n in created_nodes}
+    temporary_id2node = {n.old_id: n for n in created_nodes
+                                     if  n not in modified_nodes}
     created_ways = itertools.chain(*[c.findall('way') for c in creations])
     created_ways = {int(att["id"]): osm.Way(
         nodes=[temporary_id2node.get(node_id) or osm.Node.query.get(node_id)
