@@ -148,15 +148,6 @@ def capabilities():
     response.headers['Content-Type'] = 'text/xml'
     return response
 
-# Store test OSM data as attributes on an object. In a real app that data would
-# be stored in/retrieved from the database.
-class OSMT: pass
-OSM = OSMT()
-OSM.nodes = [{"lat": 0.0075, "lon": -0.0025,
-              "tags": {"ele": 0, # stands for 'elevation' (usually)
-                       "name": "A Test Node"}}]
-OSM.changesets = []
-
 @app.route('/osm/api/0.6/map')
 @cors.cross_origin()
 def osm_map():
@@ -399,9 +390,10 @@ osm.DB.init_app(app)
 @app.route('/iD/connection/api/0.6/changeset/create', methods=['PUT'])
 @cors.cross_origin()
 def create_changeset():
-    cs = {}
-    OSM.changesets.append(cs)
-    return str(id(cs))
+    cs = osm.Changeset()
+    osm.DB.session.add(cs)
+    osm.DB.session.commit()
+    return str(cs.id)
 
 @app.route('/iD/connection/api/0.6/user/details', methods=['GET'])
 @cors.cross_origin()
@@ -417,20 +409,21 @@ def upload_changeset(cid):
     creations = xml.findall('create')
     created_nodes = itertools.chain(*[c.findall('node') for c in creations])
     created_nodes = [
-            {"lat": float(n["lat"]), "lon": float(n["lon"]),
-             "old_id": n["id"], "version": n["version"],
-             "tags": fun.reduce(
+            osm.Node( # TODO: Replace hardcoded user_ and changeset_id values
+                      #       with computed (and correct) ones.
+              float(n["lat"]), float(n["lon"]), 1, 1,
+              tags=list(fun.reduce(
                  lambda old, new: old.update(new) or old,
                  [{k: float(v) if k in ["lat", "lon"] else v}
                      for tag in node.findall('tag')
                      for k, v in ((tag.attrib['k'], tag.attrib['v']),)],
-                 {})}
+                 {}).items()),
+              old_id=n["id"])
             for node in created_nodes
             for n in (node.attrib,)]
-    for n in created_nodes:
-        n["new_id"] = id(n)
-        n["id"] = id(n)
-    OSM.nodes.extend(created_nodes)
+    for node in created_nodes:
+        osm.DB.session.add(node)
+    osm.DB.session.commit()
     return flask.render_template('diffresult.xml', nodes=created_nodes)
 
 @app.route('/iD/connection/api/0.6/changeset/<id>/close', methods=['PUT'])
