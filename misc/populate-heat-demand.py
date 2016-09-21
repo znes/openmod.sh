@@ -13,7 +13,7 @@ web.app.app_context().push()
 # Let's store a shortcut to the session to save some typing.
 DB = dev.DB.session
 
-df = pd.read_csv('data/region-shapes-sh.csv', dtype={'region_key':str})
+df = pd.read_csv('../data/region-shapes-sh.csv', dtype={'region_key':str})
 for i,r in df.iterrows():
     region = dev.Region(region_id=r['region_key'],
                         geom_polygon=r['wkt_polygon'],

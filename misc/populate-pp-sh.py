@@ -13,7 +13,7 @@ db.add(cs)
 db.commit()
 
 
-x = pd.read_csv('data/pp-sh.csv')
+x = pd.read_csv('../data/pp-sh.csv')
 x['type'] = x['type'].fillna('Condesing')
 
 for i, r in x.iterrows():
