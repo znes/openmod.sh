@@ -85,7 +85,7 @@ def login():
 @app.route('/')
 @fl.login_required
 def root():
-    return flask.render_template('index.html')
+    return flask.redirect('http://localhost:8000')
 
 # TODO: Factor adding the 'Content-Type' header out into a separate function.
 
