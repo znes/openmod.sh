@@ -1,5 +1,5 @@
 .map, .plot { height: 233px; width: 377px; }
-#marker {
+.marker {
   width: 5px;
   height: 5px;
   border: 1px solid #586e75;;
