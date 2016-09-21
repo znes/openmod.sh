@@ -103,21 +103,9 @@ class rs_and_rs(DB.Model):
                 primaryjoin=("rs_and_rs.referencing_id == Relation.id"),
                 backref='referenced')
 
-tags_and_nodes = DB.Table('tags_and_nodes',
+tag_associations = DB.Table('tag_associations',
         DB.Column('tag_id', DB.Integer, DB.ForeignKey('tag.id')),
-        DB.Column('node_id', DB.Integer, DB.ForeignKey('node.id')))
-
-tags_and_ways = DB.Table('tags_and_ways',
-        DB.Column('tag_id', DB.Integer, DB.ForeignKey('tag.id')),
-        DB.Column('way_id', DB.Integer, DB.ForeignKey('way.id')))
-
-tags_and_changesets = DB.Table('tags_and_changesets',
-        DB.Column('tag_id', DB.Integer, DB.ForeignKey('tag.id')),
-        DB.Column('changeset_id', DB.Integer, DB.ForeignKey('changeset.id')))
-
-tags_and_rs = DB.Table('tags_and_relations',
-        DB.Column('tag_id', DB.Integer, DB.ForeignKey('tag.id')),
-        DB.Column('relation_id', DB.Integer, DB.ForeignKey('relation.id')))
+        DB.Column('tagged_id', DB.Integer, DB.ForeignKey('tagged.object_id')))
 
 # Define timeseries association tables
 
@@ -144,17 +132,35 @@ class Tag(DB.Model):
         self.key = key
         self.value = value
 
-class Node(DB.Model):
+class Tagged(DB.Model):
+    """ Base model/table for all objects which can have tags.
+
+    Nearly everything in OSM can have associated tags[0]. Most importantly,
+    elements, i.e. nodes, ways and/or relations, have nothing in common with
+    changesets, except having tags. Therefore being tagged is the only
+    commonality which can be factored out into a class that is a base for
+    elements as well as changesets.
+
+    [0]: Except tags itself. Duh.
+    """
+    object_id = DB.Column(DB.Integer, primary_key=True)
+    typename = DB.Column(DB.String(79))
+    tag_objects = DB.relationship(Tag, secondary=tag_associations,
+                                       collection_class=amc('key'))
+    tags = association_proxy('tag_objects', 'value')
+    __mapper_args__ = {'polymorphic_on': typename}
+
+
+class Node(Tagged):
+    __mapper_args__ = {'polymorphic_identity': 'node'}
     id = DB.Column(DB.Integer, primary_key=True)
+    tagged_id = DB.Column(DB.Integer, DB.ForeignKey(Tagged.object_id))
     myid = DB.Column(DB.String(255))
     lat = DB.Column(DB.Float, nullable=False)
     lon = DB.Column(DB.Float, nullable=False)
     version = DB.Column(DB.Integer, nullable=False)
     timestamp = DB.Column(DB.DateTime, nullable=False)
     visible = DB.Column(DB.Boolean, nullable=False)
-    tag_objects = DB.relationship(Tag, secondary=tags_and_nodes,
-                                       collection_class=amc('key'))
-    tags = association_proxy('tag_objects', 'value')
     uid = DB.Column(DB.Integer, DB.ForeignKey(User.id))
     user = DB.relationship(User, uselist=False)
     ways = association_proxy('nodes_way', 'way')
@@ -173,13 +179,12 @@ class Node(DB.Model):
         for k in kwargs:
             setattr(self, k, kwargs[k])
 
-class Way(DB.Model):
+class Way(Tagged):
+    __mapper_args__ = {'polymorphic_identity': 'way'}
     id = DB.Column(DB.Integer, primary_key=True)
+    tagged_id = DB.Column(DB.Integer, DB.ForeignKey(Tagged.object_id))
     myid = DB.Column(DB.String(255))
     version = DB.Column(DB.String)
-    tag_objects = DB.relationship(Tag, secondary=tags_and_ways,
-                                       collection_class=amc('key'))
-    tags = association_proxy('tag_objects', 'value')
     way_nodes = DB.relationship('nodes_and_ways',
                                 order_by='nodes_and_ways.position',
                                 collection_class=ordering_list('position'))
@@ -191,26 +196,24 @@ class Way(DB.Model):
     changeset = DB.relationship('Changeset', uselist=False)
     changeset_id = DB.Column(DB.Integer, DB.ForeignKey('changeset.id'))
 
-class Relation(DB.Model):
+class Relation(Tagged):
+    __mapper_args__ = {'polymorphic_identity': 'relation'}
     id = DB.Column(DB.Integer, primary_key=True)
+    tagged_id = DB.Column(DB.Integer, DB.ForeignKey(Tagged.object_id))
     myid = DB.Column(DB.String(255))
     version = DB.Column(DB.String)
     timestamp = DB.Column(DB.DateTime, nullable=False)
     visible = DB.Column(DB.Boolean, nullable=False)
-    tag_objects = DB.relationship(Tag, secondary=tags_and_rs,
-                                       collection_class=amc('key'))
-    tags = association_proxy('tag_objects', 'value')
     uid = DB.Column(DB.Integer, DB.ForeignKey(User.id))
     user = DB.relationship(User, uselist=False)
     superiors = association_proxy('referencing', 'relation')
     changeset = DB.relationship('Changeset', uselist=False)
     changeset_id = DB.Column(DB.Integer, DB.ForeignKey('changeset.id'))
 
-class Changeset(DB.Model):
+class Changeset(Tagged):
+    __mapper_args__ = {'polymorphic_identity': 'changeset'}
     id = DB.Column(DB.Integer, primary_key=True)
-    tag_objects = DB.relationship(Tag, secondary=tags_and_changesets,
-                                       collection_class=amc('key'))
-    tags = association_proxy('tag_objects', 'value')
+    tagged_id = DB.Column(DB.Integer, DB.ForeignKey(Tagged.object_id))
 
 class Timeseries(DB.Model):
     id = DB.Column(DB.Integer, primary_key=True)
