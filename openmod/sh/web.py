@@ -7,7 +7,7 @@ from sqlalchemy.orm import sessionmaker
 
 import sqlalchemy as db
 
-from openmod.sh.schemas import dev as schema  # dev as schema
+from .schemas import dev as schema  # test as schema
 
 
 app = Flask(__name__)
