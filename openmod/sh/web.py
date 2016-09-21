@@ -18,8 +18,8 @@ import wtforms as wtf
 
 import oemof.db
 
-from . import scenario
 from .schemas import osm
+import openmod.sh.scenario
 
 
 app = flask.Flask(__name__)
@@ -215,7 +215,7 @@ def osm_map():
 @app.route('/simulate', methods=['PUT'])
 def simulate():
     fras = flask.request.args
-    result = app.workers.apply_async(scenario.simulate,
+    result = app.workers.apply_async(openmod.sh.scenario.simulate,
                                      #kwds=fras)
                                      kwds={k: fras[k] for k in fras})
     key = str(id(result))
