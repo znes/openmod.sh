@@ -493,7 +493,7 @@ def upload_changeset(cid):
 def close_changeset(id):
     return ""
 
-def add_attribute_hash(node):
+def attach_node_attribute_hash(node):
     node.attributes = {
             ("changeset" if k == "changeset_id" else k):
             (v.name if k == "user" else (
@@ -510,9 +510,31 @@ def add_attribute_hash(node):
 def get_nodes():
     # TODO: See whether you can make this better by querying only once.
     #       Maybe 'in' works?
-    nodes = [add_attribute_hash(osm.Node.query.get(int(node_id)))
+    nodes = [attach_node_attribute_hash(osm.Node.query.get(int(node_id)))
             for node_id in flask.request.args['nodes'].split(",")]
     template = flask.render_template('node.xml', nodes=nodes)
+    return xml_response(template)
+
+def attach_way_attribute_hash(way):
+    way.attributes = {
+            ("changeset" if k == "changeset_id" else k):
+            (v.name if k == "user" else (
+             v.replace(microsecond=0).isoformat() if k == "timestamp" else (
+             str(v).lower() if k == "visible" else
+             v)))
+            for k in ["version", "timestamp", "visible", "uid",
+                      "user", "changeset_id", "id"]
+            for v in (getattr(way, k),)}
+    return way
+
+@app.route('/osm/api/0.6/ways')
+@cors.cross_origin()
+def get_ways():
+    # TODO: See whether you can make this better by querying only once.
+    #       Maybe 'in' works?
+    ways = [attach_way_attribute_hash(osm.Node.query.get(int(way_id)))
+           for way_id in flask.request.args['ways'].split(",")]
+    template = flask.render_template('ways.xml', ways=ways)
     return xml_response(template)
 
 ##### Persistence code ends here ##############################################
