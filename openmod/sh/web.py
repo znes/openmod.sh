@@ -24,6 +24,23 @@ app = flask.Flask(__name__)
 # See: http://flask.pocoo.org/docs/0.11/quickstart/#sessions
 app.secret_key = b"DON'T USE THIS IN PRODUCTION! " + b'\xdb\xcd\xb4\x8cp'
 
+##### Utility Functions #######################################################
+#
+# Some functions used throughout this module (and maybe even elsewhere.)
+#
+# This should probably go into it's own module but I'm putting it all here for
+# now, as some parts need to stay in this module while some parts can be
+# factored out later. The 'factoring out' part can be considered an open TODO.
+#
+###############################################################################
+
+def xml_response(template):
+    response = flask.make_response(template)
+    response.headers['Content-Type'] = 'text/xml'
+    return response
+
+##### Utility Functions end here ##############################################
+
 ##### Safe Redirects ##########################################################
 #
 # If we allow redirects after form submission, we want it to be safe. The code
@@ -136,8 +153,6 @@ def logout():
 def root():
     return flask.redirect('/static/iD/index.html')
 
-# TODO: Factor adding the 'Content-Type' header out into a separate function.
-
 @app.route('/iD/api/capabilities')
 @app.route('/osm/api/capabilities')
 @app.route('/osm/api/0.6/capabilities')
@@ -145,9 +160,7 @@ def root():
 def capabilities():
     template = flask.render_template('capabilities.xml', area={"max": 1},
                                      timeout=250)
-    response = flask.make_response(template)
-    response.headers['Content-Type'] = 'text/xml'
-    return response
+    return xml_response(template)
 
 @app.route('/iD/api/0.6/map')
 @app.route('/osm/api/0.6/map')
@@ -161,10 +174,7 @@ def osm_map():
     template = flask.render_template('map.xml', nodes=nodes,
                                           minlon=miny, maxlon=maxy,
                                           minlat=minx, maxlat=maxx)
-
-    response = flask.make_response(template)
-    response.headers['Content-Type'] = 'text/xml'
-    return response
+    return xml_response(template)
 
 ##### OAuth1 provider code ####################################################
 #
@@ -427,7 +437,8 @@ def upload_changeset(cid):
                      for tag in node.findall('tag')
                      for k, v in ((tag.attrib['k'], tag.attrib['v']),)],
                  {}).items()),
-              old_id=n["id"])
+              old_id=int(n["id"]),
+              tag="node")
             for node in created_nodes
             for n in (node.attrib,)]
     for node in created_nodes:
@@ -446,7 +457,29 @@ def upload_changeset(cid):
                 for tag in xml_node.findall('tag')
                 for k, v in ((tag.attrib['k'], tag.attrib['v']),)]
     osm.DB.session.commit()
-    return flask.render_template('diffresult.xml', nodes=created_nodes)
+    temporary_id2node = {n.old_id: n for n in created_nodes}
+    created_ways = itertools.chain(*[c.findall('way') for c in creations])
+    created_ways = {int(att["id"]): osm.Way(
+        nodes=[temporary_id2node.get(node_id) or osm.Node.query.get(node_id)
+               for node_id in map(lambda nd: int(nd.attrib['ref']),
+                                  way.findall('nd'))],
+        changeset=osm.Changeset.query.get(int(cid)),
+        version=att['version'],
+        tags=[osm.Tag(key=k, value=v)
+              for k,v in list(
+                 fun.reduce(lambda old, new: old.update(new) or old,
+                            [{k: v}
+                             for tag in way.findall('tag')
+                             for k, v in ((tag.attrib['k'], tag.attrib['v']),)],
+                 {}).items())])
+            for way in created_ways
+            for att in (way.attrib,)}
+    osm.DB.session.commit()
+    for k, w in created_ways.items():
+        w.old_id = k
+        w.tag = "way"
+        created_nodes.append(w)
+    return flask.render_template('diffresult.xml', modifications=created_nodes)
 
 @app.route('/iD/api/0.6/changeset/<id>/close', methods=['PUT'])
 @app.route('/iD/connection/api/0.6/changeset/<id>/close', methods=['PUT'])
@@ -454,11 +487,7 @@ def upload_changeset(cid):
 def close_changeset(id):
     return ""
 
-@app.route('/osm/api/0.6/nodes')
-@cors.cross_origin()
-def get_node():
-    # TODO: Handle multiple, comma separated node ids
-    node = osm.Node.query.get(int(flask.request.args['nodes']))
+def add_attribute_hash(node):
     node.attributes = {
             ("changeset" if k == "changeset_id" else k):
             (v.name if k == "user" else (
@@ -468,10 +497,17 @@ def get_node():
             for k in ["lat", "lon", "version", "timestamp", "visible", "uid",
                       "user", "changeset_id", "id"]
             for v in (getattr(node, k),)}
-    template = flask.render_template('node.xml', node=node)
-    response = flask.make_response(template)
-    response.headers['Content-Type'] = 'text/xml'
-    return response
+    return node
+
+@app.route('/osm/api/0.6/nodes')
+@cors.cross_origin()
+def get_nodes():
+    # TODO: See whether you can make this better by querying only once.
+    #       Maybe 'in' works?
+    nodes = [add_attribute_hash(osm.Node.query.get(int(node_id)))
+            for node_id in flask.request.args['nodes'].split(",")]
+    template = flask.render_template('node.xml', nodes=nodes)
+    return xml_response(template)
 
 ##### Persistence code ends here ##############################################
 
