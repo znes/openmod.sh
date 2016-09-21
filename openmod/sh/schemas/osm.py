@@ -79,6 +79,24 @@ tags_and_changesets = DB.Table('tags_and_changesets',
         DB.Column('tag_id', DB.Integer, DB.ForeignKey('tag.id')),
         DB.Column('changeset_id', DB.Integer, DB.ForeignKey('changeset.id')))
 
+tags_and_rs = DB.Table('tags_and_relations',
+        DB.Column('tag_id', DB.Integer, DB.ForeignKey('tag.id')),
+        DB.Column('relation_id', DB.Integer, DB.ForeignKey('relation.id')))
+
+rs_and_nodes = DB.Table('relations_and_nodes',
+        DB.Column('relation_id', DB.Integer, DB.ForeignKey('relation.id')),
+        DB.Column('node_id', DB.Integer, DB.ForeignKey('node.id')))
+
+rs_and_ways = DB.Table('relations_and_ways',
+        DB.Column('relation_id', DB.Integer, DB.ForeignKey('relation.id')),
+        DB.Column('way_id', DB.Integer, DB.ForeignKey('way.id')))
+
+rs_and_rs = DB.Table('relations_and_relations',
+        DB.Column('referencing_id', DB.Integer, DB.ForeignKey('relation.id'),
+            primary_key=True),
+        DB.Column('referenced_id', DB.Integer, DB.ForeignKey('relation.id'),
+            primary_key=True))
+
 # No association tables anymore. These are regular models.
 
 class Tag(DB.Model):
@@ -132,6 +150,23 @@ class Way(DB.Model):
     changeset = DB.relationship('Changeset', uselist=False)
     changeset_id = DB.Column(DB.Integer, DB.ForeignKey('changeset.id'))
 
+class Relation(DB.Model):
+    id = DB.Column(DB.Integer, primary_key=True)
+    myid = DB.Column(DB.String(255))
+    version = DB.Column(DB.String)
+    timestamp = DB.Column(DB.DateTime, nullable=False)
+    visible = DB.Column(DB.Boolean, nullable=False)
+    tags = DB.relationship(Tag, secondary=tags_and_rs)
+    uid = DB.Column(DB.Integer, DB.ForeignKey(User.id))
+    user = DB.relationship(User, uselist=False)
+    nodes = DB.relationship(Node, secondary=rs_and_nodes, backref="relations")
+    ways = DB.relationship(Way, secondary=rs_and_ways, backref="relations")
+    relations = DB.relationship("Relation", secondary=rs_and_rs,
+            primaryjoin=(id == rs_and_rs.c.referenced_id),
+            secondaryjoin=(id == rs_and_rs.c.referencing_id),
+            backref="superiors")
+    changeset = DB.relationship('Changeset', uselist=False)
+    changeset_id = DB.Column(DB.Integer, DB.ForeignKey('changeset.id'))
 
 class Changeset(DB.Model):
     id = DB.Column(DB.Integer, primary_key=True)
