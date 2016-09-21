@@ -13,10 +13,7 @@ $(document).ready(function() {
     view: new ol.View({ center: md, zoom: 4 })
   });
 
-  var marker = new ol.Overlay({
-    element: document.getElementById('marker'),
-    position: md,
-  });
+  var marker = new ol.Overlay({ element: $('#marker'), position: md });
 
   map.addOverlay(marker);
 
