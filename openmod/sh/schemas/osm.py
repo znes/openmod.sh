@@ -152,67 +152,74 @@ class Tagged(DB.Model):
                        'polymorphic_on': typename}
 
 
-class Node(Tagged):
-    __mapper_args__ = {'polymorphic_identity': 'node'}
-    id = DB.Column(DB.Integer, primary_key=True)
+class Element(Tagged):
+    """ Common base class of OSM elements.
+
+    This class collects attributes shared by all OSM elements, i.e. nodes, ways
+    and/or relations. It also acts as a target for polymorphic relationships to
+    more than one type of OSM element.
+    """
+
+    __mapper_args__ = {'polymorphic_identity': 'element'}
+
+    element_id = DB.Column(DB.Integer, primary_key=True)
     tagged_id = DB.Column(DB.Integer, DB.ForeignKey(Tagged.object_id))
     myid = DB.Column(DB.String(255))
-    lat = DB.Column(DB.Float, nullable=False)
-    lon = DB.Column(DB.Float, nullable=False)
     version = DB.Column(DB.Integer, nullable=False)
     timestamp = DB.Column(DB.DateTime, nullable=False)
     visible = DB.Column(DB.Boolean, nullable=False)
     uid = DB.Column(DB.Integer, DB.ForeignKey(User.id))
     user = DB.relationship(User, uselist=False)
-    ways = association_proxy('nodes_way', 'way')
-    relations = association_proxy('referencing_relations', 'relation')
     changeset_id = DB.Column(DB.Integer, DB.ForeignKey('changeset.id'))
     changeset = DB.relationship('Changeset', uselist=False,
             foreign_keys=[changeset_id])
 
-    def __init__(self, lat, lon, user_id, changeset_id, **kwargs):
-        self.lat = lat
-        self.lon = lon
+    def __init__(self, **kwargs):
         self.version = 1
         self.timestamp = datetime.now(tz.utc)
         self.visible = True
-        self.uid = user_id
-        self.changeset_id = changeset_id
+        # Can't do this:
+        #
+        #   super().__init__(**kwargs)
+        #
+        # since we put non-mapped attributes on created elements during
+        # `upload_changeset`.
+        # This shoule be cleaned up when `upload_changeset` gets refactored.
         for k in kwargs:
             setattr(self, k, kwargs[k])
 
-class Way(Tagged):
+class Node(Element):
+    __mapper_args__ = {'polymorphic_identity': 'node'}
+    id = DB.Column(DB.Integer, primary_key=True)
+    element_id = DB.Column(DB.Integer, DB.ForeignKey(Element.element_id))
+
+    lat = DB.Column(DB.Float, nullable=False)
+    lon = DB.Column(DB.Float, nullable=False)
+
+    relations = association_proxy('referencing_relations', 'relation')
+    ways = association_proxy('nodes_way', 'way')
+
+    def __init__(self, lat, lon, user_id, changeset_id, **kwargs):
+        super().__init__(uid=user_id, changeset_id=changeset_id, **kwargs)
+        self.lat = lat
+        self.lon = lon
+
+class Way(Element):
     __mapper_args__ = {'polymorphic_identity': 'way'}
     id = DB.Column(DB.Integer, primary_key=True)
-    tagged_id = DB.Column(DB.Integer, DB.ForeignKey(Tagged.object_id))
-    myid = DB.Column(DB.String(255))
-    version = DB.Column(DB.String)
+    element_id = DB.Column(DB.Integer, DB.ForeignKey(Element.element_id))
     way_nodes = DB.relationship('nodes_and_ways',
                                 order_by='nodes_and_ways.position',
                                 collection_class=ordering_list('position'))
     nodes = association_proxy('way_nodes', 'node',
                               creator=lambda n: nodes_and_ways(node=n))
     relations = association_proxy('referencing_relations', 'relation')
-    uid = DB.Column(DB.Integer, DB.ForeignKey(User.id))
-    user = DB.relationship(User, uselist=False)
-    changeset_id = DB.Column(DB.Integer, DB.ForeignKey('changeset.id'))
-    changeset = DB.relationship('Changeset', uselist=False,
-            foreign_keys=[changeset_id])
 
-class Relation(Tagged):
+class Relation(Element):
     __mapper_args__ = {'polymorphic_identity': 'relation'}
     id = DB.Column(DB.Integer, primary_key=True)
-    tagged_id = DB.Column(DB.Integer, DB.ForeignKey(Tagged.object_id))
-    myid = DB.Column(DB.String(255))
-    version = DB.Column(DB.String)
-    timestamp = DB.Column(DB.DateTime, nullable=False)
-    visible = DB.Column(DB.Boolean, nullable=False)
-    uid = DB.Column(DB.Integer, DB.ForeignKey(User.id))
-    user = DB.relationship(User, uselist=False)
+    element_id = DB.Column(DB.Integer, DB.ForeignKey(Element.element_id))
     superiors = association_proxy('referencing', 'relation')
-    changeset_id = DB.Column(DB.Integer, DB.ForeignKey('changeset.id'))
-    changeset = DB.relationship('Changeset', uselist=False,
-            foreign_keys=[changeset_id])
 
 class Changeset(Tagged):
     __mapper_args__ = {'polymorphic_identity': 'changeset'}
