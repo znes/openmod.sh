@@ -454,7 +454,7 @@ def upload_changeset(cid):
         db_node.old_id = db_node.id
         db_node.version = atts["version"]
         db_node.changeset = osm.Changeset.query.get(int(atts["changeset"]))
-        db_node.tags = [osm.Tag(key=k, value=v)
+        db_node.tags = db_node.tags + [osm.Tag(key=k, value=v)
                 for tag in xml_node.findall('tag')
                 for k, v in ((tag.attrib['k'], tag.attrib['v']),)]
     osm.DB.session.commit()
