@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="openmod.sh">
+  {% for way in ways %}
+    <way {% for k,v in way.attributes.items() %} {{k}}="{{v}}" {% endfor %}>
+      {% for tag in way.tags %}<tag k="{{tag.key}}" v="{{tag.value}}"/>
+      {% endfor %}
+      {% for node in way.nodes %}<nd ref="{{node.id}}"/>{% endfor %}
+    </way>
+  {% endfor %}
+</osm>
