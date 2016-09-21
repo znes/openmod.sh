@@ -60,6 +60,16 @@ nodes = [{'lon': 10.1,
                    'efficiency': 0.6,
                    'fuel_type': 'coal',
                    'variable_costs': 2,
+                   'energy_sector': 'electricity'}},
+         {'lon': 10.5,
+          'lat': 54.2,
+          'hub': 'myhub2',
+          'tags': {'name': 'mystorage',
+                   'type': 'storage',
+                   'oemof_class': 'storage',
+                   'installed_power': 80,
+                   'installed_energy': 500,
+                   'variable_costs': 0.1,
                    'energy_sector': 'electricity'}}]
 
 hub_nodes = {}
