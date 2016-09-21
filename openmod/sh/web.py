@@ -12,12 +12,10 @@ import flask_cors as cors # TODO: Check whether the `@cors.cross_origin()`
 import flask_login as fl
 import flask_wtf as wtfl
 import wtforms as wtf
-from geoalchemy2.functions import ST_AsGeoJSON as geojson
-from sqlalchemy.orm import sessionmaker
 
-import oemof.db as db
+import oemof.db
 
-from .schemas import dev as schema  # test as schema
+from .schemas import osm
 
 
 app = flask.Flask(__name__)
@@ -25,15 +23,6 @@ app = flask.Flask(__name__)
 # and store it in a safe place.
 # See: http://flask.pocoo.org/docs/0.11/quickstart/#sessions
 app.secret_key = b"DON'T USE THIS IN PRODUCTION! " + b'\xdb\xcd\xb4\x8cp'
-
-Plant = schema.Plant
-Timeseries = schema.Timeseries
-Grid = schema.Grid
-
-engine = db.engine("openMod.sh")
-
-Session = sessionmaker(bind=engine)
-session = Session()
 
 ##### Safe Redirects ##########################################################
 #
@@ -94,35 +83,13 @@ class RedirectForm(wtfl.Form):
 #
 ##############################################################################
 
-class User:
-    """ Required by flask-login.
-
-    See: https://flask-login.readthedocs.io/en/latest/#your-user-class
-
-    This implementation just stores users in memory in a class variable and
-    creates new users as they try to log in.
-    """
-    known = {}
-    def __init__(self, name, pw):
-        if name in self.known:
-            raise ValueError(
-                    "Trying to create user '{}' which already exists.".format(
-                        name))
-        self.known[name] = self
-        self.name = name
-        self.pw = pw
-        self.is_authenticated = True
-        self.is_active = True
-        self.is_anonymous = False
-
-    def get_id(self): return self.name
-
 login_manager = fl.LoginManager()
 login_manager.login_view = 'login'
 login_manager.init_app(app)
 @login_manager.user_loader
 def load_user(user_id):
-    return User.known.get(user_id)
+    user = osm.User.query.get(user_id)
+    return (user_id and user)
 
 class Login(RedirectForm):
     username = wtf.StringField('Username', [wtf.validators.Length(min=3,
@@ -135,16 +102,18 @@ class Login(RedirectForm):
 def login():
     form = Login()
     if form.validate_on_submit():
-        user = load_user(form.username.data)
+        user = load_user(osm.User.name2id(form.username.data))
         if user is not None:
-            if user.pw == form.password.data:
+            if user.check_pw(form.password.data):
                 fl.login_user(user)
                 #print("Current user: {}".format(fl.current_user))
             else:
                 flask.flash('Invalid username/password combination.')
                 return flask.redirect(flask.url_for('login'))
         else:
-            user = User(form.username.data, form.password.data)
+            user = osm.User(form.username.data, form.password.data)
+            osm.DB.session.add(user)
+            osm.DB.session.commit()
             flask.flash('User "{}" created.'.format(user.name))
             fl.login_user(user)
         # From now on: user logged in.
@@ -179,28 +148,14 @@ def capabilities():
     response.headers['Content-Type'] = 'text/xml'
     return response
 
-# Store test OSM data as attributes on an object. In a real app that data would
-# be stored in/retrieved from the database.
-class OSMT: pass
-OSM = OSMT()
-OSM.nodes = [{"lat": 0.0075, "lon": -0.0025,
-              "tags": {"ele": 0, # stands for 'elevation' (usually)
-                       "name": "A Test Node"}}]
-OSM.changesets = []
-
 @app.route('/osm/api/0.6/map')
 @cors.cross_origin()
 def osm_map():
     left, bottom, right, top = map(float, flask.request.args['bbox'].split(","))
     minx, maxx = sorted([top, bottom])
     miny, maxy = sorted([left, right])
-    nodes = [dict(**n)
-            for n in OSM.nodes
-            for x, y in ((n["lat"], n["lon"]),)
-            if minx <= x and  miny <= y and maxx >= x and maxy >= y]
-    for node in nodes:
-        node['id'] = node.get('id', id(node))
-        node['tags'] = node.get('tags', {})
+    nodes = osm.Node.query.filter(minx <= osm.Node.lat, miny <= osm.Node.lon,
+                                  maxx >= osm.Node.lat, maxy >= osm.Node.lon)
     template = flask.render_template('map.xml', nodes=nodes,
                                           minlon=miny, maxlon=maxy,
                                           minlat=minx, maxlat=maxx)
@@ -428,12 +383,17 @@ def oauth_protected_test_endpoint():
 #
 ###############################################################################
 
+app.config['SQLALCHEMY_DATABASE_URI'] = oemof.db.url('openMod.sh R/W')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+osm.DB.init_app(app)
+
 @app.route('/iD/connection/api/0.6/changeset/create', methods=['PUT'])
 @cors.cross_origin()
 def create_changeset():
-    cs = {}
-    OSM.changesets.append(cs)
-    return str(id(cs))
+    cs = osm.Changeset()
+    osm.DB.session.add(cs)
+    osm.DB.session.commit()
+    return str(cs.id)
 
 @app.route('/iD/connection/api/0.6/user/details', methods=['GET'])
 @cors.cross_origin()
@@ -449,20 +409,21 @@ def upload_changeset(cid):
     creations = xml.findall('create')
     created_nodes = itertools.chain(*[c.findall('node') for c in creations])
     created_nodes = [
-            {"lat": float(n["lat"]), "lon": float(n["lon"]),
-             "old_id": n["id"], "version": n["version"],
-             "tags": fun.reduce(
+            osm.Node( # TODO: Replace hardcoded user_ and changeset_id values
+                      #       with computed (and correct) ones.
+              float(n["lat"]), float(n["lon"]), 1, 1,
+              tags=list(fun.reduce(
                  lambda old, new: old.update(new) or old,
                  [{k: float(v) if k in ["lat", "lon"] else v}
                      for tag in node.findall('tag')
                      for k, v in ((tag.attrib['k'], tag.attrib['v']),)],
-                 {})}
+                 {}).items()),
+              old_id=n["id"])
             for node in created_nodes
             for n in (node.attrib,)]
-    for n in created_nodes:
-        n["new_id"] = id(n)
-        n["id"] = id(n)
-    OSM.nodes.extend(created_nodes)
+    for node in created_nodes:
+        osm.DB.session.add(node)
+    osm.DB.session.commit()
     return flask.render_template('diffresult.xml', nodes=created_nodes)
 
 @app.route('/iD/connection/api/0.6/changeset/<id>/close', methods=['PUT'])
@@ -471,101 +432,6 @@ def close_changeset(id):
     return ""
 
 ##### Persistence code ends here ##############################################
-
-@app.route('/series/<path:ids>')
-def series(ids):
-    ids = ids.split("/")
-    series = session.query(Timeseries).order_by(Timeseries.plant,
-                                                Timeseries.step)
-    if ids:
-        series = series.filter(Timeseries.plant.in_(ids))
-    # Better but still improvable. Now generates one query per plant, which
-    # incurs the time overhead of a database request for each plant. But at
-    # least we no longer have quadratic complexity.
-    # If you want to know why the data is structured the way it is, consult the
-    # [Flot data format][0] documentation.
-    #
-    # [0]: https://github.com/flot/flot/blob/master/API.md#data-format
-    series_data = [{"lines": {"show": False}, "lines": {"fill": True},
-                    "label": plant,
-                    "data": [[t.step, t.value]
-                             for t in ts]}
-                   for plant, ts in itertools.groupby(series,
-                                                      lambda s: s.plant)]
-    series_json = json.dumps(series_data)
-    return series_json
-
-
-@app.route('/plants-json')
-@app.route('/plants-json/<t>')
-def plant_coordinate_json(t=None):
-    # TODO: Maybe SQLAlchemy's "relationship"s can be used to do this in a
-    #       simpler or more efficient way. The only problem is, that here,
-    #       there is a one-to-many relationship from points/locations to
-    #       powerplants, but points do not have a separate/dedicated table and
-    #       therefore no uid (create a view maybe?).
-    #       BUT: Using groupby on an ordered collection is already very
-    #            efficient because:
-    #
-    #              * there is only one query (yeah, it's ordered, but thats
-    #                what the DBMS is for),
-    #              * the queryset is only traversed once,
-    #              * 'groupby' is written in C (i.e. lightning fast) and MEANT
-    #                for exactly this scenario.
-    #
-    #            So even if we figure out a way to do this via SQLAlchemy
-    #            relationships, it's questionable whether those are faster.
-    plants = session.query(geojson(Plant.geometry).label("gjson"),
-                           Plant.capacity, Plant.id
-                           ).order_by(Plant.geometry)
-    if t:
-        plants = plants.filter(Plant.type == t)
-    return json.dumps({"features": [{"type": "Feature",
-                                     "geometry": json.loads(k),
-                                     "properties": {
-                                         "plants": [{"id": p.id,
-                                                     "capacity": p.capacity}
-                                                    for p in ps]
-                                     }}
-                                    for k, ps in itertools.groupby(
-                                        plants, lambda p: p.gjson)],
-                       "type": "FeatureCollection"})
-
-
-@app.route('/grids-json')
-def grid():
-    grids = session.query(geojson(Grid.geometry).label("gjson"),
-                          Grid.voltage, Grid.id).all()
-    return json.dumps({"features": [{"type": "Feature",
-                                     "geometry": json.loads(g.gjson),
-                                     "properties": {"id": g.id,
-                                                    "voltage": g.voltage
-                                                    }}
-                                    for g in grids],
-                       "type": "FeatureCollection"})
-
-
-@app.route('/types')
-def types():
-    return json.dumps([p.type for p in
-                       session.query(Plant.type).distinct().all()])
-
-
-@app.route('/csv/<path:ids>')
-def csv(ids):
-    ids = ids.split("/")
-    plants = session.query(Plant.id, Plant.capacity).order_by(Plant.id)
-    if ids:
-        plants = plants.filter(Plant.id.in_(ids))
-    header = [d["name"] for d in plants.column_descriptions]
-    app.logger.debug(header)
-    plants = plants.all()
-    body = "\n".join([",".join([str(getattr(p, k)) for k in header])
-                      for p in plants])
-    response = flask.make_response(",".join(header) + "\n" + body)
-    response.headers["Content-Disposition"] = ("attachment;" +
-                                               "filename=eeg_extract.csv")
-    return response
 
 
 if __name__ == '__main__':
