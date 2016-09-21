@@ -5,19 +5,27 @@
 The following python packages have to be installed in order to use this:
 
   * flask
-  * flask-sqlalchemy
-  * sqlachemy
   * geoalchemy2
+  * oemof.db
   * psycopg2
+  * sqlalchemy
 
-Additionally there has to be a file called `uphpd` containing:
+As you can see, `openmod.sh` depends on `oemof.db`. Have a look at it's
+[README][0] for information on how to configure database access. Note
+that `openMod.sh` expects its database configuration to be in a
+`config.ini` section named `openMod.sh`.
 
-  * the username with which to log into the database management system (DBMS),
-  * the password for the given username,
-  * the hostname at which the DBMS can be reached,
-  * the port on which the DBMS is listening for connections and
-  * the name of the database inside the DBMS from which to access data.
+As `omoef.db` is not yet released as a package on PyPI, you have to
+install it from source. Be sure to install from the
+`feature/select-db-to-connect-on` branch if installing manually. To
+lower the barrier of entry, there's also a `requirements.txt` file at
+the repository root which takes care of dependencies for you, so you
+should be able to simply do:
 
-Each of those should be on a line on it's own with nothing else in between.
-Once you installed those, you can just do `python openmod.sh.py`.
+  ```
+  pip install -r requirements.txt
+  python openmod.sh.py
+  ```
+
+[0]: https://github.com/oemof/oemof.db/blob/dev/README.rst#configuration
 

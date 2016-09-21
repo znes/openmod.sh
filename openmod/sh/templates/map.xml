@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="openmod.sh">
+  <bounds minlat="{{minlat}}" minlon="{{minlon}}"
+          maxlat="{{maxlat}}" maxlon="{{maxlon}}"/>
+        {# TODO: Add <relation> and <way> elements, possibly in their own
+            {% include %}d templates.
+        #}
+  {% for node in nodes %}
+    <node id="{{node.id}}" visible="true" lat="{{node.lat}}" lon="{{node.lon}}"
+          version="0"
+      >
+      {% for k, v in node.tags.items() %} <tag k="{{k}}" v="{{v}}"/>
+      {% endfor %}
+    </node>
+  {% endfor %}
+</osm>
