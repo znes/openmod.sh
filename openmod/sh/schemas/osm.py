@@ -8,7 +8,8 @@ from sqlalchemy.orm.collections import attribute_mapped_collection as amc
 import werkzeug.security as ws
 from oemof.db import config as cfg
 
-metadata = MetaData(schema=cfg.get('openMod.sh R/W', 'schema'))
+configsection = 'openMod.sh R/W'
+metadata = MetaData(schema=cfg.get(configsection, 'schema'))
 DB = SQLAlchemy(metadata=metadata)
 
 class User(DB.Model):

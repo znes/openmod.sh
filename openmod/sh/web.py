@@ -482,7 +482,7 @@ def oauth_protected_test_endpoint():
 #
 ###############################################################################
 
-app.config['SQLALCHEMY_DATABASE_URI'] = oemof.db.url('openMod.sh R/W')
+app.config['SQLALCHEMY_DATABASE_URI'] = oemof.db.url(osm.configsection)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 osm.DB.init_app(app)
 
