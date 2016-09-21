@@ -158,6 +158,9 @@ osm_map.nodes = [{"lat": 0.0075, "lon": -0.0025,
 #
 ###############################################################################
 
+app.config['OAUTH1_PROVIDER_ENFORCE_SSL'] = False
+app.config['OAUTH1_PROVIDER_KEY_LENGTH'] = (3, 127)
+
 oauth = OAuth1Provider(app)
 
 @oauth.clientgetter
