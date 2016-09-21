@@ -24,11 +24,6 @@ $(document).ready(function() {
 
   $.ajax({ url: "plants-json",
            success: function (d, _, _) {
-             var pped = JSON.stringify(d, null, 2);
-             var dom =
-               "<div><p>JSON for Plants as returned per the \"/plants\" URI:" +
-               "</p><pre>" + pped + "</pre></div>";
-             $("#debug").append(dom);
              var gjs = new ol.format.GeoJSON;
              var projections = {dataProjection: 'EPSG:4326',
                                 featureProjection: 'EPSG:3857'};
