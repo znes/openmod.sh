@@ -108,6 +108,8 @@ class Way(DB.Model):
     tags = DB.relationship(Tag, secondary=tags_and_ways)
     nodes = DB.relationship(Node, secondary=nodes_and_ways,
                             backref=DB.backref('ways'))
+    uid = DB.Column(DB.Integer, DB.ForeignKey(User.id))
+    user = DB.relationship(User, uselist=False)
     changeset = DB.relationship('Changeset', uselist=False)
     changeset_id = DB.Column(DB.Integer, DB.ForeignKey('changeset.id'))
 
