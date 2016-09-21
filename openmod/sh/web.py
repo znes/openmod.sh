@@ -1,4 +1,6 @@
 from urllib.parse import urlparse, urljoin
+from xml.etree.ElementTree import XML
+import functools as fun
 import itertools
 import json
 
@@ -418,12 +420,55 @@ def oauth_protected_test_endpoint():
 #
 # Persistence code to store changes done in iD on the server.
 #
+# TODO: Protect these via `@oauth.require_oauth()`. It doesn't work currently,
+#       so we are just ignoring the whole OAuth thing to get a working version.
 # This should probably go into it's own module but I'm putting it all here for
 # now, as some parts need to stay in this module while some parts can be
 # factored out later. The 'factoring out' part can be considered an open TODO.
 #
 ###############################################################################
 
+@app.route('/iD/connection/api/0.6/changeset/create', methods=['PUT'])
+@cors.cross_origin()
+def create_changeset():
+    cs = {}
+    OSM.changesets.append(cs)
+    return str(id(cs))
+
+@app.route('/iD/connection/api/0.6/user/details', methods=['GET'])
+@cors.cross_origin()
+def userdetails():
+    cu = fl.current_user
+    fl.id = id(fl)
+    return flask.render_template('userdetails.xml', user=fl.current_user)
+
+@app.route('/iD/connection/api/0.6/changeset/<cid>/upload', methods=['POST'])
+@cors.cross_origin()
+def upload_changeset(cid):
+    xml = XML(flask.request.data)
+    creations = xml.findall('create')
+    created_nodes = itertools.chain(*[c.findall('node') for c in creations])
+    created_nodes = [
+            {"lat": float(n["lat"]), "lon": float(n["lon"]),
+             "old_id": n["id"], "version": n["version"],
+             "tags": fun.reduce(
+                 lambda old, new: old.update(new) or old,
+                 [{k: float(v) if k in ["lat", "lon"] else v}
+                     for tag in node.findall('tag')
+                     for k, v in ((tag.attrib['k'], tag.attrib['v']),)],
+                 {})}
+            for node in created_nodes
+            for n in (node.attrib,)]
+    for n in created_nodes:
+        n["new_id"] = id(n)
+        n["id"] = id(n)
+    OSM.nodes.extend(created_nodes)
+    return flask.render_template('diffresult.xml', nodes=created_nodes)
+
+@app.route('/iD/connection/api/0.6/changeset/<id>/close', methods=['PUT'])
+@cors.cross_origin()
+def close_changeset(id):
+    return ""
 
 ##### Persistence code ends here ##############################################
 
