@@ -1,7 +1,9 @@
 # Contains the simulation code
 
 import time
-
+import pdb
+import os
+from tempfile import mkstemp
 from sqlalchemy.orm import sessionmaker
 #import matplotlib.pyplot as plt, mpld3
 import pandas as pd
@@ -17,7 +19,7 @@ import oemof.outputlib as output
 from .schemas import osm
 
 
-def simulate(**kwargs):
+def simulate(folder, **kwargs):
     # This is how you get a scenario object from the database.
     # Since the iD editor prefixes element ids with their type ('r' for
     # relation, 'w' for way and 'n' for node), we have to strip a leading
@@ -30,8 +32,8 @@ def simulate(**kwargs):
     session = Session()
 
     scenario = session.query(osm.Relation).filter_by(
-            id = int(kwargs['scenario'][1:])).first()
-            #id = 1).first()
+                             id = int(kwargs['scenario'][1:])).first()
+                             #id = 1).first()
 
     # Delete the scenario id from `kwargs` so that is doesn't show up in the
     # response later.
@@ -51,7 +53,7 @@ def simulate(**kwargs):
     # OEMOF SOLPH
     #########################################################################
     # We need a datetimeindex for the optimization problem / energysystem
-    datetimeindex = pd.date_range(scenario.tags.get('year', 2016),
+    datetimeindex = pd.date_range('1/1/'+scenario.tags.get('year', '2012'),
                                   periods=24, freq='H')
 
     energy_system = EnergySystem(groupings=GROUPINGS, time_idx=datetimeindex)
@@ -181,29 +183,31 @@ def simulate(**kwargs):
     om.results()
 
     esplot = output.DataFramePlot(energy_system=energy_system)
+
+
+    csv_links = {}
     for b in buses.values():
-        b.label
-        unstack = esplot.slice_unstacked(unstacklevel=b.label)
-        unstack.to_csv('results_'+b.label+'.csv')
-    #string = unstack.to_html()
+        subset = esplot.slice_by(bus_label=b.label).unstack([0,1,2])
+        fd, temp_path = mkstemp(dir=folder, suffix='.csv')
+        file = open(temp_path, 'w')
+        file.write(subset.to_csv())
+        file.close()
+        os.close(fd)
 
-    #########################################################################
-    # END OF OEMOF SOLPH
-    #########################################################################
-    # Generate a response so that we see something is actually happening.
-    lengths = [len(l) for l in [nodes, ways, relations]]
-    response = (
-            "Done running scenario: '{scenario}'.<br />" +
-            "Contents:<br />" +
-            "  {0[0]:>5} nodes<br />" +
-            "  {0[1]:>5} ways<br />" +
-            "  {0[2]:>5} relations<br />" +
-            "Parameters:<br />  " +
-            "<br />  ".join(["{}: {}".format(*x) for x in kwargs.items()])
-            ).format(lengths,
-                     scenario=scenario.tags['name'])
+        head, tail = os.path.split(temp_path)
+        link = "/static/"+tail
+        csv_links[b.label] = link
 
-    # Now sleep for 5 minutes to pretend we are doing something.
-    time.sleep(0.5)
+
+    #ax = subset.plot(title="Results", stacked=True, width=1, lw=0.1, kind='bar')
+    #pdb.set_trace()
+    #html_plot = mpld3.fig_to_html(ax.get_figure())
+
+    response = ("<h3>Openmod.sh Results </h3><br />" +
+               "Simulation was successful! " +
+               "Please download your results below:<br />  Hub: " +
+               "<br /> Hub: ".join([
+               "<a href='{1}'>{0}</a>".format(*x) for x in csv_links.items()]))
+
     return response
 
