@@ -94,6 +94,12 @@ def login():
             return flask.redirect('http://localhost:8000')
     return flask.render_template('login.html', form=form)
 
+@app.route('/logout')
+def logout():
+    fl.logout_user()
+    flask.flash('Logged out')
+    return flask.redirect(flask.url_for('login'))
+
 ##### User Management stuff ends here (except for the `@fl.login_required`).
 
 @app.route('/')
