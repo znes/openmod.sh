@@ -78,6 +78,20 @@ class Login(wtf.Form):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = Login(flask.request.form)
+    if flask.request.method == 'POST' and form.validate():
+        user = load_user(form.username.data)
+        if user is not None:
+            if user.pw == form.password.data:
+                fl.login_user(user)
+                return flask.redirect('http://localhost:8000')
+            else:
+                flask.flash('Invalid username/password combination.')
+                return flask.redirect(flask.url_for('login'))
+        else:
+            user = User(form.username.data, form.password.data)
+            flask.flash('User "{}" created.'.format(user.name))
+            fl.login_user(user)
+            return flask.redirect('http://localhost:8000')
     return flask.render_template('login.html', form=form)
 
 ##### User Management stuff ends here (except for the `@fl.login_required`).
@@ -85,6 +99,8 @@ def login():
 @app.route('/')
 @fl.login_required
 def root():
+    # TODO: Actually use this by using the `flask.request.args.get('next')` in
+    #       the `login` endpoint instead of hardcoding the redirect there too.
     return flask.redirect('http://localhost:8000')
 
 # TODO: Factor adding the 'Content-Type' header out into a separate function.
