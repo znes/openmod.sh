@@ -7,13 +7,14 @@ from sqlalchemy.orm import sessionmaker
 
 import sqlalchemy as db
 
-from schemas import test as schema  # dev as schema
+from schemas import dev as schema  # dev as schema
 
 
 app = Flask(__name__)
 
 Plant = schema.Plant
 Timeseries = schema.Timeseries
+Grid = schema.Grid
 
 with open("uphpd") as f:
     config = {k: v for (k, v) in
@@ -32,7 +33,8 @@ session = Session()
 def root():
     plants = session.query(Plant).count()
     series = session.query(Timeseries).count()
-    return render_template('index.html', plants=plants, series=series)
+    grids = session.query(Grid).count()
+    return render_template('index.html', plants=plants, series=series, grids=grids)
 
 
 @app.route('/series/<path:ids>')
@@ -91,6 +93,19 @@ def plant_coordinate_json():
                                         plants, lambda p: p.gjson)],
                        "type": "FeatureCollection"})
 
+@app.route('/grids-json')
+def grid():
+    grids = session.query(geojson(Grid.geometry).label("gjson"),
+                           Grid.voltage, Grid.id
+                           ).all()
+    return json.dumps({"features": [{"type": "Feature",
+                                     "geometry": json.loads(g.gjson),
+                                     "properties": {
+                                         "grids": [{"id": g.id,
+                                                     "voltage": g.voltage}]
+                                     }}
+                                    for g in grids],
+                       "type": "FeatureCollection"})
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", debug=True)
