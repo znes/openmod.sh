@@ -552,8 +552,8 @@ def get_nodes():
     template = flask.render_template('node.xml', nodes=nodes)
     return xml_response(template)
 
-def attach_way_attribute_hash(way):
-    way.attributes = {
+def attach_non_node_attribute_hash(non_node):
+    non_node.attributes = {
             ("changeset" if k == "changeset_id" else k):
             (v.name if k == "user" else (
              v.replace(microsecond=0).isoformat() if k == "timestamp" else (
@@ -561,15 +561,15 @@ def attach_way_attribute_hash(way):
              v)))
             for k in ["version", "timestamp", "visible", "uid",
                       "user", "changeset_id", "id"]
-            for v in (getattr(way, k),)}
-    return way
+            for v in (getattr(non_node, k),)}
+    return non_node
 
 @app.route('/osm/api/0.6/ways')
 @cors.cross_origin()
 def get_ways():
     # TODO: See whether you can make this better by querying only once.
     #       Maybe 'in' works?
-    ways = [attach_way_attribute_hash(osm.Node.query.get(int(way_id)))
+    ways = [attach_non_node_attribute_hash(osm.Node.query.get(int(way_id)))
            for way_id in flask.request.args['ways'].split(",")]
     template = flask.render_template('ways.xml', ways=ways)
     return xml_response(template)
