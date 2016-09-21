@@ -263,9 +263,9 @@ def load_nonce(client_key, timestamp, nonce, request_token, access_token):
 def save_nonce(client_key, timestamp, nonce, request_token, access_token):
     return Nonce(timestamp, nonce, request_token, access_token)
 
-@app.route('/iD/connection/oauth/request_token')#, methods=['GET', 'POST'])
-@oauth.request_token_handler
+@app.route('/iD/connection/oauth/request_token', methods=['GET', 'POST'])
 @cors.cross_origin()
+@oauth.request_token_handler
 def oauth_request_token():
     return {}
 
