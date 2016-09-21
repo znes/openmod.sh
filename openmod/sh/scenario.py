@@ -1,6 +1,5 @@
 # Contains the simulation code
 
-import time
 import pdb
 import os
 from tempfile import mkstemp
@@ -49,12 +48,15 @@ def simulate(folder, **kwargs):
     ways = [w for w in elements if isinstance(w, osm.Way)]
     relations = [r for r in elements if isinstance(r, osm.Relation)]
 
+    # emission factor (hardcoded for now....) t/MWh
+    emission_factors = {'gas': 0.2, 'coal': 0.34, 'oil': 0.27, 'lignite': 0.4,
+                        'waste': 0.3, 'biomass': 0}
     #########################################################################
     # OEMOF SOLPH
     #########################################################################
     # We need a datetimeindex for the optimization problem / energysystem
     datetimeindex = pd.date_range('1/1/'+scenario.tags.get('year', '2012'),
-                                  periods=24, freq='H')
+                                  periods=168*12, freq='H')
 
     energy_system = EnergySystem(groupings=GROUPINGS, time_idx=datetimeindex)
 
@@ -187,7 +189,8 @@ def simulate(folder, **kwargs):
 
     csv_links = {}
     for b in buses.values():
-        subset = esplot.slice_by(bus_label=b.label).unstack([0,1,2])
+        subset = esplot.slice_by(bus_label=b.label,
+                                 type='to_bus').unstack([0,1,2])
         fd, temp_path = mkstemp(dir=folder, suffix='.csv')
         file = open(temp_path, 'w')
         file.write(subset.to_csv())
@@ -198,16 +201,80 @@ def simulate(folder, **kwargs):
         link = "/static/"+tail
         csv_links[b.label] = link
 
+    ####################### CALCULATIONS FOR OUTPUT ###########################
+    # get electical hubs production
+    el_buses = [b.label for b in buses.values()
+                if b.energy_sector == 'electricity']
+    elproduction = esplot.slice_by(bus_label=el_buses,
+                                   type='to_bus').unstack([0, 1, 2])
+    elproduction.columns = elproduction.columns.droplevel([0, 1, 2])
+    elproduction_daily_sum = elproduction.resample('1D', how='sum')
 
-    #ax = subset.plot(title="Results", stacked=True, width=1, lw=0.1, kind='bar')
+    # slice fuel types, unstack components and sum by components
+    fossil_consumption = esplot.slice_by(bus_label=global_buses.keys(),
+                                         type='from_bus').unstack(2).sum(axis=1)
+    # drop level 'from_bus' that all rows have anyway
+    fossil_consumption.index = fossil_consumption.index.droplevel(1)
+    # turn index with fuel type to columns
+    fossil_consumption = fossil_consumption.unstack(0)
+
+    fossil_emissions = fossil_consumption.copy()
     #pdb.set_trace()
-    #html_plot = mpld3.fig_to_html(ax.get_figure())
+    for col in fossil_consumption:
+        fossil_emissions[col] = fossil_consumption[col] * emission_factors[col]
+    # sum total emissions
+    emission = fossil_emissions.sum(axis=1)
+    # resampling
+    emission = emission.resample('1D', how='sum')
+    # helpers for generating python-html ouput
+    help_fill = ['tozeroy'] + ['tonexty']*(len(elproduction_daily_sum.columns)-1)
+    fill_dict = dict(zip(elproduction_daily_sum.columns, help_fill))
 
-    response = ("<h3>Openmod.sh Results </h3><br />" +
-               "Simulation was successful! " +
-               "Please download your results below:<br />  Hub: " +
+
+    #pdb.set_trace()
+    response = (
+        "<head>" +
+        "<title>openmod.sh results</title>" +
+        "<script src='https://cdn.plot.ly/plotly-latest.min.js'></script>" +
+        "</head>" +
+        ############################### Plot ##################################
+        ("<body>" +
+        "<div id='myDiv' style='width: 1000px; height: 600px;'></div>" +
+        "<script>" +
+        "var traces = [" +
+        ", ".join(["{{x: {0}, y: {1}, fill: '{fillarg}', name: '{name}'}}".format(
+                   list(range(len(elproduction_daily_sum.index.values))),
+                   list(elproduction_daily_sum[col].values),
+                   name=col,
+                   fillarg=fill_dict[col]) for col in elproduction_daily_sum]) + "];" +
+        "function stackedArea(traces) {" +
+                "for(var i=1; i<traces.length; i++) {" +
+                    "for(var j=0; j<(Math.min(traces[i]['y'].length, traces[i-1]['y'].length)); j++) {" +
+                        "traces[i]['y'][j] += traces[i-1]['y'][j];}}" +
+                "return traces;}" +
+        "var layout = {title: 'Total electricity production on all hubs'," +
+                       "xaxis: {title: 'Day of the year'},"+
+                       "yaxis : {title: 'Energy in MWh'}," +
+                       "yaxis2: {title: 'CO2-emissions in tons', " +
+                           "range: [0, {0}],".format(emission.max()*1.1) +
+                           #"titlefont: {color: 'rgb(148, 103, 189)'}, " +
+                           #"tickfont: {color: 'rgb(148, 103, 189)'}," +
+                           "overlaying: 'y', side: 'right'}," +
+                        "legend: {x: 0, y: 1,}};" +
+        #"var data = " + "["+",".join(["{0}".format(col) for col in subset]) + "];"
+        "var emission = {{x: {0}, y: {1}, type: 'scatter', yaxis: 'y2', name: 'CO2-Emissions'}};".format(
+                                    list(range(len(emission.index.values))),
+                                    list(emission.values)) +
+        "data = stackedArea(traces);" +
+        "data.push(emission);" +
+        "Plotly.newPlot('myDiv', data, layout);" +
+        "</script>" +
+        "</body>") +
+        #######################################################################
+        ("You can download your results below:<br />  Hub: " +
                "<br /> Hub: ".join([
                "<a href='{1}'>{0}</a>".format(*x) for x in csv_links.items()]))
+        )
 
     return response
 
