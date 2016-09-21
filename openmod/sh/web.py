@@ -125,6 +125,15 @@ def capabilities():
     response.headers['Content-Type'] = 'text/xml'
     return response
 
+# Store test OSM data as attributes on an object. In a real app that data would
+# be stored in/retrieved from the database.
+class OSMT: pass
+OSM = OSMT()
+OSM.nodes = [{"lat": 0.0075, "lon": -0.0025,
+              "tags": {"ele": 0, # stands for 'elevation' (usually)
+                       "name": "A Test Node"}}]
+OSM.changesets = []
+
 @app.route('/osm/api/0.6/map')
 @cors.cross_origin()
 def osm_map():
@@ -142,12 +151,6 @@ def osm_map():
     response = flask.make_response(template)
     response.headers['Content-Type'] = 'text/xml'
     return response
-
-# Put a test node on the osm.map function. In a real app that data would be
-# retrieved from the database.
-osm_map.nodes = [{"lat": 0.0075, "lon": -0.0025,
-                  "tags": {"ele": 0, # stands for 'elevation' (usually)
-                           "name": "A Test Node"}}]
 
 ##### OAuth1 provider code ####################################################
 #
