@@ -8,7 +8,7 @@ The following python packages have to be installed in order to use this:
   * geoalchemy2
   * oemof.db
   * psycopg2
-  * sqlachemy
+  * sqlalchemy
 
 As you can see, `openmod.sh` depends on `oemof.db`. Have a look at it's
 [README][0] for information on how to configure database access. There's
