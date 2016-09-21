@@ -34,7 +34,13 @@ $(document).ready(function() {
                                 featureProjection: 'EPSG:3857'};
              var features = gjs.readFeatures(d, projections);
              var layer = new ol.layer.Vector(
-                 {source: new ol.source.Vector({features: features})});
+                 {source: new ol.source.Vector({features: features}),
+                  style: new ol.style.Style({image: new ol.style.Icon({
+                    src: "/static/dot.svg",
+                    anchorXUnits: 'pixel',
+                    anchorYUnits: 'pixel',
+                    scale: 1
+                  })})});
              map.addLayer(layer, projections);
            },
            dataType: "json"});
