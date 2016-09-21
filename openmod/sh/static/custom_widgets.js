@@ -70,7 +70,7 @@ widgets.scenarios = function (parent, context) {
   var input = outer.append('input')
     .attr('class', 'value combobox-input')
     .attr('type', 'text')
-    .attr('placeholder', 'Checking selected scenario');
+    .attr('placeholder', 'Getting scenarios');
   outer.append('div').attr('class', 'combobox-caret');
 
   d3.xhr('/scenario')
