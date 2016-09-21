@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="openmod.sh">
+  {% for relation in relations %}
+    <relation {% for k,v in relation.attributes.items() %} {{k}}="{{v}}"
+              {% endfor %}>
+      {% for tag in relation.tags %}<tag k="{{tag.key}}" v="{{tag.value}}"/>
+      {% endfor %}
+      {% for reference in relation.referenced_nodes %}
+        <member type="node" ref="{{reference.node.id}}"
+          {% if reference.role %}
+                role="{{reference.role}}"
+          {% endif %}
+        />
+      {% endfor %}
+      {% for reference in relation.referenced_ways %}
+        <member type="way" ref="{{reference.way.id}}"
+          {% if reference.role %}
+                role="{{reference.role}}"
+          {% endif %}
+        />
+      {% endfor %}
+      {% for reference in relation.referenced %}
+        <member type="relation" ref="{{reference.referenced_id}}"
+          {% if reference.role %}
+                role="{{reference.role}}"
+          {% endif %}
+        />
+      {% endfor %}
+    </relation>
+  {% endfor %}
+</osm>
