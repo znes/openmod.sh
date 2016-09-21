@@ -8,6 +8,9 @@
   </ul>
   {% endif %}
 {% endwith %}
+{% if current_user.is_authenticated %}
+<p> Logged in as {{ current_user.name }}.</p>
+{% else %}
 <form method=post action="/login">
   <dl>
     {{ render_field(form.username) }}
@@ -15,4 +18,5 @@
   </dl>
   <p><input type=submit value=Login>
 </form>
+{% endif %}
 
