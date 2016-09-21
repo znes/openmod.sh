@@ -4,6 +4,8 @@ from xml.etree.ElementTree import XML
 import functools as fun
 import itertools
 import json
+import multiprocessing as mp
+import multiprocessing.pool as mpp
 
 from flask_oauthlib.provider import OAuth1Provider
 import flask
@@ -16,6 +18,7 @@ import wtforms as wtf
 
 import oemof.db
 
+from . import scenario
 from .schemas import osm
 
 
@@ -24,6 +27,11 @@ app = flask.Flask(__name__)
 # and store it in a safe place.
 # See: http://flask.pocoo.org/docs/0.11/quickstart/#sessions
 app.secret_key = b"DON'T USE THIS IN PRODUCTION! " + b'\xdb\xcd\xb4\x8cp'
+
+# Set up a pool of workers to which jobs can be submitted and a dictionary
+# which stores the asynchronous result objects.
+app.workers = mpp.Pool(1)
+app.results = {}
 
 ##### Utility Functions #######################################################
 #
@@ -194,6 +202,28 @@ def osm_map():
                                           minlon=miny, maxlon=maxy,
                                           minlat=minx, maxlat=maxx)
     return xml_response(template)
+
+@app.route('/simulate', methods=['PUT'])
+def simulate():
+    fras = flask.request.args
+    result = app.workers.apply_async(scenario.simulate,
+                                     #kwds=fras)
+                                     kwds={k: fras[k] for k in fras})
+    key = str(id(result))
+    app.results[key] = result
+    return key
+
+@app.route('/simulation/<job>')
+def simulation(job):
+    if not job in app.results:
+        return "Unknown job."
+    elif not app.results[job].ready():
+        return ("Job running, but not finished yet. <br />" +
+                "Please come back later.")
+    else:
+        result = app.results[job].get()
+        del app.results[job]
+        return result
 
 ##### OAuth1 provider code ####################################################
 #
