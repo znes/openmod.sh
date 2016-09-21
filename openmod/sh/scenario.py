@@ -31,6 +31,10 @@ def simulate(**kwargs):
 
     scenario = session.query(osm.Relation).get(int(kwargs['scenario'][1:]))
 
+    scenario_tags = {}
+    for t in scenario.tags:
+        scenario_tags.update({t.key: t.value})
+
     # Delete the scenario id from `kwargs` so that is doesn't show up in the
     # response later.
     del kwargs['scenario']
@@ -45,14 +49,14 @@ def simulate(**kwargs):
     relations = scenario.referenced # Make sure to traverse these recursively.
 
 
-
-
     #########################################################################
     # OEMOF SOLPH
     #########################################################################
     # We need a datetimeindex for the optimization problem / energysystem
     # TODO: Replace date and period with arguments from scenario
-    datetimeindex = pd.date_range('1/1/2012', periods=24, freq='H')
+    datetimeindex = pd.date_range(scenario_tags.get('year', 2016),
+                                  periods=24, freq='H')
+
     energy_system = EnergySystem(groupings=GROUPINGS, time_idx=datetimeindex)
 
     ## Create Nodes (added automatically to energysystem)
@@ -97,7 +101,6 @@ def simulate(**kwargs):
                                     date_from='2012-01-01 00:00:00',
                                     date_to='2012-01-01 23:00:00')
     string = unstack.to_html()
-
 
 #    fig = plt.figure()
 #    esplot.plot(title="January 2012", stacked=True, width=1, lw=0.1,
