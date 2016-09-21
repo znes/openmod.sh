@@ -7,9 +7,8 @@ $(document).ready(function() {
     return result;
   };
 
-  $.ajax({ url: "series",
-           success: function (d, _, _) {$.plot($("#timeseries-plot"), d);},
-           dataType: "json"});
+  var plot = $.plot($("#timeseries-plot"), []);
+  $('#timeseries-plot').hide();
 
   var popup = { close: $('#close-popup'), content: $('#popup-content'),
                 container: $('#popup') };
@@ -57,6 +56,19 @@ $(document).ready(function() {
                  $.each(feature.get("plants"), function (i, x) {
                    var button = $(
                        '<a class="plant-id" href="#">' + x.id + '</a>' );
+                   button.click(function (e) {
+                     $.ajax({ url: "series/" + x.id,
+                              success: function (d, _, _) {
+                                console.log("Url was: series/" + x.id)
+                                console.log("Setting plot data to: " +
+                                    JSON.stringify(d, null, 2));
+                                plot.setData(d);
+                                plot.setupGrid();
+                                plot.draw();},
+                              dataType: "json"});
+                     $('#timeseries-plot').show();
+                     return false;
+                   });
                    content.append($('<tr></tr>').append(
                          $('<td></td>').append(button)).append(
                          $("<td>" + x.capacity + "</td>")));
