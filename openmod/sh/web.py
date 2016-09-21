@@ -1,7 +1,7 @@
 import itertools
 import json
 
-from flask import Flask, make_response, render_template
+from flask import Flask, make_response, render_template, request
 import flask_cors as cors # TODO: Check whether the `@cors.cross_origin()`
                           #       decorators are still necessary once 'iD' is
                           #       served from within this app.
@@ -37,6 +37,30 @@ def capabilities():
     response = make_response(template)
     response.headers['Content-Type'] = 'text/xml'
     return response
+
+@app.route('/osm/api/0.6/map')
+@cors.cross_origin()
+def osm_map():
+    left, bottom, right, top = map(float, request.args['bbox'].split(","))
+    minx, maxx = sorted([top, bottom])
+    miny, maxy = sorted([left, right])
+    nodes = [dict(id=id(n), **n)
+            for n in osm_map.nodes
+            for x, y in ((n["lat"], n["lon"]),)
+            if minx <= x and  miny <= y and maxx >= x and maxy >= y]
+    template = render_template('map.xml', nodes=nodes,
+                                          minlon=miny, maxlon=maxy,
+                                          minlat=minx, maxlat=maxx)
+
+    response = make_response(template)
+    response.headers['Content-Type'] = 'text/xml'
+    return response
+
+# Put a test node on the osm.map function. In a real app that data would be
+# retrieved from the database.
+osm_map.nodes = [{"lat": 0.0075, "lon": -0.0025,
+                  "tags": {"ele": 0, # stands for 'elevation' (usually)
+                           "name": "A Test Node"}}]
 
 @app.route('/series/<path:ids>')
 def series(ids):
