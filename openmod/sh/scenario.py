@@ -5,16 +5,16 @@ import time
 from sqlalchemy.orm import sessionmaker
 #import matplotlib.pyplot as plt, mpld3
 import pandas as pd
-import numpy as np
+
 # solph imports
-from oemof.solph import (Sink, Source, LinearTransformer, Bus, Flow,
+from oemof.solph import (Sink, Source, LinearTransformer, Storage, Bus, Flow,
                          OperationalModel, EnergySystem, GROUPINGS)
 import oemof.db as db
 import oemof.outputlib as output
 # Here you would now import the `oemof` modules and proceed to customize the
 # `simulate` function to generate objects and start the simulation.
 
-from .schemas import osm
+from openmod.sh.schemas import osm
 
 
 def simulate(**kwargs):
@@ -31,10 +31,7 @@ def simulate(**kwargs):
 
     scenario = session.query(osm.Relation).filter_by(
             id = int(kwargs['scenario'][1:])).first()
-
-    scenario_tags = {}
-    for t in scenario.tags:
-        scenario_tags.update({t.key: t.value})
+            #id = 1).first()
 
     # Delete the scenario id from `kwargs` so that is doesn't show up in the
     # response later.
@@ -45,46 +42,112 @@ def simulate(**kwargs):
     # contents here.
     # These are lists with Node, Way and Relation objects.
     # See the .schemas.osm module for the API.
-    nodes = scenario.referenced_nodes
-    ways = scenario.referenced_ways
-    relations = scenario.referenced # Make sure to traverse these recursively.
-
+    elements = scenario.elements
+    nodes = [n for n in elements if isinstance(n, osm.Node)]
+    ways = [w for w in elements if isinstance(w, osm.Way)]
+    relations = [r for r in elements if isinstance(r, osm.Relation)]
 
     #########################################################################
     # OEMOF SOLPH
     #########################################################################
     # We need a datetimeindex for the optimization problem / energysystem
-    # TODO: Replace date and period with arguments from scenario
-    datetimeindex = pd.date_range(scenario_tags.get('year', 2016),
-                                  periods=24, freq='H')
+    datetimeindex = pd.date_range(scenario.tags.get('year', 2016),
+                                  periods=4, freq='H')
 
     energy_system = EnergySystem(groupings=GROUPINGS, time_idx=datetimeindex)
 
-    ## Create Nodes (added automatically to energysystem)
-    bel = Bus(label='bel')
-    bgas = Bus(label='bgas', balanced=False)
+    ## CREATE NODES FROM RELATIONS OF TYPE "HUB ASSIGNMENT"
+    buses = {}
+    for r in relations:
+        if r.tags.get('type') is not None:
+            if r.tags['type'] == 'hub_relation':
+                 name = r.tags.get('name')
+                 buses[name] = Bus(label=str(name))
+                 buses[name].energy_sector = r.tags['energy_sector']
+        else:
+            raise ValueError('Missing tag type of component with name {0}.'.format(r.tags['name']))
 
-    # sources from ID input """(i,n) in enumerate(nodes)"""
+    ## GLOBAL FUEL BUSES FOR TRANSFORMER INPUTS (THAT ARE NOT IN RELATIONS)
+    global_buses = {n.tags['fuel_type']:Bus(label=n.tags['fuel_type'],
+                                            balanced=False)
+                    for n in nodes
+                    if n.tags.get('oemof_class') == 'linear_transformer'}
+
+    ## Create Nodes (added automatically to energysystem)
     for n in nodes:
-        tags = {}
-        for t in n.node.tags:
-            tags.update({t.key: t.value})
-        if tags.get('type') == 'source':
-            Source(label=tags['name'],
-                   outputs={bel:Flow(actual_value=np.random.rand(24),
-                            nominal_value=float(tags['power']),
+        # GET RELATIONS 'HUB ASSIGNMENT' FOR NODE
+        node_bus = [r.tags['name'] for r in n.referencing_relations
+                    if r.tags['name'] in list(buses.keys())]
+        # CREATE SINK OBJECTS
+
+        if n.tags.get('oemof_class') == 'sink':
+            Sink(label=n.tags['name'],
+                 inputs={buses[node_bus[0]]:
+                     Flow(nominal_value=float(n.tags['energy_amount']),
+                          actual_value=n.timeseries['timeseries'],
+                          fixed=True)})
+        # CREATE SOURCE OBJECTS
+        if n.tags.get('oemof_class') == 'source':
+            Source(label=n.tags['name'],
+                   outputs={buses[node_bus[0]]:
+                       Flow(nominal_value=float(n.tags['installed_power']),
+                            actual_value=n.timeseries['timeseries'],
                             fixed=True)})
-        if tags.get('type') == 'powerplant':
-            LinearTransformer(label=tags['name'],
-                              inputs={bgas: Flow()},
-                              outputs={bel: Flow(nominal_value=float(tags['power']),
-                              variable_costs=40)},
-                              conversion_factors={bel: 0.50})
-        if tags.get('type') == 'demand':
-            Sink(label=tags['name'],
-                 inputs={bel: Flow(nominal_value=float(tags['amount']),
-                         actual_value=np.random.rand(24),
-                         fixed=True)})
+        # CREATE TRANSFORMER OBJECTS
+        if n.tags.get('oemof_class') == 'linear_transformer':
+            if n.tags.get('type') == 'flexible_generator':
+                # CREATE LINEAR TRANSFORMER
+                ins =  global_buses[n.tags['fuel_type']]
+                outs = buses[node_bus[0]]
+                LinearTransformer(label=n.tags['name'],
+                                  inputs={ins: Flow(variable_costs=float(n.tags.get('variable_costs', 0)))},
+                                  outputs={outs: Flow(nominal_value=float(n.tags['installed_power']))},
+                conversion_factors={outs:float(n.tags['efficiency'])})
+            if n.tags.get('type') == 'combined_flexible_generator':
+                # CREATE COMBINED HEAT AND POWER AS LINEAR TRANSFORMER
+                ins =  global_buses[n.tags['fuel_type']]
+                heat_out = [buses[k] for k in node_bus
+                            if buses[k].energy_sector == 'heat'][0]
+                power_out = [buses[k] for k in node_bus
+                             if buses[k].energy_sector == 'electricity'][0]
+                LinearTransformer(label=n.tags['name'],
+                                  inputs={ins: Flow(variable_costs=float(n.tags.get('variable_costs', 0)))},
+                                  outputs={power_out: Flow(nominal_value=float(n.tags['installed_power'])),
+                                           heat_out: Flow()},
+                conversion_factors={heat_out:float(n.tags['thermal_efficiency']),
+                                    power_out:float(n.tags['electrical_efficiency'])})
+
+        if n.tags.get('oemof_class') == 'storage':
+            # CRAETE STORAGE OBJECTS
+            # Oemof solph does not provide direct way to set power in/out of
+            # storage hence, we need to caculate the needed ratios upfront
+            nicr = float(n.tags['installed_power']) / float(n.tags['installed_energy'])
+            nocr = float(n.tags['installed_power']) / float(n.tags['installed_energy'])
+            Storage(label=n.tags['name'],
+                    inputs={buses[node_bus[0]]:Flow()},
+                    outputs={buses[node_bus[0]]:Flow()},
+                    nominal_capacity=float(n.tags['installed_energy']),
+                    nominal_input_capacity_ratio=nicr,
+                    nominal_output_capacity_ration=nocr)
+    for w in ways:
+        way_bus = [r.tags['name'] for r in w.referencing_relations
+                    if r.tags['name'] in list(buses.keys())]
+        if w.tags.get('oemof_class') == 'linear_transformer':
+            # CREATE TWO TRANSFORMER OBJECTS WITH DIFFERENT DIRECTIONS IN/OUTS
+            if w.tags.get('type') == 'transmission':
+                # transmission lines are modelled as two transformers with
+                # the same technical parameters
+                ins = buses[way_bus[0]]
+                outs = buses[way_bus[1]]
+                LinearTransformer(label=w.tags['name']+'_1',
+                                  inputs={outs: Flow()},
+                                  outputs={ins: Flow(nominal_value=float(w.tags['installed_power']))},
+                conversion_factors={ins:float(w.tags['efficiency'])})
+                LinearTransformer(label=w.tags['name']+'_2',
+                                  inputs={ins: Flow()},
+                                  outputs={outs: Flow(nominal_value=float(w.tags['installed_power']))},
+                conversion_factors={outs:float(w.tags['efficiency'])})
+
 
     ## Create optimization model, solve it, wrtie back results
     om = OperationalModel(es=energy_system)
@@ -97,23 +160,19 @@ def simulate(**kwargs):
     om.results()
 
     # figure to html with mpld3 package ???
-    esplot = output.DataFramePlot(energy_system=energy_system)
-    unstack = esplot.slice_unstacked(bus_label="bel", type="to_bus",
-                                    date_from='2012-01-01 00:00:00',
-                                    date_to='2012-01-01 23:00:00')
-    string = unstack.to_html()
-
-#    fig = plt.figure()
-#    esplot.plot(title="January 2012", stacked=True, width=1, lw=0.1,
-#                kind='bar')
-#    string = mpld3.fig_to_html(fig)
+    #esplot = output.DataFramePlot(energy_system=energy_system)
+    #unstack = esplot.slice_unstacked(bus_label=power_out.label,
+    #                                 type="to_bus",
+    #                                 date_from='2012-01-01 00:00:00',
+    #                                 date_to='2012-01-01 23:00:00')
+    #string = unstack.to_html()
 
     #########################################################################
     # END OF OEMOF SOLPH
     #########################################################################
     # Generate a response so that we see something is actually happening.
     lengths = [len(l) for l in [nodes, ways, relations]]
-    response = string + (
+    response = (
             "Done running scenario: '{scenario}'.<br />" +
             "Contents:<br />" +
             "  {0[0]:>5} nodes<br />" +
