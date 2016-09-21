@@ -1,0 +1,3 @@
+name;lon;lat;hubs;energy_amount;energy_sector;timeseries
+mysink;10.1;54.1;myhub1;100;electricity;mysink
+myheatsink;10.54;54.06;myheathub1;40;heat;myheatsink
