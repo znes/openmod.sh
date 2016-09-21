@@ -6,7 +6,6 @@ geoalchemy2
 keyrings.alt
 oemof
 psycopg2
-sqlalchemy
 Flask-WTF
 WTForms
 
