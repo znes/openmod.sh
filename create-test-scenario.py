@@ -27,7 +27,9 @@ myscenario = osm.Relation(myid='myscenario',
                           changeset_id=csid,
                           timestamp=ts,
                           tags={'type': 'scenario',
-                                'name': 'myscenario'})
+                                'name': 'myscenario',
+                                'scneario_year': 2050,
+                                'scenario_description':'My test scenario.'})
 DB.add(myscenario)
 DB.flush()
 
@@ -83,7 +85,7 @@ nodes = [{'lon': 10.1,
                    'variable_costs': 3.5,
                    'energy_sector': 'powerheat'}},
          {'lon': 10.5,
-          'lat': 54.2,
+          'lat': 54,
           'hubs': ['myhub2'],
           'tags': {'name': 'mystorage',
                    'type': 'storage',
@@ -120,7 +122,8 @@ hubs =[{'area_nodes': [(10,54),(10.3,54),(10.3,54.2),(10,54.2),(10,54)],
         'tags': {'name': 'myhub2',
                  'type': 'hub_relation',
                  'energy_sector': 'electricity'}},
-       {'area_nodes': [(10.2,54),(10.4,54),(10.4,54.2),(10.3,54.2),(10.2,54)],
+       {'area_nodes': [(10.5,54.05),(10.55,54.05),(10.55,54.1),(10.5,54.1),
+                       (10.5,54.05)],
         'tags': {'name': 'myheathub1',
                  'type': 'hub_relation',
                  'energy_sector': 'heat'}}]
