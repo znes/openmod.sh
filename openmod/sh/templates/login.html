@@ -12,6 +12,7 @@
 <p> Logged in as {{ current_user.name }}.</p>
 {% else %}
 <form method=post action="/login">
+  {{ form.hidden_tag() }}
   <dl>
     {{ render_field(form.username) }}
     {{ render_field(form.password) }}

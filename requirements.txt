@@ -5,6 +5,7 @@ geoalchemy2
 oemof
 psycopg2
 sqlalchemy
+Flask-WTF
 WTForms
 
 # oemof.db which is not yet a package on PyPI
