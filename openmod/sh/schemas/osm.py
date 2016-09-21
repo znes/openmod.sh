@@ -104,8 +104,12 @@ class Node(DB.Model):
 class Way(DB.Model):
     id = DB.Column(DB.Integer, primary_key=True)
     myid = DB.Column(DB.String(255))
+    version = DB.Column(DB.String)
     tags = DB.relationship(Tag, secondary=tags_and_ways)
     nodes = DB.relationship(Node, secondary=nodes_and_ways)
+    changeset = DB.relationship('Changeset', uselist=False)
+    changeset_id = DB.Column(DB.Integer, DB.ForeignKey('changeset.id'))
+
 
 class Changeset(DB.Model):
     id = DB.Column(DB.Integer, primary_key=True)
