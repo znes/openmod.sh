@@ -1,3 +1,6 @@
+.close { text-decoration: none; position: absolute; top: 3px; right: 3px;}
+.close:visited, .plant-id {color: inherit; }
+.popup { background: #eee8d5; color: #93a1a1; }
 .plot { height: 233px; width: 377px; }
 #title { color: #586e75; position: absolute; left: 1.9em; top: 0; }
 
