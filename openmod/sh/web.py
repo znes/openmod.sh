@@ -246,7 +246,12 @@ class Client:
                               # The [OAuthLib example][0] needs this redirect.
                               #
                               # [0]: https://oauthlib.readthedocs.io/en/latest/oauth1/server.html#try-your-provider-with-a-quick-cli-client
-                              "http://127.0.0.1/cb"]
+                              "http://127.0.0.1/cb",
+                              # This one is needed by the iD editor. This is
+                              # where the user is redirected to after
+                              # authorizing iD, so that iD gets to know that it
+                              # can go on.
+                              "http://127.0.0.1:8000/land.html"]
         self.default_redirect_uri = self.redirect_uris[0]
         self.default_realms = []
 CLIENT = Client()
