@@ -1,8 +1,11 @@
 from datetime import datetime, timezone as tz
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import MetaData
 import werkzeug.security as ws
+from oemof.db import config as cfg
 
-DB = SQLAlchemy()
+metadata = MetaData(schema=cfg.get('openMod.sh R/W', 'schema'))
+DB = SQLAlchemy(metadata=metadata)
 
 class User(DB.Model):
     """ Required by flask-login.
@@ -74,6 +77,7 @@ class Tag(DB.Model):
 
 class Node(DB.Model):
     id = DB.Column(DB.Integer, primary_key=True)
+    myid = DB.Column(DB.String(255), unique=True)
     lat = DB.Column(DB.Float, nullable=False)
     lon = DB.Column(DB.Float, nullable=False)
     version = DB.Column(DB.Integer, nullable=False)
@@ -99,6 +103,7 @@ class Node(DB.Model):
 
 class Way(DB.Model):
     id = DB.Column(DB.Integer, primary_key=True)
+    myid = DB.Column(DB.String(255), unique=True)
     tags = DB.relationship(Tag, secondary=tags_and_ways)
     nodes = DB.relationship(Node, secondary=nodes_and_ways)
 
