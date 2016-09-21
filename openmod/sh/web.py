@@ -1,3 +1,4 @@
+from datetime import datetime, timezone as tz
 from urllib.parse import urlparse, urljoin
 from xml.etree.ElementTree import XML
 import functools as fun
@@ -519,6 +520,94 @@ def upload_changeset(cid):
         created_nodes.append(element)
     osm.DB.session.flush()
 
+    created_relations = itertools.chain(*[ c.findall('relation')
+                                           for c in creations])
+    created_relations = {
+            int(atts["id"]):
+                ( osm.Relation(
+                    timestamp=datetime.now(tz.utc),
+                    uid=fl.current_user.id,
+                    changeset_id=cid,
+                    tags=[osm.Tag(k, v) for k,v in fun.reduce(
+                        lambda old, new: old.update(new) or old,
+                        [ {k: v}
+                            for tag in node.findall('tag')
+                            for k, v in ((tag.attrib['k'], tag.attrib['v']),)],
+                        {}).items()],
+                    version=1,
+                    visible=True)
+                , node.findall('member'))
+            for node in created_relations
+            for atts in (node.attrib,)}
+
+    for old_id, (relation, members) in created_relations.items():
+        osm.DB.session.add(relation)
+        osm.DB.session.flush()
+        relation.old_id = old_id
+        relation.tag = "relation"
+        for member in members:
+            if member.attrib['type'] == 'node':
+                reference = osm.rs_and_nodes(node_id=int(member.attrib['ref']),
+                                             relation_id=relation.id)
+            elif member.attrib['type'] == 'way':
+                reference = osm.rs_and_ways(way_id=int(member.attrib['ref']),
+                                            relation_id=relation.id)
+            elif member.attrib['type'] == 'relation':
+                reference = osm.rs_and_rs(
+                        referenced_id=int(member.attrib['ref']),
+                        referencing_id=relation.id)
+
+            if member.attrib['role']:
+                reference.role = member.attrib['role']
+
+            osm.DB.session.add(reference)
+
+        created_nodes.append(relation)
+
+    osm.DB.session.flush()
+
+    modifications = xml.findall('modify')
+    modified_relations = list(
+            itertools.chain(*[c.findall('relation') for c in modifications]))
+    for xml_node in modified_relations:
+        atts = xml_node.attrib
+        relation = osm.Relation.query.get(int(atts["id"]))
+        relation.old_id = relation.id
+        relation.version = atts["version"]
+        relation.changeset = osm.Changeset.query.get(int(atts["changeset"]))
+        relation.tags = relation.tags + [osm.Tag(key=k, value=v)
+                for tag in xml_node.findall('tag')
+                for k, v in ((tag.attrib['k'], tag.attrib['v']),)]
+        members = xml_node.findall('member')
+        nodes = {str(r.node_id): r.node for r in relation.referenced_nodes}
+        ways = {str(r.way_id): r.way for r in relation.referenced_ways}
+        relations = {str(r.referenced_id): r.referenced
+                     for r in relation.referenced}
+        for member in members:
+            if member.attrib['type'] == 'node':
+                reference = nodes.get(member.attrib['ref'],
+                                      osm.rs_and_nodes(
+                                          node_id=int(member.attrib['ref']),
+                                          relation_id=relation.id))
+            elif member.attrib['type'] == 'way':
+                reference = ways.get(member.attrib['ref'],
+                                     osm.rs_and_ways(
+                                         way_id=int(member.attrib['ref']),
+                                         relation_id=relation.id))
+            elif member.attrib['type'] == 'relation':
+                reference = relations.get(
+                        member.attrib['ref'],
+                        osm.rs_and_rs(referenced_id=int(member.attrib['ref']),
+                                      referencing_id=relation.id))
+
+            if member.attrib['role']:
+                reference.role = member.attrib['role']
+
+            osm.DB.session.add(reference)
+
+    for element in modified_relations:
+        element.tag = "relation"
+        created_nodes.append(element)
 
     osm.DB.session.commit()
 
