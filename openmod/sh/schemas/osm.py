@@ -87,17 +87,10 @@ Tag_Associations = DB.Table('tag_associations',
 
 # Define timeseries association tables
 
-ts_and_nodes = DB.Table('timeseries_and_nodes',
+Element_Timeseries_Associations = DB.Table(
+        'element_timeseries_associations',
         DB.Column('timeseries_id', DB.Integer, DB.ForeignKey('timeseries.id')),
-        DB.Column('node_id', DB.Integer, DB.ForeignKey('node.id')))
-
-ts_and_ways = DB.Table('timeseries_and_ways',
-        DB.Column('timeseries_id', DB.Integer, DB.ForeignKey('timeseries.id')),
-        DB.Column('way_id', DB.Integer, DB.ForeignKey('way.id')))
-
-ts_and_rs = DB.Table('timeseries_and_relations',
-        DB.Column('timeseries_id', DB.Integer, DB.ForeignKey('timeseries.id')),
-        DB.Column('relation_id', DB.Integer, DB.ForeignKey('relation.id')))
+        DB.Column('element_id', DB.Integer, DB.ForeignKey('node.id')))
 
 # No association tables anymore. These are regular models.
 
