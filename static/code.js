@@ -53,9 +53,11 @@ $(document).ready(function() {
                  var position = feature.getGeometry().getCoordinates();
                  var content = $(
                      '<table><tr><th>EEG ID</th><th>capacity</th></tr></table>');
+                 var ids = "";
                  $.each(feature.get("plants"), function (i, x) {
                    var button = $(
                        '<a class="plant-id" href="#">' + x.id + '</a>' );
+                   ids += x.id + "/";
                    button.click(function (e) {
                      $.ajax({ url: "series/" + x.id,
                               success: function (d, _, _) {
@@ -73,6 +75,9 @@ $(document).ready(function() {
                          $('<td></td>').append(button)).append(
                          $("<td>" + x.capacity + "</td>")));
                  });
+                 content.append($(
+                       '<button type="button" onclick="location=\'/csv/' +
+                       ids + '\'">Download CSV</button>'));
                  popup.content.html(content);
                  overlay.setPosition(position);
                })});

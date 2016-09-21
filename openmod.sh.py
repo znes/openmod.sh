@@ -1,7 +1,7 @@
 import itertools
 import json
 
-from flask import Flask, render_template
+from flask import Flask, make_response, render_template
 from geoalchemy2.functions import ST_AsGeoJSON as geojson
 from sqlalchemy.orm import sessionmaker
 
@@ -108,6 +108,23 @@ def grid():
 def types():
     return json.dumps([p.type for p in
                        session.query(Plant.type).distinct().all()])
+
+
+@app.route('/csv/<path:ids>')
+def csv(ids):
+    ids = ids.split("/")
+    plants = session.query(Plant.id, Plant.capacity).order_by(Plant.id)
+    if ids:
+        plants = plants.filter(Plant.id.in_(ids))
+    header = [d["name"] for d in plants.column_descriptions]
+    app.logger.debug(header)
+    plants = plants.all()
+    body = "\n".join([",".join([str(getattr(p, k)) for k in header])
+                      for p in plants])
+    response = make_response(",".join(header) + "\n" + body)
+    response.headers["Content-Disposition"] = ("attachment;" +
+                                               "filename=eeg_extract.csv")
+    return response
 
 
 if __name__ == '__main__':
