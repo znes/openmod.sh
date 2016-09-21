@@ -196,7 +196,8 @@ def osm_map():
     # Get all ways referencing the above nodes.
     ways = set(way for node in nodes for way in node.ways)
     # Get all relations referencing the above ways.
-    relations = set(relation for way in ways for relation in way.relations)
+    relations = set(relation for way in ways
+                             for relation in way.referencing_relations)
     # Add possibly missing nodes (from outside the bounding box) referenced by
     # the ways retrieved above.
     nodes = set(itertools.chain([n for way in ways for n in way.nodes], nodes))
