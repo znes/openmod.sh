@@ -242,6 +242,19 @@ def scenarios():
                             if (v != flask.session.get("scenario"))]))))
     return json.dumps(sorted(scenarios))
 
+@app.route('/scenario', defaults={"s": None}, methods=['GET'])
+@app.route('/scenario/<s>', methods=['PUT'])
+@fl.login_required
+def scenario(s):
+    if flask.request.method == 'GET':
+        return flask.session.get("scenario", "")
+    elif ( (s == "Deselect selected scenario" or s == "") and
+           "scenario" in flask.session):
+        del flask.session["scenario"]
+    else:
+        flask.session["scenario"] = s
+    return ""
+
 ##### OAuth1 provider code ####################################################
 #
 # In order to talk to the iD editor, we need to implement and OAuth1 provider.
