@@ -474,11 +474,12 @@ def upload_changeset(cid):
                  {}).items())])
             for way in created_ways
             for att in (way.attrib,)}
-    osm.DB.session.commit()
     for k, w in created_ways.items():
         w.old_id = k
         w.tag = "way"
+        osm.DB.session.add(w)
         created_nodes.append(w)
+    osm.DB.session.commit()
     return flask.render_template('diffresult.xml', modifications=created_nodes)
 
 @app.route('/iD/api/0.6/changeset/<id>/close', methods=['PUT'])
