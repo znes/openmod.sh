@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="openmod.sh">
+ <user display_name="{{ user.name }}" id="{{ user.id }}">
+   <contributor-terms agreed="true" pd="true"/>
+   <roles></roles>
+   <changesets count="4182"/>
+   <traces count="0"/>
+   <blocks>
+       <received count="0" active="0"/>
+   </blocks>
+   <!--
+   <home lat="49.4733718952806" lon="8.89285988577866" zoom="3"/>
+   <description>The description of your profile</description>
+  -->
+   <languages>
+     <lang>de-DE</lang>
+     <lang>de</lang>
+     <lang>en-US</lang>
+     <lang>en</lang>
+   </languages>
+   <messages>
+     <received count="0" unread="0"/>
+     <sent count="0"/>
+   </messages>
+ </user>
+</osm>
