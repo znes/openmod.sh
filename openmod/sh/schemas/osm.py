@@ -71,7 +71,7 @@ class Node_Way_Associations(DB.Model):
         way = DB.relationship('Way')
 
 class Element_Relation_Associations(DB.Model):
-        __tablename__ = 'Element_Relation_Associations'
+        __tablename__ = 'element_relation_associations'
         id = DB.Column(DB.Integer, primary_key=True)
         role = DB.Column(DB.String(255))
         relation_id = DB.Column(DB.Integer, DB.ForeignKey('relation.id'))
