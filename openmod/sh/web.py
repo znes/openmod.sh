@@ -198,8 +198,8 @@ def osm_map():
     scenario = flask.session.get("scenario")
     if (scenario):
         scenario = osm.Relation.query.filter_by(id=scenario).first()
-        nodes = [ n for n in nodes
-                    for scenario in n.referencing_relations]
+        nodes = set(nodes).intersection(scenario.reachable_nodes())
+
     # Get all ways referencing the above nodes.
     ways = set(way for node in nodes for way in node.ways)
     # Get all relations referencing the above ways.
