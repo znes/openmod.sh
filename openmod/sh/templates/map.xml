@@ -19,4 +19,22 @@
     {% for tag in way.tags %}<tag k="{{tag.key}}" v="{{tag.value}}"/>{% endfor %}
   </way>
   {% endfor %}
+  {% for relation in relations %}
+  <relation id="{{relation.id}}" version="{{relation.version}}"
+       changeset="{{relation.changeset.id}}">
+    {% for tag in relation.tags %}<tag k="{{tag.key}}" v="{{tag.value}}"/>
+    {% endfor %}
+    {% for reference in relation.referenced_nodes %}
+    <member type="node" ref="{{reference.node.id}}" role="{{reference.role}}"/>
+    {% endfor %}
+    {% for reference in relation.referenced_ways %}
+    <member type="way" ref="{{reference.way.id}}" role="{{reference.role}}"/>
+    {% endfor %}
+    {% for reference in relation.referenced %}
+    <member type="relation" ref="{{reference.relation.id}}"
+            role="{{reference.role}}"/>
+    {% endfor %}
+  </relation>
+  {% endfor %}
+
 </osm>
