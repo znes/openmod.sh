@@ -461,8 +461,8 @@ def upload_changeset(cid):
     for node in created_nodes:
         osm.DB.session.add(node)
     modifications = xml.findall('modify')
-    modified_nodes = itertools.chain(*[c.findall('node')
-        for c in modifications])
+    modified_nodes = list(
+            itertools.chain(*[c.findall('node') for c in modifications]))
     for xml_node in modified_nodes:
         atts = xml_node.attrib
         tags = xml_node.findall('tag')
@@ -502,8 +502,8 @@ def upload_changeset(cid):
         created_nodes.append(way)
     osm.DB.session.flush()
 
-    modified_ways = itertools.chain(*[c.findall('way')
-        for c in modifications])
+    modified_ways = list(
+            itertools.chain(*[c.findall('way') for c in modifications]))
     for xml_way in modified_ways:
         atts = xml_way.attrib
         tags = xml_way.findall('tag')
