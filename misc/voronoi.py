@@ -67,11 +67,12 @@ print(x)
 
 sql = "\
 CREATE TABLE {0}.area_weights AS  \
-	SELECT  t.station_id t_station_id, r.region_id r_station_id, \
+	SELECT  t.station_id temperature_station_id, r.region_id region_id, \
 		st_intersection (r.geom_polygon, t.voronoi) geom, \
-		st_area (st_intersection (r.geom_polygon, t.voronoi)::geography) area \
+		st_area (st_intersection (r.geom_polygon, t.voronoi)::geography) area, \
+          st_area (st_intersection (r.geom_polygon, t.voronoi)::geography) / st_area(r.geom_polygon::geography) weight \
 		FROM {0}.region r, {0}.temperature_station t \
-		WHERE ST_Intersects(r.geom_polygon,t.voronoi);".format(schema)
+		WHERE ST_Intersects(r.geom_polygon, t.voronoi);".format(schema)
 x = engine.execute(sql)
 print(x)
 
