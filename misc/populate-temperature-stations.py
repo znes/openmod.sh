@@ -19,7 +19,7 @@ web.app.app_context().push()
 DB = dev.DB.session
 
 
-df = pd.read_csv('../data/temperature_stations.csv')
+df = pd.read_csv('../data/sh_temperature_stations_2015.csv')
 
 for i,r in df.iterrows():
     station  = dev.TemperatureStation(station_id=r['station_id'],
