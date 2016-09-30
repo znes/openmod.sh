@@ -12,7 +12,7 @@ Usage:
 python create-scenario-from-csv.py data/scenarios/test
 
 """
-
+import pdb
 import pandas as pd
 import os
 import sys
@@ -34,6 +34,9 @@ if len(scenario_pd) != 1:
 
 timeseries_pd = pd.read_csv(scenario + '-timeseries.scsv', sep=';')
 demand_pd = pd.read_csv(scenario + '-demand.scsv', sep=';')
+
+demand_pd.to_json(scenario + '.json')
+pdb.set_trace()
 
 # This line is necessary so that flask-sqlalchemy creates a database session
 # for us.
