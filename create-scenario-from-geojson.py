@@ -66,7 +66,12 @@ polygons = [f for f in features if f['geometry']['type'] == 'Polygon']
 
 hub_elements = {}
 
+print("Adding points")
+number_of_points = len(points)
+i = 0
 for f in points:
+    i += 1
+    print(i, 'of', number_of_points)
     n = osm.Node(myid=f['id'],
                  uid=uid,
                  changeset_id=csid,
@@ -81,6 +86,7 @@ for f in points:
 
 DB.flush()
 
+print("Adding linestrings")
 for f in linestrings:
     nodes = create_supporting_points(f['geometry']['coordinates'], f['id'])
     w = osm.Way(myid = f['id'],
@@ -96,6 +102,7 @@ for f in linestrings:
 
 DB.flush()
 
+print("Adding polygons")
 for f in polygons:
     nodes = create_supporting_points(f['geometry']['coordinates'][0], f['id'])
     w = osm.Way(myid = f['id'],
@@ -120,5 +127,7 @@ for f in polygons:
     DB.add(r)
 
 DB.flush()
+
+print("Commiting to database")
 DB.commit()
 
