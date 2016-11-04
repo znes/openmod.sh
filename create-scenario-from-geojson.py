@@ -1,7 +1,5 @@
-import geopandas as gdp
 import sys
 import matplotlib.pyplot as plt
-import json
 import pandas as pd
 import geojson
 from datetime import datetime, timezone as tz
