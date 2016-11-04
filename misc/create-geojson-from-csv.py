@@ -20,16 +20,20 @@ import os
 import sys
 import geojson as gj
 
-def extract_coordinates(coords):
-    coords = coords.split(',')
+def extract_coordinates(row):
+    coords = row['geom'].split(',')
     coords = [tuple([float(c) for c in co.split(' ')]) for co in coords]
+    for c in coords:
+        if pd.isnull(c[0]) or pd.isnull(c[1]):
+            print(row)
+            raise Exception("No understandable lat lon given")
     return coords
 
 def create_features(df):
     features = []
     properties = [c for c in list(df) if c not in ['name','geom','timeseries']]
     for _, row in df.iterrows():
-        coords = extract_coordinates(row['geom'])
+        coords = extract_coordinates(row)
         name = row['name']
         if len(coords) == 1:
             feature = gj.Feature(id=name,
