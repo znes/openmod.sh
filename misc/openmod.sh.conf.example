@@ -1,0 +1,17 @@
+<VirtualHost *:80>
+		ServerName localhost
+		ServerAdmin localhost
+		WSGIScriptAlias / /path/to/openmod.sh.wsgi
+		<Directory /home/clemens/znes_clemens/openmodsh/>
+			Require all granted
+		</Directory>
+		Alias /static /path/to/openmod/sh/static
+		<Directory /path/to/openmod/sh/static/>
+			Options FollowSymlinks
+			Require all granted	
+		</Directory>
+		ErrorLog ${APACHE_LOG_DIR}/error.log
+		LogLevel info
+		CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+
