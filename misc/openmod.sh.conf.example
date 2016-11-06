@@ -2,7 +2,7 @@
 		ServerName localhost
 		ServerAdmin localhost
 		WSGIScriptAlias / /path/to/openmod.sh.wsgi
-		<Directory /home/clemens/znes_clemens/openmodsh/>
+		<Directory /path/to/openmodsh/>
 			Require all granted
 		</Directory>
 		Alias /static /path/to/openmod/sh/static
