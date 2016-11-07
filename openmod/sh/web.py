@@ -130,19 +130,19 @@ def login():
     form = Login()
     if form.validate_on_submit():
         user = load_user(osm.User.name2id(form.username.data))
-        if user is not None:
-            if user.check_pw(form.password.data):
+        #if user is not None:
+        if user.check_pw(form.password.data):
                 fl.login_user(user)
                 #print("Current user: {}".format(fl.current_user))
-            else:
+        else:
                 flask.flash('Invalid username/password combination.')
                 return flask.redirect(flask.url_for('login'))
-        else:
-            user = osm.User(form.username.data, form.password.data)
-            osm.DB.session.add(user)
-            osm.DB.session.commit()
-            flask.flash('User "{}" created.'.format(user.name))
-            fl.login_user(user)
+        #else:
+        #    user = osm.User(form.username.data, form.password.data)
+        #    osm.DB.session.add(user)
+        #    osm.DB.session.commit()
+        #    flask.flash('User "{}" created.'.format(user.name))
+        #    fl.login_user(user)
         # From now on: user logged in.
         # TODO: Doesn't seem to work, as `flask.request.args.get('next')` is
         #       always none. Have a look at http://flask.pocoo.org/snippets/63/
