@@ -1,17 +1,18 @@
-<VirtualHost *:80>
-		ServerName localhost
-		ServerAdmin localhost
-		WSGIScriptAlias / /path/to/openmod.sh.wsgi
-		<Directory /path/to/openmodsh/>
-			Require all granted
-		</Directory>
-		Alias /static /path/to/openmod/sh/static
-		<Directory /path/to/openmod/sh/static/>
-			Options FollowSymlinks
-			Require all granted	
-		</Directory>
-		ErrorLog ${APACHE_LOG_DIR}/error.log
-		LogLevel info
-		CustomLog ${APACHE_LOG_DIR}/access.log combined
+Listen ip:port
+
+<VirtualHost ip:port>
+    ServerName localhost
+    ServerAdmin localhost
+    WSGIScriptAlias / /path/to/openmod.sh.wsgi
+    # give access to directory where the reps are
+    # somehow it works even without Options FollowSymLinks
+    <Directory /path/to/openmodsh/>
+        Require all granted
+    </Directory>
+    Alias /static /path/to/openmod/sh/static
+    # write logs to standard apache2 log, usually in /var/log/apache2/
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    LogLevel info
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
 </VirtualHost>
 
