@@ -1,8 +1,8 @@
-name;type;geom;hubs;energy_sector;installed_power;variable_costs;fuel_type;energy_amount;electrical_efficiency;themal_efficiency;installed_energy;timeseries
+name;type;geom;hubs;energy_sector;installed_power;variable_costs;fuel_type;energy_amount;electrical_efficiency;thermal_efficiency;installed_energy;timeseries
 elthegen;combined_flexible_generator;10.54 54.15;elhub2,thehub;powerheat;100;3.5;coal;;0.4;0.4;;
-elsink;demand;10.1 54.1;elhub1;electricity;;;;100;;;;elsink
-elsource;volatile_generator;10.2 54.1;elhub1;electricity;10;;wind;;;;;elsource
-thesink;demand;10.54 54.06;thehub;heat;;;;40;;;;thesink
+elsink;demand;10.1 54.1;elhub1;electricity;;;;100;;;;load_profile
+elsource;volatile_generator;10.2 54.1;elhub1;electricity;10;;wind;;;;;load_profile,variable_costs
+thesink;demand;10.54 54.06;thehub;heat;;;;40;;;;load_profile
 elgen;flexible_generator;10.5 54.1;elhub2;electricity;150;3.5;coal;;0.6;;;
 thestore;storage;10.5 54;thehub;heat;100;0.1;;;;;1000;
 eltrans;transmission;10.3 54.1,10.4 54.1;elhub1,elhub2;electricity;100;;;;0.95;;;

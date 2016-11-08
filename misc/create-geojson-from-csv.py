@@ -53,7 +53,8 @@ def create_features(df):
         if 'timeseries' in df:
             ts_value = row['timeseries']
             if pd.notnull(ts_value):
-                feature['properties']['timeseries'] = list(timeseries_df[ts_value])
+                for ts in ts_value.split(','):
+                    feature['properties'][ts] = list(timeseries_df[name + '.' + ts])
         features.append(feature)
     return features
 

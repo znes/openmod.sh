@@ -14,12 +14,30 @@ def create_supporting_points(points, name='support'):
                      timestamp = ts,
                      changeset_id = csid,
                      lon = p[0],
-                     lat = p[1],
-                     referencing_relations = [scenario])
+                     lat = p[1])
         DB.add(n)
         nodes.append(n)
     DB.flush()
     return nodes
+
+oemof_classes = {'demand': 'sink',
+                 'volatile_generator': 'source',
+                 'flexible_generator': 'linear_transformer',
+                 'combined_flexible_generator': 'linear_transformer',
+                 'storage': 'storage',
+                 'transmission': 'linear_transformer'}
+
+def make_tags(feature):
+    tags = feature['properties'].copy()
+    tags.pop('hubs', None)
+    for key, value in tags.copy().items():
+        if isinstance(value, list):
+            tags[key] = 'timeseries'
+    tags['name'] = feature['id']
+    if feature['properties']['type'] in oemof_classes:
+        tags['oemof_class'] = oemof_classes[feature['properties']['type']]
+    print(tags)
+    return tags
 
 input_filename = sys.argv[1]
 
@@ -76,8 +94,11 @@ for f in points:
                  timestamp=ts,
                  lon=f['geometry']['coordinates'][0],
                  lat=f['geometry']['coordinates'][1],
-                 tags=f['properties'],
+                 tags=make_tags(f),
                  referencing_relations = [scenario])
+    for key,value in n.tags.copy().items():
+        if value == 'timeseries':
+            n.timeseries[key] = f['properties'][key]
     DB.add(n)
     for h in f['properties']['hubs']:
         hub_elements[h] = hub_elements.get(h, []) + [n]
@@ -92,7 +113,7 @@ for f in linestrings:
                 uid = uid,
                 timestamp = ts,
                 nodes = nodes,
-                tags = f['properties'],
+                tags = make_tags(f),
                 referencing_relations = [scenario])
     DB.add(w)
     for h in f['properties']['hubs']:
@@ -120,12 +141,13 @@ for f in polygons:
                     uid = uid,
                     changeset_id = csid,
                     elements = hub_elements[f['id']],
-                    tags = f['properties'],
+                    tags = make_tags(f),
                     referencing_relations = [scenario])
     DB.add(r)
 
 DB.flush()
 
-print("Commiting to database")
+print("Commiting to database. Be patient.")
 DB.commit()
+print("Imported successfully.")
 
