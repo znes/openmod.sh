@@ -100,9 +100,16 @@ def simulate(folder, **kwargs):
 
         # CREATE SINK OBJECTS
         if n.tags.get('oemof_class') == 'sink':
+            if n.tags.get('energy_amount') is None:
+                nominal_value = None
+                if n.timeseries.get('load_profile') is not None:
+                    raise ValueError('No enery amount has been specified' +
+                                     ' but the load_profile has been set!')
+            else:
+                nominal_value = float(n.tags.get('energy_amount'))
             s = Sink(label=n.tags['name'],
                      inputs={buses[node_bus[0]]:
-                     Flow(nominal_value=float(n.tags['energy_amount']),
+                     Flow(nominal_value=nominal_value,
                           actual_value=n.timeseries['load_profile'],
                           variable_costs=variable_costs,
                           fixed=True)})
@@ -112,7 +119,7 @@ def simulate(folder, **kwargs):
             s = Source(label=n.tags['name'],
                        outputs={buses[node_bus[0]]:
                            Flow(nominal_value=float(n.tags['installed_power']),
-                                actual_value=n.timeseries['load_profile'],
+                                actual_value=n.timeseries.get('load_profile'),
                                 variable_costs=variable_costs,
                                 fixed=True)})
             s.fuel_type = n.tags['fuel_type']
