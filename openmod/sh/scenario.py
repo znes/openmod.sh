@@ -56,7 +56,8 @@ def simulate(folder, **kwargs):
     #########################################################################
     # We need a datetimeindex for the optimization problem / energysystem
     datetimeindex = pd.date_range('1/1/'+scenario.tags.get('year', '2012'),
-                                  periods=168*4, freq='H')
+                                  periods=scenario.tags.get('hours', 168*4),
+                                  freq='H')
 
     energy_system = EnergySystem(groupings=GROUPINGS, time_idx=datetimeindex)
 
