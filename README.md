@@ -77,10 +77,12 @@ the transaction. To do so, `cd` into the repository's directory and run:
   ```
 ## Creating test scenario
 
-To setup the test scenario, just run
+To setup a scenario, just run:
   ```
-  python create-test-scenario.py
+  python create-scenario-from-geojson.py path/to/file.geojson
   ```
+
+You find some test scenarios inside the data directory.
 ## Ready to start
 
 Now you're ready to start `openmod.sh` which is as simple as
