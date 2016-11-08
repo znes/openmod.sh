@@ -87,12 +87,23 @@ def simulate(folder, **kwargs):
         # GET RELATIONS 'HUB ASSIGNMENT' FOR NODE
         node_bus = [r.tags['name'] for r in n.referencing_relations
                     if r.tags['name'] in list(buses.keys())]
+        # create the variable cost timeseries if specified, otherwise use
+        # variable costs key from tags
+        if n.tags.get('variable_costs', 0) == 'timeseries':
+            variable_costs = n.timeseries.get('variable_costs')
+            if variable_costs is None:
+                raise ValueError('No timeseries variable cost found for ' +
+                                 'node {0}.'.format(n.tags['name']))
+        else:
+            variable_costs = float(n.tags.get('variable_costs', 0))
+
         # CREATE SINK OBJECTS
         if n.tags.get('oemof_class') == 'sink':
             s = Sink(label=n.tags['name'],
                      inputs={buses[node_bus[0]]:
                      Flow(nominal_value=float(n.tags['energy_amount']),
-                          actual_value=n.timeseries['timeseries'],
+                          actual_value=n.timeseries['load_profile'],
+                          variable_costs=variable_costs,
                           fixed=True)})
             s.type = n.tags['type']
         # CREATE SOURCE OBJECTS
@@ -100,7 +111,8 @@ def simulate(folder, **kwargs):
             s = Source(label=n.tags['name'],
                        outputs={buses[node_bus[0]]:
                            Flow(nominal_value=float(n.tags['installed_power']),
-                                actual_value=n.timeseries['timeseries'],
+                                actual_value=n.timeseries['load_profile'],
+                                variable_costs=variable_costs,
                                 fixed=True)})
             s.fuel_type = n.tags['fuel_type']
             s.type = n.tags['type']
@@ -111,8 +123,7 @@ def simulate(folder, **kwargs):
                 ins =  global_buses[n.tags['fuel_type']]
                 outs = buses[node_bus[0]]
                 t = LinearTransformer(label=n.tags['name'],
-                        inputs={ins: Flow(variable_costs=float(
-                                            n.tags.get('variable_costs', 0)))},
+                        inputs={ins: Flow(variable_costs=variable_costs)},
                         outputs={outs: Flow(nominal_value=float(
                                             n.tags['installed_power']))},
                         conversion_factors={outs:float(n.tags['efficiency'])})
@@ -128,8 +139,7 @@ def simulate(folder, **kwargs):
                 power_out = [buses[k] for k in node_bus
                              if buses[k].energy_sector == 'electricity'][0]
                 t = LinearTransformer(label=n.tags['name'],
-                                inputs={ins: Flow(variable_costs=float(
-                                            n.tags.get('variable_costs', 0)))},
+                                inputs={ins: Flow(variable_costs=variable_costs)},
                                 outputs={power_out: Flow(nominal_value=float(
                                              n.tags['installed_power'])),
                                          heat_out: Flow()},
@@ -148,8 +158,10 @@ def simulate(folder, **kwargs):
             nocr = (float(n.tags['installed_power']) /
                     float(n.tags['installed_energy']))
             s = Storage(label=n.tags['name'],
-                        inputs={buses[node_bus[0]]:Flow()},
-                        outputs={buses[node_bus[0]]:Flow()},
+                        inputs={buses[node_bus[0]]:
+                                    Flow(variable_costs=variable_costs)},
+                        outputs={buses[node_bus[0]]:
+                                    Flow(variable_costs=variable_costs)},
                         nominal_capacity=float(n.tags['installed_energy']),
                         nominal_input_capacity_ratio=nicr,
                         nominal_output_capacity_ration=nocr)
@@ -240,7 +252,8 @@ def simulate(folder, **kwargs):
         solar_production.columns = ['solar']
 
     # slice fuel types, unstack components and sum components by fuel type
-    fossil_production = esplot.slice_by(bus_label=global_buses.keys(), type='from_bus').unstack(2).sum(axis=1)
+    fossil_production = esplot.slice_by(bus_label=global_buses.keys(),
+                                        type='from_bus').unstack(2).sum(axis=1)
     # drop level 'from_bus' that all rows have anyway
     fossil_production.index = fossil_production.index.droplevel(1)
     # turn index with fuel type to columns
