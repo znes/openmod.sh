@@ -12,6 +12,8 @@ from oemof.solph import (Sink, Source, LinearTransformer, Storage, Bus, Flow,
                          OperationalModel, EnergySystem, GROUPINGS)
 import oemof.db as db
 import oemof.outputlib as output
+from bokeh.charts import Bar, output_file, show
+from bokeh.embed import components as bokeh_components
 # Here you would now import the `oemof` modules and proceed to customize the
 # `simulate` function to generate objects and start the simulation.
 
@@ -230,6 +232,7 @@ def simulate(folder, **kwargs):
     # create results dataframe based on oemof's outputlib (multiindex)
     esplot = output.DataFramePlot(energy_system=energy_system)
 
+
     # select subsets of data frame (full hub balances) and write to temp-csv
     csv_links = {}
     for b in buses.values():
@@ -298,6 +301,31 @@ def simulate(folder, **kwargs):
     fill_dict = dict(zip(all_production.columns, help_fill))
 
 
+    colors = {'gas': '#9bc8c8', 'coal': '#9b9499',
+              'oil': '#2e1629', 'lignite': '#c89b9b',
+              'waste': '#8b862a', 'biomass': '#187c66',
+              'wind': '#2b99ff', 'solar':'#ffc125'}
+    p = Bar(all_production.sum()/1e3, legend='top_right',
+            title="Summend energy production",
+            xlabel="Type", ylabel="Energy Production in GWh",
+            width=400, height=400, palette=[colors[col]
+                                            for col in all_production])
+    output_file(os.path.join(folder, 'all_production.html'))
+
+    show(p)
+
+    e = Bar(fossil_emissions.sum(), legend='top_right',
+            title="Summend CO2-emissions of production",
+            xlabel="Type", ylabel="Energy Production in tons",
+            width=400, height=400, palette=[colors[col]
+                                            for col in all_production])
+    output_file(os.path.join(folder, 'emissions.html'))
+    show(e)
+
+    plots= {'production': p, 'emissions': e}
+    script, div = bokeh_components(plots)
+
+    pdb.set_trace()
     #pdb.set_trace()
     response = (
         "<head>" +
@@ -306,6 +334,7 @@ def simulate(folder, **kwargs):
         "</head>" +
         ############################### Plot ##################################
         ("<body>" +
+        div + script +
         "<div id='myDiv' style='width: 1000px; height: 600px;'></div>" +
         "<script>" +
         "var traces = [" +
