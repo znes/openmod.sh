@@ -597,6 +597,10 @@ def upload_changeset(cid):
                 setattr(db_way, att, atts[att])
         db_way.changeset = osm.Changeset.query.filter_by(
                 id = int(atts["changeset"])).first()
+        db_way.nodes=[temporary_id2node.get(node_id) or
+                      osm.Node.query.filter_by(id = node_id).first()
+                      for node_id in map(lambda nd: int(nd.attrib['ref']),
+                                         xml_way.findall('nd'))]
         db_way.tags.update({tag.attrib['k']: tag.attrib['v']
                             for tag in xml_way.findall('tag')})
     for element in modified_ways:
