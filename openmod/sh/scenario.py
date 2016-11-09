@@ -223,10 +223,11 @@ def simulate(folder, **kwargs):
 
     # Create optimization model, solve it, wrtie back results
     om = OperationalModel(es=energy_system)
-    if 'solver' in kwargs.keys():
-        solver = kwargs['solver']
-    else:
+
+    solver =  scenario.tags.get('solver')
+    if solver is not None:
         solver = 'glpk'
+
     om.solve(solver=solver,
              solve_kwargs={'tee': True, 'keepfiles': False})
     om.results()
