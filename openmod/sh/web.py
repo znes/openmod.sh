@@ -131,7 +131,7 @@ def login():
     if form.validate_on_submit():
         user = load_user(osm.User.name2id(form.username.data))
         #if user is not None:
-        if user.check_pw(form.password.data):
+        if ((user is not None) and (user.check_pw(form.password.data))):
                 fl.login_user(user)
                 #print("Current user: {}".format(fl.current_user))
         else:
@@ -597,6 +597,10 @@ def upload_changeset(cid):
                 setattr(db_way, att, atts[att])
         db_way.changeset = osm.Changeset.query.filter_by(
                 id = int(atts["changeset"])).first()
+        db_way.nodes=[temporary_id2node.get(node_id) or
+                      osm.Node.query.filter_by(id = node_id).first()
+                      for node_id in map(lambda nd: int(nd.attrib['ref']),
+                                         xml_way.findall('nd'))]
         db_way.tags.update({tag.attrib['k']: tag.attrib['v']
                             for tag in xml_way.findall('tag')})
     for element in modified_ways:
@@ -696,9 +700,23 @@ def upload_changeset(cid):
         element.tag = "relation"
         created_nodes.append(element)
 
+    osm.DB.session.flush()
+
+    deletions = list(itertools.chain(*xml.findall('delete')))
+    for deletion in deletions:
+        print("Handling deletion: {}".format(deletion))
+        entity = {"node": osm.Node, "way": osm.Way, "relation": osm.Relation
+                 }[deletion.tag]
+        instance = entity.query.filter_by(id=int(deletion.attrib['id'])).first()
+        instance.visible = False
+
     osm.DB.session.commit()
 
-    return flask.render_template('diffresult.xml', modifications=created_nodes)
+    deletions = [{"id": deletion.attrib['id'], "tag": deletion.tag}
+                 for deletion in deletions]
+
+    return flask.render_template('diffresult.xml', modifications=created_nodes,
+                                                   deletions=deletions)
 
 @app.route('/iD/api/0.6/changeset/<id>/close', methods=['PUT'])
 @app.route('/iD/connection/api/0.6/changeset/<id>/close', methods=['PUT'])

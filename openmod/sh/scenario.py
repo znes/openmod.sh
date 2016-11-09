@@ -71,9 +71,13 @@ def simulate(folder, **kwargs):
     # OEMOF SOLPH
     #########################################################################
     # We need a datetimeindex for the optimization problem / energysystem
-    datetimeindex = pd.date_range('1/1/'+scenario.tags.get('year', '2012'),
-                                  periods=scenario.tags.get('hours', 4),
-                                  freq='H')
+    first = pd.to_datetime(scenario.tags.get('scenario_year' + '0101', '2016'))
+    start = first + pd.DateOffset(
+                        hours=int(scenario.tags.get('start_timestep', 0)))
+    end = first + pd.DateOffset(
+                    hours=int(scenario.tags.get('end_timestep', 8759)))
+    datetimeindex = pd.date_range(start=start, end=end, freq='H')
+
 
     energy_system = EnergySystem(groupings=GROUPINGS,
                                  timeindex=datetimeindex)
@@ -221,10 +225,11 @@ def simulate(folder, **kwargs):
 
     # Create optimization model, solve it, wrtie back results
     om = OperationalModel(es=energy_system)
-    if 'solver' in kwargs.keys():
-        solver = kwargs['solver']
-    else:
+
+    solver =  scenario.tags.get('solver')
+    if solver is not None:
         solver = 'glpk'
+
     om.solve(solver=solver,
              solve_kwargs={'tee': True, 'keepfiles': False})
     om.results()
