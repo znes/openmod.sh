@@ -47,8 +47,8 @@ def simulate(folder, **kwargs):
     session = Session()
 
     scenario = session.query(osm.Relation).filter_by(
-                             #id = int(kwargs['scenario'][1:])).first()
-                             id = 1).first()
+                             id = int(kwargs['scenario'][1:])).first()
+                             #id = 1).first()
 
     # Delete the scenario id from `kwargs` so that is doesn't show up in the
     # response later.
