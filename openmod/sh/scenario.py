@@ -225,7 +225,7 @@ def simulate(folder, **kwargs):
     om = OperationalModel(es=energy_system)
 
     solver =  scenario.tags.get('solver')
-    if solver is not None:
+    if solver is None:
         solver = 'glpk'
 
     om.solve(solver=solver,
