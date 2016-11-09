@@ -7,13 +7,15 @@
             {% include %}d templates.
         #}
   {% for node in nodes %}
-    <node id="{{node.id}}" visible="{{node.visible}}" version="{{node.version}}"
+    <node id="{{node.id}}" visible="{{node.visible|string|lower}}"
+          version="{{node.version}}"
           lat="{{node.lat}}" lon="{{node.lon}}">
       {{ tags(node) }}
     </node>
   {% endfor %}
   {% for way in ways %}
   <way id="{{way.id}}" version="{{way.version}}"
+       visible="{{way.visible|string|lower}}"
        changeset="{{way.changeset.id}}">
     {% for node in way.nodes %}<nd ref="{{node.id}}"/>{% endfor %}
     {{ tags(way) }}
@@ -21,7 +23,8 @@
   {% endfor %}
   {% for relation in relations %}
   <relation id="{{relation.id}}" version="{{relation.version}}"
-       changeset="{{relation.changeset.id}}">
+       changeset="{{relation.changeset.id}}"
+       visible="{{relation.visible|string|lower}}">
     {{ tags(relation) }}
     {% for reference in relation.referenced_nodes %}
     <member type="node" ref="{{reference.element.id}}"
