@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 """
+Creates a geojson file from a selected scenario in the database.
+
 Usage:
-python db_to_geojson.py scenarioname outputfile
+python db2geojson.py scenarioname outputfile
 """
 import sys
 import os

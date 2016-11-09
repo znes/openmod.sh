@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """
+Creates a geojson file from a multiple csv input.
+
 The scenario has to be specified in semicolon separated values files like:
 
 scenario.csv
@@ -7,12 +9,13 @@ hubs.csv
 components.csv
 timeseries.csv
 
-All columns are separated by semicolon. Do not use additional white spaces.
+All columns are separated by semicolon. Do not use additional white spaces. Have
+a look at data/scenario/test2 for an example.
 
 On usage you have to specify the directory with the files as specified above.
 
 Usage:
-python create-geojson-from-csv.py csv-directory outputfile
+python csv2geojson.py csv-directory outputfile
 
 """
 import pandas as pd

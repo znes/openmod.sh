@@ -1,3 +1,12 @@
+"""
+Creates a scenario in the databse from a geojson file.
+
+Have a look at data/test1/test1.geojson for an example file.
+
+Usage:
+python geojson2db.py inputfile
+"""
+
 import sys
 import os
 file_path = os.path.dirname(os.path.abspath(__file__))
