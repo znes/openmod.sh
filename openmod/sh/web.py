@@ -131,7 +131,7 @@ def login():
     if form.validate_on_submit():
         user = load_user(osm.User.name2id(form.username.data))
         #if user is not None:
-        if user.check_pw(form.password.data):
+        if ((user is not None) and (user.check_pw(form.password.data))):
                 fl.login_user(user)
                 #print("Current user: {}".format(fl.current_user))
         else:
