@@ -43,6 +43,7 @@ relations = [r for r in elements if isinstance(r, osm.Relation)  and
 
 #print([n.tags.get('name') for n in nodes])
 
+print("Creating features...")
 features = []
 # create all nodes (in nodes there should be node 'help' nodes!!!)
 for n in nodes:
@@ -50,10 +51,13 @@ for n in nodes:
                          geometry=gj.Point([n.lon, n.lat]))
 
     for k,v in n.tags.items():
-        if k != 'name':
+        if k != 'name' and k != 'oemof_class':
             feature['properties'][k] = v
         if v == 'timeseries':
             feature['properties'][k] = n.timeseries[k]
+    hubs = [r for r in n.referencing_relations 
+            if r.tags['type'] == 'hub_relation']
+    feature['properties']['hubs'] = [h.tags['name'] for h in hubs]
     features.append(feature)
 
 # create all hub relations
@@ -62,18 +66,22 @@ for r in relations:
     feature = gj.Feature(id=r.tags.get('name'),
                          geometry=gj.Polygon([[[n.lon, n.lat]
                                                for n in w.nodes]]))
-    for k,v in n.tags.items():
-        if k != 'name':
+    for k,v in r.tags.items():
+        if k != 'name' and k != 'oemof_class':
             feature['properties'][k] = v
     features.append(feature)
 
+# create all transmissions
 for w in ways:
     feature = gj.Feature(id=w.tags.get('name'),
                          geometry=gj.LineString([[n.lon, n.lat]
                                                  for n in w.nodes]))
-    for k,v in n.tags.items():
-        if k != 'name':
+    for k,v in w.tags.items():
+        if k != 'name' and k != 'oemof_class':
             feature['properties'][k] = v
+    hubs = [r for r in n.referencing_relations 
+            if r.tags['type'] == 'hub_relation']
+    feature['properties']['hubs'] = [h.tags['name'] for h in hubs]
     features.append(feature)
 
 
