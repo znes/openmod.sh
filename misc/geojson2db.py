@@ -1,4 +1,8 @@
 import sys
+import os
+file_path = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(file_path, '..'))
+
 #import matplotlib.pyplot as plt
 import pandas as pd
 import geojson
@@ -36,7 +40,6 @@ def make_tags(feature):
     tags['name'] = feature['id']
     if feature['properties']['type'] in oemof_classes:
         tags['oemof_class'] = oemof_classes[feature['properties']['type']]
-    print(tags)
     return tags
 
 input_filename = sys.argv[1]
