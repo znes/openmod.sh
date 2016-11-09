@@ -552,7 +552,9 @@ def upload_changeset(cid):
         tags = xml_node.findall('tag')
         db_node = osm.Node.query.filter_by(id = int(atts["id"])).first()
         db_node.old_id = db_node.id
-        db_node.version = atts["version"]
+        for att in atts:
+            if not (att == "changeset"):
+                setattr(db_node, att, atts[att])
         db_node.changeset = osm.Changeset.query.filter_by(
                 id = int(atts["changeset"])).first()
         db_node.tags.update({tag.attrib['k']: tag.attrib['v']
@@ -590,7 +592,9 @@ def upload_changeset(cid):
         tags = xml_way.findall('tag')
         db_way = osm.Way.query.filter_by(id = int(atts["id"])).first()
         db_way.old_id = db_way.id
-        db_way.version = atts["version"]
+        for att in atts:
+            if not (att == "changeset"):
+                setattr(db_way, att, atts[att])
         db_way.changeset = osm.Changeset.query.filter_by(
                 id = int(atts["changeset"])).first()
         db_way.tags.update({tag.attrib['k']: tag.attrib['v']
@@ -647,7 +651,9 @@ def upload_changeset(cid):
         atts = xml_node.attrib
         relation = osm.Relation.query.filter_by(id = int(atts["id"])).first()
         relation.old_id = relation.id
-        relation.version = atts["version"]
+        for att in atts:
+            if not (att == "changeset"):
+                setattr(db_way, att, atts[att])
         relation.changeset = osm.Changeset.query.filter_by(
                 id = int(atts["changeset"])).first()
         relation.tags.update({tag.attrib['k']: tag.attrib['v']
