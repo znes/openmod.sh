@@ -130,19 +130,19 @@ def login():
     form = Login()
     if form.validate_on_submit():
         user = load_user(osm.User.name2id(form.username.data))
-        if user is not None:
-            if user.check_pw(form.password.data):
+        #if user is not None:
+        if user.check_pw(form.password.data):
                 fl.login_user(user)
                 #print("Current user: {}".format(fl.current_user))
-            else:
+        else:
                 flask.flash('Invalid username/password combination.')
                 return flask.redirect(flask.url_for('login'))
-        else:
-            user = osm.User(form.username.data, form.password.data)
-            osm.DB.session.add(user)
-            osm.DB.session.commit()
-            flask.flash('User "{}" created.'.format(user.name))
-            fl.login_user(user)
+        #else:
+        #    user = osm.User(form.username.data, form.password.data)
+        #    osm.DB.session.add(user)
+        #    osm.DB.session.commit()
+        #    flask.flash('User "{}" created.'.format(user.name))
+        #    fl.login_user(user)
         # From now on: user logged in.
         # TODO: Doesn't seem to work, as `flask.request.args.get('next')` is
         #       always none. Have a look at http://flask.pocoo.org/snippets/63/
@@ -552,7 +552,9 @@ def upload_changeset(cid):
         tags = xml_node.findall('tag')
         db_node = osm.Node.query.filter_by(id = int(atts["id"])).first()
         db_node.old_id = db_node.id
-        db_node.version = atts["version"]
+        for att in atts:
+            if not (att == "changeset"):
+                setattr(db_node, att, atts[att])
         db_node.changeset = osm.Changeset.query.filter_by(
                 id = int(atts["changeset"])).first()
         db_node.tags.update({tag.attrib['k']: tag.attrib['v']
@@ -590,7 +592,9 @@ def upload_changeset(cid):
         tags = xml_way.findall('tag')
         db_way = osm.Way.query.filter_by(id = int(atts["id"])).first()
         db_way.old_id = db_way.id
-        db_way.version = atts["version"]
+        for att in atts:
+            if not (att == "changeset"):
+                setattr(db_way, att, atts[att])
         db_way.changeset = osm.Changeset.query.filter_by(
                 id = int(atts["changeset"])).first()
         db_way.tags.update({tag.attrib['k']: tag.attrib['v']
@@ -647,7 +651,9 @@ def upload_changeset(cid):
         atts = xml_node.attrib
         relation = osm.Relation.query.filter_by(id = int(atts["id"])).first()
         relation.old_id = relation.id
-        relation.version = atts["version"]
+        for att in atts:
+            if not (att == "changeset"):
+                setattr(db_way, att, atts[att])
         relation.changeset = osm.Changeset.query.filter_by(
                 id = int(atts["changeset"])).first()
         relation.tags.update({tag.attrib['k']: tag.attrib['v']

@@ -12,4 +12,4 @@ geojson
 
 # oemof.db which is not yet a package on PyPI
 -e git+https://github.com/oemof/oemof.db.git@dev#egg=oemof.db
--e git+https://github.com/oemof/oemof.git@v0.1-beta#egg=oemof
+-e git+https://github.com/oemof/oemof.git@v0.1.1#egg=oemof

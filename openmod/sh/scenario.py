@@ -17,6 +17,20 @@ import oemof.outputlib as output
 
 from .schemas import osm
 
+defaults = {'variable_costs': 0, 'efficiency' : 1}
+def _float(obj, attr):
+    """ Help function to convert string input from database string of tag[key]
+    to float with explicit value error message and default setting of
+    attributes.
+    """
+
+    default = defaults.get(attr)
+    try:
+        return float(obj.tags.get(attr, default))
+    except:
+        raise ValueError('Your attribute {0} of object {1} is supposed to be\
+         a number. Did you specifiy it and use `.` as decimal sign?'.format(attr,
+                                                            obj.tags.get('name')))
 
 def simulate(folder, **kwargs):
     # This is how you get a scenario object from the database.
@@ -31,8 +45,8 @@ def simulate(folder, **kwargs):
     session = Session()
 
     scenario = session.query(osm.Relation).filter_by(
-                             id = int(kwargs['scenario'][1:])).first()
-                             #id = 1).first()
+                             #id = int(kwargs['scenario'][1:])).first()
+                             id = 1).first()
 
     # Delete the scenario id from `kwargs` so that is doesn't show up in the
     # response later.
@@ -56,9 +70,11 @@ def simulate(folder, **kwargs):
     #########################################################################
     # We need a datetimeindex for the optimization problem / energysystem
     datetimeindex = pd.date_range('1/1/'+scenario.tags.get('year', '2012'),
-                                  periods=168*4, freq='H')
+                                  periods=scenario.tags.get('hours', 4),
+                                  freq='H')
 
-    energy_system = EnergySystem(groupings=GROUPINGS, time_idx=datetimeindex)
+    energy_system = EnergySystem(groupings=GROUPINGS,
+                                 timeindex=datetimeindex)
 
     ## CREATE BUSES FROM RELATIONS OF TYPE "HUB RELATION"
     buses = {}
@@ -87,20 +103,39 @@ def simulate(folder, **kwargs):
         # GET RELATIONS 'HUB ASSIGNMENT' FOR NODE
         node_bus = [r.tags['name'] for r in n.referencing_relations
                     if r.tags['name'] in list(buses.keys())]
+        # create the variable cost timeseries if specified, otherwise use
+        # variable costs key from tags
+        if n.tags.get('variable_costs', 0) == 'timeseries':
+            variable_costs = n.timeseries.get('variable_costs')
+            if variable_costs is None:
+                raise ValueError('No timeseries `variable cost` found for ' +
+                                 'node {0}.'.format(n.tags.get('name')))
+        else:
+            variable_costs = _float(n, 'variable_costs')
+
         # CREATE SINK OBJECTS
         if n.tags.get('oemof_class') == 'sink':
+            if n.tags.get('energy_amount') is None:
+                nominal_value = None
+                if n.timeseries.get('load_profile') is not None:
+                    raise ValueError('No enery amount has been specified' +
+                                     ' but the load_profile has been set!')
+            else:
+                nominal_value = _float(n, 'energy_amount')
             s = Sink(label=n.tags['name'],
                      inputs={buses[node_bus[0]]:
-                     Flow(nominal_value=float(n.tags['energy_amount']),
-                          actual_value=n.timeseries['timeseries'],
+                     Flow(nominal_value=nominal_value,
+                          actual_value=n.timeseries['load_profile'],
+                          variable_costs=variable_costs,
                           fixed=True)})
             s.type = n.tags['type']
         # CREATE SOURCE OBJECTS
         if n.tags.get('oemof_class') == 'source':
             s = Source(label=n.tags['name'],
                        outputs={buses[node_bus[0]]:
-                           Flow(nominal_value=float(n.tags['installed_power']),
-                                actual_value=n.timeseries['timeseries'],
+                           Flow(nominal_value=_float(n, 'installed_power'),
+                                actual_value=n.timeseries.get('load_profile'),
+                                variable_costs=variable_costs,
                                 fixed=True)})
             s.fuel_type = n.tags['fuel_type']
             s.type = n.tags['type']
@@ -111,11 +146,9 @@ def simulate(folder, **kwargs):
                 ins =  global_buses[n.tags['fuel_type']]
                 outs = buses[node_bus[0]]
                 t = LinearTransformer(label=n.tags['name'],
-                        inputs={ins: Flow(variable_costs=float(
-                                            n.tags.get('variable_costs', 0)))},
-                        outputs={outs: Flow(nominal_value=float(
-                                            n.tags['installed_power']))},
-                        conversion_factors={outs:float(n.tags['efficiency'])})
+                        inputs={ins: Flow(variable_costs=variable_costs)},
+                        outputs={outs: Flow(nominal_value=_float(n, 'installed_power'))},
+                        conversion_factors={outs:_float(n, 'efficiency')})
                 # store fuel_type as attribute for identification
                 t.fuel_type = n.tags['fuel_type']
                 t.type = n.tags['type']
@@ -128,14 +161,13 @@ def simulate(folder, **kwargs):
                 power_out = [buses[k] for k in node_bus
                              if buses[k].energy_sector == 'electricity'][0]
                 t = LinearTransformer(label=n.tags['name'],
-                                inputs={ins: Flow(variable_costs=float(
-                                            n.tags.get('variable_costs', 0)))},
-                                outputs={power_out: Flow(nominal_value=float(
-                                             n.tags['installed_power'])),
+                                inputs={ins: Flow(variable_costs=variable_costs)},
+                                outputs={power_out: Flow(
+                                    nominal_value=_float(n, 'installed_power')),
                                          heat_out: Flow()},
                                 conversion_factors={
-                            heat_out: float(n.tags['thermal_efficiency']),
-                            power_out: float(n.tags['electrical_efficiency'])})
+                            heat_out: _float(n, 'thermal_efficiency'),
+                            power_out: _float(n, 'electrical_efficiency')})
                 t.fuel_type = n.tags['fuel_type']
                 t.type = n.tags['type']
 
@@ -143,14 +175,16 @@ def simulate(folder, **kwargs):
         if n.tags.get('oemof_class') == 'storage':
             # Oemof solph does not provide direct way to set power in/out of
             # storage hence, we need to caculate the needed ratios upfront
-            nicr = (float(n.tags['installed_power']) /
-                    float(n.tags['installed_energy']))
-            nocr = (float(n.tags['installed_power']) /
-                    float(n.tags['installed_energy']))
+            nicr = (_float(n,'installed_power') /
+                    _float(n,'installed_energy'))
+            nocr = (_float(n,'installed_power') /
+                    _float(n,'installed_energy'))
             s = Storage(label=n.tags['name'],
-                        inputs={buses[node_bus[0]]:Flow()},
-                        outputs={buses[node_bus[0]]:Flow()},
-                        nominal_capacity=float(n.tags['installed_energy']),
+                        inputs={buses[node_bus[0]]:
+                                    Flow(variable_costs=variable_costs)},
+                        outputs={buses[node_bus[0]]:
+                                    Flow(variable_costs=variable_costs)},
+                        nominal_capacity=_float(n,'installed_energy'),
                         nominal_input_capacity_ratio=nicr,
                         nominal_output_capacity_ration=nocr)
             s.energy_sector = n.tags['energy_sector']
@@ -171,16 +205,16 @@ def simulate(folder, **kwargs):
                 t1 = LinearTransformer(label=w.tags['name']+'_1',
                           inputs={outs: Flow()},
                          outputs={
-                    ins: Flow(nominal_value=float(w.tags['installed_power']))},
-                conversion_factors={ins:float(w.tags['efficiency'])})
+                    ins: Flow(nominal_value=_float(w,'installed_power'))},
+                conversion_factors={ins:_float(w,'efficiency')})
                 t1.type = w.tags.get('type')
                 # 2nd transformer
                 t2 = LinearTransformer(label=w.tags['name']+'_2',
                                   inputs={
                     ins: Flow()},
                                   outputs={
-                    outs: Flow(nominal_value=float(w.tags['installed_power']))},
-                conversion_factors={outs:float(w.tags['efficiency'])})
+                    outs: Flow(nominal_value=_float(w,'installed_power'))},
+                conversion_factors={outs:_float(w,'efficiency')})
                 t2.type = w.tags.get('type')
 
     # Create optimization model, solve it, wrtie back results
@@ -240,7 +274,8 @@ def simulate(folder, **kwargs):
         solar_production.columns = ['solar']
 
     # slice fuel types, unstack components and sum components by fuel type
-    fossil_production = esplot.slice_by(bus_label=global_buses.keys(), type='from_bus').unstack(2).sum(axis=1)
+    fossil_production = esplot.slice_by(bus_label=global_buses.keys(),
+                                        type='from_bus').unstack(2).sum(axis=1)
     # drop level 'from_bus' that all rows have anyway
     fossil_production.index = fossil_production.index.droplevel(1)
     # turn index with fuel type to columns
