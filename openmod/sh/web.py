@@ -700,9 +700,23 @@ def upload_changeset(cid):
         element.tag = "relation"
         created_nodes.append(element)
 
+    osm.DB.session.flush()
+
+    deletions = list(itertools.chain(*xml.findall('delete')))
+    for deletion in deletions:
+        print("Handling deletion: {}".format(deletion))
+        entity = {"node": osm.Node, "way": osm.Way, "relation": osm.Relation
+                 }[deletion.tag]
+        instance = entity.query.filter_by(id=int(deletion.attrib['id'])).first()
+        instance.visible = False
+
     osm.DB.session.commit()
 
-    return flask.render_template('diffresult.xml', modifications=created_nodes)
+    deletions = [{"id": deletion.attrib['id'], "tag": deletion.tag}
+                 for deletion in deletions]
+
+    return flask.render_template('diffresult.xml', modifications=created_nodes,
+                                                   deletions=deletions)
 
 @app.route('/iD/api/0.6/changeset/<id>/close', methods=['PUT'])
 @app.route('/iD/connection/api/0.6/changeset/<id>/close', methods=['PUT'])
