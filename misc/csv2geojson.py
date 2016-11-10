@@ -22,6 +22,7 @@ import pandas as pd
 import os
 import sys
 import geojson as gj
+import numpy
 
 def extract_coordinates(row):
     coords = row['geom'].split(',')
@@ -75,7 +76,9 @@ feature_collection = gj.FeatureCollection(features)
 
 scenario_dict = dict(scenario_df.iloc[0])
 # json package does not serialize numpy.int64 therefore
-scenario_dict['scenario_year'] = int(scenario_dict['scenario_year'])
+for key, value in scenario_dict.copy().items():
+    if isinstance(value, numpy.int64):
+        scenario_dict[key] = int(scenario_dict[key])
 # probably better to use https://pypi.python.org/pypi/geojson/#custom-classes
 feature_collection['scenario'] = scenario_dict
 
