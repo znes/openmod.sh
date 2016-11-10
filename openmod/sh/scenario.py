@@ -132,8 +132,11 @@ def simulate(folder, **kwargs):
             else:
                 nominal_value = _float(n, 'energy_amount')
             # calculate actual value
-            actual_value = [i/sum(n.timeseries['load_profile'])
-                            for i in n.timeseries['load_profile']]
+            if n.timeseries.get('load_profile') is None:
+                actual_value = None
+            else:
+                actual_value = [i/sum(n.timeseries.get('load_profile'))
+                                for i in n.timeseries.get('load_profile')]
             s = Sink(label=n.tags['name'],
                      inputs={buses[node_bus[0]]:
                      Flow(nominal_value=nominal_value,
