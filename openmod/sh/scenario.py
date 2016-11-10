@@ -313,7 +313,7 @@ def simulate(folder, **kwargs):
               'oil': '#2e1629', 'lignite': '#c89b9b',
               'waste': '#8b862a', 'biomass': '#187c66',
               'wind': '#2b99ff', 'solar':'#ffc125'}
-    p = Bar(all_production.sum()/1e3, legend='top_right',
+    p = Bar(all_production.sum()/1e3, legend=False,
             title="Summend energy production",
             xlabel="Type", ylabel="Energy Production in GWh",
             width=400, height=300, palette=[colors[col]
@@ -322,7 +322,7 @@ def simulate(folder, **kwargs):
 
     #show(p)
 
-    e = Bar(fossil_emissions.sum(), legend='top_right',
+    e = Bar(fossil_emissions.sum(), legend=False,
             title="Summend CO2-emissions of production",
             xlabel="Type", ylabel="Energy Production in tons",
             width=400, height=300, palette=[colors[col]
