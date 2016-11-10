@@ -657,7 +657,7 @@ def upload_changeset(cid):
         relation.old_id = relation.id
         for att in atts:
             if not (att == "changeset"):
-                setattr(db_way, att, atts[att])
+                setattr(relation, att, atts[att])
         relation.changeset = osm.Changeset.query.filter_by(
                 id = int(atts["changeset"])).first()
         relation.tags.update({tag.attrib['k']: tag.attrib['v']
