@@ -146,7 +146,7 @@ def simulate(folder, **kwargs):
             s = Source(label=n.tags['name'],
                        outputs={buses[node_bus[0]]:
                            Flow(nominal_value=_float(n, 'installed_power'),
-                                actual_value=actual_value,
+                                actual_value=n.timeseries['load_profile'],
                                 variable_costs=variable_costs,
                                 fixed=True)})
             s.fuel_type = n.tags['fuel_type']
