@@ -72,9 +72,9 @@ def simulate(folder, **kwargs):
     # We need a datetimeindex for the optimization problem / energysystem
     first = pd.to_datetime(scenario.tags.get('scenario_year' + '0101', '2016'))
     start = first + pd.DateOffset(
-                        hours=int(scenario.tags.get('start_timestep', 0)))
+                        hours=int(scenario.tags.get('start_timestep', 1))-1)
     end = first + pd.DateOffset(
-                    hours=int(scenario.tags.get('end_timestep', 8759)))
+                    hours=int(scenario.tags.get('end_timestep', 8760))-1)
     datetimeindex = pd.date_range(start=start, end=end, freq='H')
 
 
