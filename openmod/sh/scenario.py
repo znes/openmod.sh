@@ -131,19 +131,25 @@ def simulate(folder, **kwargs):
                                      ' but the load_profile has been set!')
             else:
                 nominal_value = _float(n, 'energy_amount')
+            # calculate actual value
+            actual_value = [i/sum(n.timeseries['load_profile'])
+                            for i in n.timeseries['load_profile']]
             s = Sink(label=n.tags['name'],
                      inputs={buses[node_bus[0]]:
                      Flow(nominal_value=nominal_value,
-                          actual_value=n.timeseries['load_profile'],
+                          actual_value=actual_value,
                           variable_costs=variable_costs,
                           fixed=True)})
             s.type = n.tags['type']
         # CREATE SOURCE OBJECTS
         if n.tags.get('oemof_class') == 'source':
+            # calculate actual value
+            actual_value = [i/sum(n.timeseries['load_profile'])
+                            for i in n.timeseries['load_profile']]
             s = Source(label=n.tags['name'],
                        outputs={buses[node_bus[0]]:
                            Flow(nominal_value=_float(n, 'installed_power'),
-                                actual_value=n.timeseries.get('load_profile'),
+                                actual_value=actual_value,
                                 variable_costs=variable_costs,
                                 fixed=True)})
             s.fuel_type = n.tags['fuel_type']
