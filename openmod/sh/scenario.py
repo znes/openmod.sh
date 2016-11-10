@@ -1,6 +1,6 @@
 # Contains the simulation code
-
 #from traceback import TracebackException as TE
+from jinja2 import Template
 import pdb
 import os
 from tempfile import mkstemp
@@ -13,6 +13,10 @@ from oemof.solph import (Sink, Source, LinearTransformer, Storage, Bus, Flow,
                          OperationalModel, EnergySystem, GROUPINGS)
 import oemof.db as db
 import oemof.outputlib as output
+from bokeh.charts import Bar, output_file
+from bokeh.plotting import figure
+from bokeh.resources import INLINE
+from bokeh.embed import components as bokeh_components
 # Here you would now import the `oemof` modules and proceed to customize the
 # `simulate` function to generate objects and start the simulation.
 
@@ -236,6 +240,7 @@ def simulate(folder, **kwargs):
     # create results dataframe based on oemof's outputlib (multiindex)
     esplot = output.DataFramePlot(energy_system=energy_system)
 
+
     # select subsets of data frame (full hub balances) and write to temp-csv
     csv_links = {}
     for b in buses.values():
@@ -304,15 +309,71 @@ def simulate(folder, **kwargs):
     fill_dict = dict(zip(all_production.columns, help_fill))
 
 
-    #pdb.set_trace()
-    response = (
-        "<head>" +
-        "<title>openmod.sh results</title>" +
-        "<script src='https://cdn.plot.ly/plotly-latest.min.js'></script>" +
-        "</head>" +
-        ############################### Plot ##################################
-        ("<body>" +
-        "<div id='myDiv' style='width: 1000px; height: 600px;'></div>" +
+    colors = {'gas': '#9bc8c8', 'coal': '#9b9499',
+              'oil': '#2e1629', 'lignite': '#c89b9b',
+              'waste': '#8b862a', 'biomass': '#187c66',
+              'wind': '#2b99ff', 'solar':'#ffc125'}
+    p = Bar(all_production.sum()/1e3, legend=False,
+            title="Summend energy production",
+            xlabel="Type", ylabel="Energy Production in GWh",
+            width=400, height=300, palette=[colors[col]
+                                            for col in all_production])
+    output_file(os.path.join(folder, 'all_production.html'))
+
+    #show(p)
+
+    e = Bar(fossil_emissions.sum(), legend=False,
+            title="Summend CO2-emissions of production",
+            xlabel="Type", ylabel="Energy Production in tons",
+            width=400, height=300, palette=[colors[col]
+                                            for col in all_production])
+    output_file(os.path.join(folder, 'emissions.html'))
+    #show(e)
+
+    plots= {'production': p, 'emissions': e}
+    script, div = bokeh_components(plots)
+
+
+    ########## RENDER PLOTS ################
+
+    # Define our html template for out plots
+    template = Template('''<!DOCTYPE html>
+    <html lang="en">
+        <head>
+            <meta charset="utf-8">
+            <title>openmod.sh Scenario Results</title>
+            {{ js_resources }}
+            {{ css_resources }}
+            <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+        </head>
+        <body>
+        <table>
+            <tr>
+                <td>
+                    <h3> Total CO2 - Emission </h3>
+                    {{ plot_div.emissions }}
+                </td>
+                <td>
+                </td>
+                <td>
+                    <h3> Total energy production </h3>
+                    {{ plot_div.production }}
+                </td>
+            </tr>
+       </table>
+
+        {{ plot_script }}
+
+      <h3> Daily production and emissions </h3>
+        {{ timeplot }}
+      <h3> Download your results </h3>
+        {{ download }}
+        </body>
+    </html>
+    ''')
+
+
+    timeplot = ("<div id='myDiv' style='width: 800px; height: 500px;'></div>" +
         "<script>" +
         "var traces = [" +
         ", ".join(["{{x: {0}, y: {1}, fill: '{fillarg}', name: '{name}'}}".format(
@@ -341,13 +402,30 @@ def simulate(folder, **kwargs):
         "data = stackedArea(traces);" +
         "data.push(emission);" +
         "Plotly.newPlot('myDiv', data, layout);" +
-        "</script>" +
-        "</body>") +
-        #######################################################################
-        ("You can download your results below:<br />  Hub: " +
-               "<br /> Hub: ".join([
-               "<a href='{1}'>{0}</a>".format(*x) for x in csv_links.items()]))
-        )
+        "</script>")
+
+    download = ("<br />You can download your results below:<br />  Hub: " +
+               "<br /> Hub: ".join(["<a href='{1}'>{0}</a>".format(*x) for x in csv_links.items()]))
+    resources = INLINE
+
+    js_resources = resources.render_js()
+    css_resources = resources.render_css()
+
+
+    html = template.render(js_resources=js_resources,
+                           css_resources=css_resources,
+                           plot_script=script,
+                           plot_div=div,
+                           download=download,
+                           timeplot=timeplot)
+
+    #filename = 'embed_multiple_responsive.html'
+
+    #with open(filename, 'w') as f:
+    #    f.write(html)
+    #pdb.set_trace()
+    response = (html)
+
 
     return response
 
