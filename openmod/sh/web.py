@@ -222,7 +222,7 @@ def osm_map():
 @app.route('/simulate', methods=['PUT'])
 def simulate():
     fras = flask.request.args
-    result = app.workers.apply_async(openmod.sh.scenario.simulate,
+    result = app.workers.apply_async(openmod.sh.scenario.wrapped_simulation,
                                      #kwds=fras)
                                      args=[app.static_folder],
                                      kwds={k: fras[k] for k in fras})
