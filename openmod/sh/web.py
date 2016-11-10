@@ -704,7 +704,6 @@ def upload_changeset(cid):
 
     deletions = list(itertools.chain(*xml.findall('delete')))
     for deletion in deletions:
-        print("Handling deletion: {}".format(deletion))
         entity = {"node": osm.Node, "way": osm.Way, "relation": osm.Relation
                  }[deletion.tag]
         instance = entity.query.filter_by(id=int(deletion.attrib['id'])).first()
