@@ -1,5 +1,6 @@
 # Contains the simulation code
 
+from traceback import TracebackException as TE
 import pdb
 import os
 from tempfile import mkstemp
@@ -41,7 +42,7 @@ def simulate(folder, **kwargs):
     # character from the scenario id string before converting it to int.
     # This is what the [1:] is for.
 
-    engine = db.engine('openMod.sh R/W')
+    engine = db.engine(osm.configsection)
 
     Session = sessionmaker(bind=engine)
     session = Session()
@@ -227,7 +228,7 @@ def simulate(folder, **kwargs):
     om = OperationalModel(es=energy_system)
 
     solver =  scenario.tags.get('solver')
-    if solver is not None:
+    if solver is None:
         solver = 'glpk'
 
     om.solve(solver=solver,
@@ -378,4 +379,11 @@ def simulate(folder, **kwargs):
         )
 
     return response
+
+def wrapped_simulation(folder, **kwargs):
+    try:
+        result = simulate(folder, **kwargs)
+    except Exception as e:
+        result = '<br/>'.join(TE.from_exception(e).format())
+    return result
 

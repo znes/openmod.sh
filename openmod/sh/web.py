@@ -222,7 +222,7 @@ def osm_map():
 @app.route('/simulate', methods=['PUT'])
 def simulate():
     fras = flask.request.args
-    result = app.workers.apply_async(openmod.sh.scenario.simulate,
+    result = app.workers.apply_async(openmod.sh.scenario.wrapped_simulation,
                                      #kwds=fras)
                                      args=[app.static_folder],
                                      kwds={k: fras[k] for k in fras})
@@ -657,7 +657,7 @@ def upload_changeset(cid):
         relation.old_id = relation.id
         for att in atts:
             if not (att == "changeset"):
-                setattr(db_way, att, atts[att])
+                setattr(relation, att, atts[att])
         relation.changeset = osm.Changeset.query.filter_by(
                 id = int(atts["changeset"])).first()
         relation.tags.update({tag.attrib['k']: tag.attrib['v']
@@ -704,7 +704,6 @@ def upload_changeset(cid):
 
     deletions = list(itertools.chain(*xml.findall('delete')))
     for deletion in deletions:
-        print("Handling deletion: {}".format(deletion))
         entity = {"node": osm.Node, "way": osm.Way, "relation": osm.Relation
                  }[deletion.tag]
         instance = entity.query.filter_by(id=int(deletion.attrib['id'])).first()
