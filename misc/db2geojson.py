@@ -56,7 +56,7 @@ for n in nodes:
         if k != 'name' and k != 'oemof_class':
             feature['properties'][k] = v
         if v == 'timeseries':
-            feature['properties'][k] = n.timeseries[k]
+            feature['properties'][k] = n.timeseries.get(k, None)
     hubs = [r for r in n.referencing_relations 
             if r.tags['type'] == 'hub_relation']
     feature['properties']['hubs'] = [h.tags['name'] for h in hubs]
