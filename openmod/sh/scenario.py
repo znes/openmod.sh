@@ -135,8 +135,11 @@ def simulate(folder, **kwargs):
             if n.timeseries.get('load_profile') is None:
                 actual_value = None
             else:
-                actual_value = [i/sum(n.timeseries.get('load_profile'))
-                                for i in n.timeseries.get('load_profile')]
+                try:
+                    actual_value = [i/sum(n.timeseries.get('load_profile'))
+                                    for i in n.timeseries.get('load_profile')]
+                except Exception:
+                    actual_value = None
             s = Sink(label=n.tags['name'],
                      inputs={buses[node_bus[0]]:
                      Flow(nominal_value=nominal_value,
