@@ -316,7 +316,7 @@ def simulate(folder, **kwargs):
     p = Bar(all_production.sum()/1e3, legend='top_right',
             title="Summend energy production",
             xlabel="Type", ylabel="Energy Production in GWh",
-            width=200, height=200, palette=[colors[col]
+            width=400, height=300, palette=[colors[col]
                                             for col in all_production])
     output_file(os.path.join(folder, 'all_production.html'))
 
@@ -325,7 +325,7 @@ def simulate(folder, **kwargs):
     e = Bar(fossil_emissions.sum(), legend='top_right',
             title="Summend CO2-emissions of production",
             xlabel="Type", ylabel="Energy Production in tons",
-            width=200, height=200, palette=[colors[col]
+            width=400, height=300, palette=[colors[col]
                                             for col in all_production])
     output_file(os.path.join(folder, 'emissions.html'))
     #show(e)
@@ -347,16 +347,27 @@ def simulate(folder, **kwargs):
             <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
         </head>
         <body>
-        <h3> Total CO2 - Emission </h3>
-        {{ plot_div.emissions }}
-        <h3> Total energy production </h3>
-        {{ plot_div.production }}
+        <table>
+            <tr>
+                <td>
+                    <h3> Total CO2 - Emission </h3>
+                    {{ plot_div.emissions }}
+                </td>
+                <td>
+                </td>
+                <td>
+                    <h3> Total energy production </h3>
+                    {{ plot_div.production }}
+                </td>
+            </tr>
+       </table>
+
         {{ plot_script }}
 
       <h3> Daily production and emissions </h3>
         {{ timeplot }}
+      <h3> Download your results </h3>
         {{ download }}
-        )
         </body>
     </html>
     ''')
