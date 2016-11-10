@@ -1,6 +1,6 @@
 # Contains the simulation code
+#from traceback import TracebackException as TE
 from jinja2 import Template
-from traceback import TracebackException as TE
 import pdb
 import os
 from tempfile import mkstemp
@@ -76,9 +76,9 @@ def simulate(folder, **kwargs):
     # We need a datetimeindex for the optimization problem / energysystem
     first = pd.to_datetime(scenario.tags.get('scenario_year' + '0101', '2016'))
     start = first + pd.DateOffset(
-                        hours=int(scenario.tags.get('start_timestep', 0)))
+                        hours=int(scenario.tags.get('start_timestep', 1))-1)
     end = first + pd.DateOffset(
-                    hours=int(scenario.tags.get('end_timestep', 8759)))
+                    hours=int(scenario.tags.get('end_timestep', 8760))-1)
     datetimeindex = pd.date_range(start=start, end=end, freq='H')
 
 
@@ -430,9 +430,9 @@ def simulate(folder, **kwargs):
     return response
 
 def wrapped_simulation(folder, **kwargs):
-    try:
-        result = simulate(folder, **kwargs)
-    except Exception as e:
-        result = '<br/>'.join(TE.from_exception(e).format())
+#    try:
+    result = simulate(folder, **kwargs)
+#    except Exception as e:
+#        result = '<br/>'.join(TE.from_exception(e).format())
     return result
 
