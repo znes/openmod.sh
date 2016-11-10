@@ -1,6 +1,6 @@
 # Contains the simulation code
 
-from traceback import TracebackException as TE
+#from traceback import TracebackException as TE
 import pdb
 import os
 from tempfile import mkstemp
@@ -352,9 +352,9 @@ def simulate(folder, **kwargs):
     return response
 
 def wrapped_simulation(folder, **kwargs):
-    try:
-        result = simulate(folder, **kwargs)
-    except Exception as e:
-        result = '<br/>'.join(TE.from_exception(e).format())
+#    try:
+    result = simulate(folder, **kwargs)
+#    except Exception as e:
+#        result = '<br/>'.join(TE.from_exception(e).format())
     return result
 
