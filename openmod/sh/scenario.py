@@ -143,9 +143,6 @@ def simulate(folder, **kwargs):
             s.type = n.tags['type']
         # CREATE SOURCE OBJECTS
         if n.tags.get('oemof_class') == 'source':
-            # calculate actual value
-            actual_value = [i/sum(n.timeseries['load_profile'])
-                            for i in n.timeseries['load_profile']]
             s = Source(label=n.tags['name'],
                        outputs={buses[node_bus[0]]:
                            Flow(nominal_value=_float(n, 'installed_power'),
