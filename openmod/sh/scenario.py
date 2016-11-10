@@ -40,7 +40,7 @@ def simulate(folder, **kwargs):
     # character from the scenario id string before converting it to int.
     # This is what the [1:] is for.
 
-    engine = db.engine('openMod.sh R/W')
+    engine = db.engine(osm.configsection)
 
     Session = sessionmaker(bind=engine)
     session = Session()
