@@ -778,6 +778,20 @@ def get_relations():
     template = flask.render_template('relations.xml', relations=relations)
     return xml_response(template)
 
+@app.route('/element/<int:element_id>/JSON')
+@fl.login_required
+def provide_json(element_id):
+    element = osm.Element.query.filter_by(element_id=element_id).first()
+    serialized = {}
+    serialized['element_id'] = element.element_id
+    serialized['tags'] = {}
+    for key, value in element.tags.items():
+        serialized['tags'][key] = value
+    serialized['timeseries'] = {}
+    for key, value in element.timeseries.items():
+        serialized['timeseries'][key] = value
+    return flask.jsonify(serialized)
+
 ##### Persistence code ends here ##############################################
 
 
