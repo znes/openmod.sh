@@ -3,3 +3,4 @@ src/
 .*.swp
 .ropeproject
 openmod/sh/static/iD
+__pycache__/
