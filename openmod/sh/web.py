@@ -779,7 +779,7 @@ def get_relations():
     return xml_response(template)
 
 @app.route('/element/<int:element_id>/JSON')
-@fl.login_required
+#@fl.login_required
 def provide_json(element_id):
     element = osm.Element.query.filter_by(element_id=element_id).first()
     serialized = {}
