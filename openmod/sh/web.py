@@ -780,7 +780,7 @@ def get_relations():
 
 @app.route('/element/<int:element_id>/JSON')
 #@fl.login_required
-def provide_json(element_id):
+def provide_element_json(element_id):
     element = osm.Element.query.filter_by(element_id=element_id).first()
     serialized = {}
     serialized['element_id'] = element.element_id
@@ -789,6 +789,21 @@ def provide_json(element_id):
         serialized['tags'][key] = value
     serialized['timeseries'] = {}
     for key, value in element.timeseries.items():
+        serialized['timeseries'][key] = value
+    return flask.jsonify(serialized)
+
+# json for nodes
+@app.route('/n/<int:node_id>/JSON')
+#@fl.login_required
+def provide_node_json(node_id):
+    node = osm.Node.query.filter_by(id=node_id).first()
+    serialized = {}
+    serialized['node_id'] = node.id
+    serialized['tags'] = {}
+    for key, value in node.tags.items():
+        serialized['tags'][key] = value
+    serialized['timeseries'] = {}
+    for key, value in node.timeseries.items():
         serialized['timeseries'][key] = value
     return flask.jsonify(serialized)
 
