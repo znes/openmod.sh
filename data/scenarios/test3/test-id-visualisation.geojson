@@ -17,12 +17,9 @@
       },
       "id": "eltrans",
       "properties": {
-        "stroke": "#555555",
-        "stroke-width": 2,
-        "stroke-opacity": 1,
         "efficiency": 0.95,
         "energy_sector": "electricity",
-        "hubs": "[\"elhub1\",\"elhub2\"]",
+        "hubs": ["elhub1","elhub2"],
         "installed_power": 100,
         "type": "transmission",
         "line_loading": 200
@@ -59,11 +56,6 @@
       },
       "id": "elhub1",
       "properties": {
-        "stroke": "#555555",
-        "stroke-width": 2,
-        "stroke-opacity": 1,
-        "fill": "#555555",
-        "fill-opacity": 0.5,
         "energy_sector": "electricity",
         "type": "hub_relation",
         "total_demand": 2000
@@ -100,11 +92,6 @@
       },
       "id": "elhub2",
       "properties": {
-        "stroke": "#555555",
-        "stroke-width": 2,
-        "stroke-opacity": 1,
-        "fill": "#555555",
-        "fill-opacity": 0.5,
         "energy_sector": "electricity",
         "type": "hub_relation",
         "total_demand": 5000
@@ -141,11 +128,6 @@
       },
       "id": "thehub",
       "properties": {
-        "stroke": "#555555",
-        "stroke-width": 2,
-        "stroke-opacity": 1,
-        "fill": "#555555",
-        "fill-opacity": 0.5,
         "energy_sector": "heat",
         "type": "hub_relation",
         "total_demand": 400
