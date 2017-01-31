@@ -23,7 +23,7 @@
         "hubs": ["elhub1","elhub2"],
         "installed_power": 100,
         "type": "transmission",
-        "line_loading": 200
+        "value": 200
       },
       "type": "Feature"
     },
@@ -59,7 +59,7 @@
       "properties": {
         "energy_sector": "electricity",
         "type": "hub_relation",
-        "total_demand": 2000
+        "value": 2000
       },
       "type": "Feature"
     },
@@ -95,7 +95,7 @@
       "properties": {
         "energy_sector": "electricity",
         "type": "hub_relation",
-        "total_demand": 5000
+        "value": 5000
       },
       "type": "Feature"
     },
@@ -131,7 +131,7 @@
       "properties": {
         "energy_sector": "heat",
         "type": "hub_relation",
-        "total_demand": 400
+        "value": 400
       },
       "type": "Feature"
     }
