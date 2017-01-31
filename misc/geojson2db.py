@@ -144,7 +144,9 @@ for f in polygons:
                 tags = {'area': 'yes',
                         'name': f['id'] +'_area',
                         'type':'hub_area',
-                        'energy_sector': f['properties']['energy_sector']},
+                        'energy_sector': f['properties']['energy_sector'],
+                    # remove this line below, if not needed anymore for testing
+                        'value' : f['properties'].get('value', 0)},
                 referencing_relations = [scenario])
     DB.add(w)
     hub_elements[f['id']] = hub_elements.get(f['id'], []) + [w]
