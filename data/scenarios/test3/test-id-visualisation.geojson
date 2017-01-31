@@ -1,4 +1,5 @@
-{
+{"scenario": {"name": "test-visualisation", 
+	      "scenario_description": "the test scenario to test heatmap und line-loading plots"},
   "type": "FeatureCollection",
   "features": [
     {
