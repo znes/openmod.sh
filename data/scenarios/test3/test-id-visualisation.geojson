@@ -1,0 +1,156 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            9.3,
+            54.6
+          ],
+          [
+            9.4,
+            54.6
+          ]
+        ]
+      },
+      "id": "eltrans",
+      "properties": {
+        "stroke": "#555555",
+        "stroke-width": 2,
+        "stroke-opacity": 1,
+        "efficiency": 0.95,
+        "energy_sector": "electricity",
+        "hubs": "[\"elhub1\",\"elhub2\"]",
+        "installed_power": 100,
+        "type": "transmission",
+        "line_loading": 200
+      },
+      "type": "Feature"
+    },
+    {
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              9,
+              54.5
+            ],
+            [
+              9.3,
+              54.5
+            ],
+            [
+              9.3,
+              54.7
+            ],
+            [
+              9,
+              54.7
+            ],
+            [
+              9,
+              54.5
+            ]
+          ]
+        ]
+      },
+      "id": "elhub1",
+      "properties": {
+        "stroke": "#555555",
+        "stroke-width": 2,
+        "stroke-opacity": 1,
+        "fill": "#555555",
+        "fill-opacity": 0.5,
+        "energy_sector": "electricity",
+        "type": "hub_relation",
+        "total_demand": 2000
+      },
+      "type": "Feature"
+    },
+    {
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              9.4,
+              54.5
+            ],
+            [
+              9.6,
+              54.5
+            ],
+            [
+              9.6,
+              54.7
+            ],
+            [
+              9.4,
+              54.7
+            ],
+            [
+              9.4,
+              54.5
+            ]
+          ]
+        ]
+      },
+      "id": "elhub2",
+      "properties": {
+        "stroke": "#555555",
+        "stroke-width": 2,
+        "stroke-opacity": 1,
+        "fill": "#555555",
+        "fill-opacity": 0.5,
+        "energy_sector": "electricity",
+        "type": "hub_relation",
+        "total_demand": 5000
+      },
+      "type": "Feature"
+    },
+    {
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              9.5,
+              54.55
+            ],
+            [
+              9.55,
+              54.55
+            ],
+            [
+              9.55,
+              54.6
+            ],
+            [
+              9.5,
+              54.6
+            ],
+            [
+              9.5,
+              54.55
+            ]
+          ]
+        ]
+      },
+      "id": "thehub",
+      "properties": {
+        "stroke": "#555555",
+        "stroke-width": 2,
+        "stroke-opacity": 1,
+        "fill": "#555555",
+        "fill-opacity": 0.5,
+        "energy_sector": "heat",
+        "type": "hub_relation",
+        "total_demand": 400
+      },
+      "type": "Feature"
+    }
+  ]
+}
