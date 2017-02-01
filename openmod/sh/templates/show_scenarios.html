@@ -1,0 +1,17 @@
+{% extends "base_layout.html" %}
+{% block body %}
+ <table border='1' align="center">
+    <tr>
+        <th>Scenario Name</th>
+        <th>Comment</th>
+    </tr>
+{% for sc in scenarios %}
+    <tr>
+        <td>{{ sc.tags['name'] }}</td>
+        <td>{{ sc.tags['scenario_description'] }}</td>
+
+    </tr>
+{% endfor %}
+</table>
+{% endblock %}
+

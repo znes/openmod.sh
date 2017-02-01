@@ -826,6 +826,27 @@ def provide_way_json(way_id):
 def provide_relation_json(relation_id):
     return flask.jsonify(serialize('relation', relation_id))
 
+
+@app.route('/scenario_overview')
+def show_scenarios():
+    model='pypsa'
+    scenarios = [s for s in osm.Relation.query.all()
+                 if s.tags.get("type") == "scenario"]
+    return flask.render_template('show_scenarios.html',
+                                 scenarios=scenarios,
+                                 model=model)
+
+@app.route('/compute_results')
+def compute_results(model='oemof'):
+    if model == 'pypsa':
+        return flask.render_template('compute_results.html', model=model)
+    if model == 'oemof':
+        return flask.render_template('compute_results.html', model=model)
+
+@app.route('/main_menu')
+def main_menu():
+    return flask.render_template('main_menu.html')
+
 ##### Persistence code ends here ##############################################
 
 
