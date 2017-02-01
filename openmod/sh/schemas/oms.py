@@ -108,7 +108,8 @@ class Element(DB.Model):
     # TODO: is it possible to remove geom_id?
     geom_id = DB.Column(DB.Integer, DB.ForeignKey(Geom.id))
     geom = DB.relationship(Geom, uselist=False)
-    tags = DB.relationship('Tag', secondary=Element_Tag_Associations)
+    tags = DB.relationship('Tag', secondary=Element_Tag_Associations,
+                           backref='elements')
     sequences = DB.relationship('Sequence',
                                 secondary=Element_Sequence_Associations)
     children = DB.relationship(

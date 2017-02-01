@@ -18,7 +18,7 @@ import wtforms as wtf
 
 import oemof.db
 
-from .schemas import osm
+from .schemas import oms as osm
 from .schemas.osm import Element_Relation_Associations as ERAs
 import openmod.sh.scenario
 
@@ -778,53 +778,25 @@ def get_relations():
     template = flask.render_template('relations.xml', relations=relations)
     return xml_response(template)
 
-def serialize(osm_type, id):
-    if osm_type == 'element':
-        id_tag = 'element_id'
-        element = osm.Element.query.filter_by(element_id=id).first()
-    elif osm_type == 'node':
-        id_tag = 'id'
-        element = osm.Node.query.filter_by(id=id).first()
-    elif osm_type == 'way':
-        id_tag = 'id'
-        element = osm.Way.query.filter_by(id=id).first()
-    elif osm_type == 'relation':
-        id_tag = 'id'
-        element = osm.Relation.query.filter_by(id=id).first()
-    else:
-        raise Exception("Unknown osm type")
-    serialized = {}
-    serialized[osm_type+'_id'] = id
-    serialized['tags'] = {}
-    for key, value in element.tags.items():
-        serialized['tags'][key] = value
-    serialized['timeseries'] = {}
-    for key, value in element.timeseries.items():
-        serialized['timeseries'][key] = value
+def serialize_scenario(scenario_name):
+    element = osm.Tag.query.filter_by(value=scenario_name).first().elements[0]
+    serialized = {'scenario': scenario_name,
+                  'element_id': element.id,
+                  'tags': {},
+                  'elements': []}
+    for tag in element.tags:
+        serialized['tags'][tag.key] = tag.value
+    for child in element.children:
+        child_dict = {'tags': {}}
+        for tag in child.tags:
+            child_dict['tags'][tag.key] = tag.value
+        serialized['elements'] = serialized['elements'] + [child_dict]
     return serialized
 
-@app.route('/element/<int:element_id>/JSON')
+@app.route('/scenario/<scenario_name>/JSON')
 #@fl.login_required
-def provide_element_json(element_id):
-    return flask.jsonify(serialize('element', element_id))
-
-# json for nodes
-@app.route('/n/<int:node_id>/JSON')
-#@fl.login_required
-def provide_node_json(node_id):
-    return flask.jsonify(serialize('node', node_id))
-
-# json for ways
-@app.route('/w/<int:way_id>/JSON')
-#@fl.login_required
-def provide_way_json(way_id):
-    return flask.jsonify(serialize('way', way_id))
-
-# json for relations
-@app.route('/r/<int:relation_id>/JSON')
-#@fl.login_required
-def provide_relation_json(relation_id):
-    return flask.jsonify(serialize('relation', relation_id))
+def provide_scenario_json(scenario_name):
+    return flask.jsonify(serialize_scenario(scenario_name))
 
 ##### Persistence code ends here ##############################################
 

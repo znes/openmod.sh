@@ -42,30 +42,31 @@ elements = {}
 
 scenario = {'type': 'scenario', 'name': 'pypsa-test'}
 tags = [oms.Tag(k,v) for k,v in scenario.items()]
-element = oms.Element(user=user, tags=tags)
-elements[scenario['name']] = element
+scenario_element = oms.Element(user=user, tags=tags)
+elements[scenario['name']] = scenario_element
 
 for _, bus in json_input['buses'].items():
     tags = [oms.Tag(k,v) for k,v in bus.items()]
     element = oms.Element(user=user, tags=tags)
+    element.parents = [scenario_element]
     elements[bus['name']] = element
 
 for _, gen in json_input['generators'].items():
     tags = [oms.Tag(k,v) for k,v in gen.items()]
     element = oms.Element(user=user, tags=tags)
-    element.parents = [elements[gen['bus']]]
+    element.parents = [elements[gen['bus']]] + [scenario_element]
     elements[gen['name']] = element
 
 for _, load in json_input['loads'].items():
     tags = [oms.Tag(k,v) for k,v in load.items()]
     element = oms.Element(user=user, tags=tags)
-    element.parents = [elements[load['bus']]]
+    element.parents = [elements[load['bus']]] + [scenario_element]
     elements[load['name']] = element
 
 for _, line in json_input['lines'].items():
     tags = [oms.Tag(k,v) for k,v in line.items()]
     element = oms.Element(user=user, tags=tags)
-    element.parents = [elements[line['buses'][0]]] + [elements[line['buses'][1]]]
+    element.parents = [elements[line['buses'][0]]] + [elements[line['buses'][1]]] + [scenario_element]
     elements[line['name']] = element
 
 for _, element in elements.items():
