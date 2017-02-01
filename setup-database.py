@@ -31,8 +31,11 @@ oms.DB.session.commit()
 element = oms.Element(user=user,
                       geom=geom,
                       # many to many association not working yet therefore ids...
-                      tag_id=tag.tag_id,
-                      sequence_id=sequence.sequence_id)
+                      tags=[tag],
+                      sequences=[sequence])
 oms.DB.session.add(element)
 oms.DB.session.commit()
+
+print(element.tags[0].key, element.tags[0].value)
+print(element.sequences[0].key, element.sequences[0].value)
 

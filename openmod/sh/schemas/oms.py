@@ -64,22 +64,19 @@ class User(DB.Model):
 #
 # for pointers on how this works.
 
-#Element_Tag_Associations = DB.Table('element_tag_associations',
-#        DB.Column('element_id', DB.Integer, DB.ForeignKey('element.element_id')),
-#        DB.Column('tag_id', DB.Integer, DB.ForeignKey('tag.tag_id')))
+Element_Tag_Associations = DB.Table('element_tag_associations',
+        DB.Column('element_id', DB.Integer, DB.ForeignKey('element.id')),
+        DB.Column('tag_id', DB.Integer, DB.ForeignKey('tag.id')))
 
-# Define sequence association tables
-
-#Element_Sequence_Associations = DB.Table(
-#        'element_sequence_associations',
-#        DB.Column('sequence_id', DB.Integer, DB.ForeignKey('sequence.sequence_id')),
-#        DB.Column('element_id', DB.Integer,
-#            DB.ForeignKey('element.element_id')))
+Element_Sequence_Associations = DB.Table(
+        'element_sequence_associations',
+        DB.Column('sequence_id', DB.Integer, DB.ForeignKey('sequence.id')),
+        DB.Column('element_id', DB.Integer, DB.ForeignKey('element.id')))
 
 # No association tables anymore. These are regular models.
 
 class Tag(DB.Model):
-    tag_id = DB.Column(DB.Integer, primary_key=True)
+    id = DB.Column(DB.Integer, primary_key=True)
     key = DB.Column(DB.String(255), nullable=False)
     value = DB.Column(DB.String(255), nullable=False)
 
@@ -88,7 +85,7 @@ class Tag(DB.Model):
         self.value = value
 
 class Sequence(DB.Model):
-    sequence_id = DB.Column(DB.Integer, primary_key=True)
+    id = DB.Column(DB.Integer, primary_key=True)
     key = DB.Column(DB.String(255), nullable=False)
     value = DB.Column(ARRAY(DB.Float, dimensions=1), nullable=False)
 
@@ -97,7 +94,7 @@ class Sequence(DB.Model):
         self.value = value
 
 class Geom(DB.Model):
-    geom_id = DB.Column(DB.Integer, primary_key=True)
+    id = DB.Column(DB.Integer, primary_key=True)
     type = DB.Column(DB.String(255), nullable=False)
     geom = DB.Column(DB.String(255), nullable=False)
 
@@ -108,16 +105,16 @@ class Geom(DB.Model):
 class Element(DB.Model):
     """ Common base class
     """
-    element_id = DB.Column(DB.Integer, primary_key=True)
+    id = DB.Column(DB.Integer, primary_key=True)
     uid = DB.Column(DB.Integer, DB.ForeignKey(User.id))
     user = DB.relationship(User, uselist=False)
-    geom_id = DB.Column(DB.Integer, DB.ForeignKey(Geom.geom_id))
+    geom_id = DB.Column(DB.Integer, DB.ForeignKey(Geom.id))
     geom = DB.relationship(Geom, uselist=False)
     # many to many asscociation still missing, therfore no attributes tags and
     #  sequences yet...
-    tag_id = DB.Column(DB.Integer, DB.ForeignKey(Tag.tag_id))
-    sequence_id = DB.Column(DB.Integer, DB.ForeignKey(Sequence.sequence_id))
-    
+    tags = DB.relationship('Tag', secondary=Element_Tag_Associations)
+    sequences = DB.relationship('Sequence',
+                                secondary=Element_Sequence_Associations)
 
     def __init__(self, **kwargs):
         for k in kwargs:
