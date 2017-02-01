@@ -53,18 +53,8 @@ class User(DB.Model):
         return ws.check_password_hash(self.password_hash, pw)
 
 # Association tables for many-to-many relationships.
-# Tags can appear just about anywhere...
-
-# This one is necessary to keep track of the additional ordering information.
-# See:
-#
-#   * http://stackoverflow.com/questions/21292726/how-to-properly-use-association-proxy-and-ordering-list-together-with-sqlalchemy
-#   * http://docs.sqlalchemy.org/en/latest/orm/extensions/associationproxy.html#simplifying-association-objects
-#   * http://docs.sqlalchemy.org/en/latest/orm/extensions/orderinglist.html#module-sqlalchemy.ext.orderinglist
-#
-# for pointers on how this works.
-
-Element_Tag_Associations = DB.Table('element_tag_associations',
+Element_Tag_Associations = DB.Table(
+        'element_tag_associations',
         DB.Column('element_id', DB.Integer, DB.ForeignKey('element.id')),
         DB.Column('tag_id', DB.Integer, DB.ForeignKey('tag.id')))
 
@@ -73,8 +63,12 @@ Element_Sequence_Associations = DB.Table(
         DB.Column('sequence_id', DB.Integer, DB.ForeignKey('sequence.id')),
         DB.Column('element_id', DB.Integer, DB.ForeignKey('element.id')))
 
-# No association tables anymore. These are regular models.
+Element_Element_Associations = DB.Table(
+        'element_element_associations',
+        DB.Column('element_parent_id', DB.Integer, DB.ForeignKey('element.id')),
+        DB.Column('element_child_id', DB.Integer, DB.ForeignKey('element.id')))
 
+# No association tables anymore. These are regular models.
 class Tag(DB.Model):
     id = DB.Column(DB.Integer, primary_key=True)
     key = DB.Column(DB.String(255), nullable=False)
@@ -87,6 +81,8 @@ class Tag(DB.Model):
 class Sequence(DB.Model):
     id = DB.Column(DB.Integer, primary_key=True)
     key = DB.Column(DB.String(255), nullable=False)
+    # TODO: Could be as well an array of strings for a more generic approach
+    #       Additionally then perhaps sequence and tag could be merged...
     value = DB.Column(ARRAY(DB.Float, dimensions=1), nullable=False)
 
     def __init__(self, key, value):
@@ -96,6 +92,7 @@ class Sequence(DB.Model):
 class Geom(DB.Model):
     id = DB.Column(DB.Integer, primary_key=True)
     type = DB.Column(DB.String(255), nullable=False)
+    # TODO: Add postgis geometry type instead of string
     geom = DB.Column(DB.String(255), nullable=False)
 
     def __init__(self, type, geom):
@@ -108,13 +105,18 @@ class Element(DB.Model):
     id = DB.Column(DB.Integer, primary_key=True)
     uid = DB.Column(DB.Integer, DB.ForeignKey(User.id))
     user = DB.relationship(User, uselist=False)
+    # TODO: is it possible to remove geom_id?
     geom_id = DB.Column(DB.Integer, DB.ForeignKey(Geom.id))
     geom = DB.relationship(Geom, uselist=False)
-    # many to many asscociation still missing, therfore no attributes tags and
-    #  sequences yet...
     tags = DB.relationship('Tag', secondary=Element_Tag_Associations)
     sequences = DB.relationship('Sequence',
                                 secondary=Element_Sequence_Associations)
+    children = DB.relationship(
+            'Element',
+            secondary=Element_Element_Associations,
+            primaryjoin=id==Element_Element_Associations.c.element_parent_id,
+            secondaryjoin=id==Element_Element_Associations.c.element_child_id,
+            backref='parents')
 
     def __init__(self, **kwargs):
         for k in kwargs:
