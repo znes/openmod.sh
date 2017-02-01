@@ -12,35 +12,56 @@ oms.DB.session.flush()
 
 
 ################################################################################
-# Add test data ################################################################
+# Add pypsa test data ##########################################################
 ################################################################################
 
-tags = [oms.Tag('name', '1'), oms.Tag('name', '2')]
+json_input = {"buses": {"bus1": {"name": "bus1", "v_nom": 20},
+                        "bus2": {"name": "bus2", "v_nom": 20},
+                        "bus3": {"name": "bus3", "v_nom": 20}},
+              "generators": {"gen1": {"bus": "bus1",
+                                      "control": "PQ",
+                                      "name": "gen1",
+                                      "p_set": 100}},
+              "lines": {"line1": {"buses": ["bus1", "bus2"],
+                                  "name": "line1",
+                                  "r": 0.01,
+                                  "x": 0.1},
+                        "line2": {"buses": ["bus2", "bus3"],
+                                  "name": "line2",
+                                  "r": 0.01,
+                                  "x": 0.1},
+                        "line3": {"buses": ["bus3", "bus1"],
+                                  "name": "line3",
+                                  "r": 0.01,
+                                  "x": 0.1}},
+              "loads": {"load1": {"bus": "bus2", "name": "load1", "p_set": 100}}}
 
-for tag in tags: oms.DB.session.add(tag)
-oms.DB.session.flush()
+elements = {}
+for _, bus in json_input['buses'].items():
+    tags = [oms.Tag(k,v) for k,v in bus.items()]
+    element = oms.Element(user=user, tags=tags)
+    elements[bus['name']] = element
 
-sequence = oms.Sequence('profile', [1,5,6,3])
-oms.DB.session.add(sequence)
-oms.DB.session.flush()
+for _, gen in json_input['generators'].items():
+    tags = [oms.Tag(k,v) for k,v in gen.items()]
+    element = oms.Element(user=user, tags=tags)
+    element.children = [elements[gen['bus']]]
+    elements[gen['name']] = element
 
-# so far geom type is still a string
-geom = oms.Geom('point', '54.5,17.1')
-oms.DB.session.add(geom)
-oms.DB.session.flush()
+for _, load in json_input['loads'].items():
+    tags = [oms.Tag(k,v) for k,v in load.items()]
+    element = oms.Element(user=user, tags=tags)
+    element.parents = [elements[load['bus']]]
+    elements[load['name']] = element
 
-elements = []
-for tag in tags:
-    element = oms.Element(user=user,
-                          geom=geom,
-                          # many to many association not working yet therefore ids...
-                          tags=[tag],
-                          sequences=[sequence])
+for _, line in json_input['lines'].items():
+    tags = [oms.Tag(k,v) for k,v in line.items()]
+    element = oms.Element(user=user, tags=tags)
+    element.parents = [elements[line['buses'][0]]]
+    element.parents = [elements[line['buses'][1]]]
+    elements[line['name']] = element
+
+for _, element in elements.items():
     oms.DB.session.add(element)
-    elements.append(element)
-
-element.children = [elements[0]]
-
-for element in elements: oms.DB.session.add(element)
 
 oms.DB.session.commit()
