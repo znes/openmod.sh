@@ -827,6 +827,7 @@ def provide_relation_json(relation_id):
     return flask.jsonify(serialize('relation', relation_id))
 
 
+
 @app.route('/scenario_overview')
 def show_scenarios():
     model='pypsa'
@@ -836,12 +837,27 @@ def show_scenarios():
                                  scenarios=scenarios,
                                  model=model)
 
+class ComputeForm(wtfl.FlaskForm):
+    scn_name = wtf.StringField('scn_name',
+                                validators=[wtf.validators.DataRequired()])
+    start = wtf.IntegerField('start')
+    end = wtf.IntegerField('end')
+
 @app.route('/compute_results')
-def compute_results(model='oemof'):
+def compute_results(model='oemof', methods=['GET', 'POST']):
+    # model will come l
+    form = ComputeForm()
+    if form.validate_on_submit():
+        scn_name = form.scn_name.data
+        return flask.redirect(flask.url_for('compute_results'))
     if model == 'pypsa':
-        return flask.render_template('compute_results.html', model=model)
+        return flask.render_template('compute_results.html',
+                                     model=model,
+                                     form=form)
     if model == 'oemof':
-        return flask.render_template('compute_results.html', model=model)
+        return flask.render_template('compute_results.html',
+                                     model=model,
+                                     form=form)
 
 @app.route('/main_menu')
 def main_menu():
