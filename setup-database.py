@@ -47,12 +47,14 @@ elements[scenario['name']] = scenario_element
 
 for _, bus in json_input['buses'].items():
     tags = [oms.Tag(k,v) for k,v in bus.items()]
+    tags.append(oms.Tag('type', 'bus'))
     element = oms.Element(user=user, tags=tags)
     element.parents = [scenario_element]
     elements[bus['name']] = element
 
 for _, gen in json_input['generators'].items():
     tags = [oms.Tag(k,v) for k,v in gen.items()]
+    tags.append(oms.Tag('type', 'generator'))
     element = oms.Element(user=user, tags=tags)
     element.parents = [scenario_element]
     element.successors = [elements[gen['bus']]]
@@ -60,6 +62,7 @@ for _, gen in json_input['generators'].items():
 
 for _, load in json_input['loads'].items():
     tags = [oms.Tag(k,v) for k,v in load.items()]
+    tags.append(oms.Tag('type', 'load'))
     element = oms.Element(user=user, tags=tags)
     element.parents = [scenario_element]
     element.predecessors = [elements[load['bus']]]
@@ -67,6 +70,7 @@ for _, load in json_input['loads'].items():
 
 for _, line in json_input['lines'].items():
     tags = [oms.Tag(k,v) for k,v in line.items()]
+    tags.append(oms.Tag('type', 'line'))
     element = oms.Element(user=user, tags=tags)
     element.parents = [scenario_element]
     element.predecessors = [elements[line['buses'][0]]] + [elements[line['buses'][1]]]

@@ -778,25 +778,48 @@ def get_relations():
     template = flask.render_template('relations.xml', relations=relations)
     return xml_response(template)
 
-def serialize_scenario(scenario_name):
-    element = osm.Tag.query.filter_by(value=scenario_name).first().elements[0]
-    serialized = {'scenario': scenario_name,
+def tags_to_dict(tags):
+    """
+    tags: list of osm.Tag objects
+    returns: dictionary
+    """
+    tag_dict = {}
+    for tag in tags:
+        tag_dict[tag.key] = tag.value
+    return tag_dict
+
+def get_tag_value(elements, key):
+    """
+    elements: osm.Element object or list
+    key: string with tag key
+    returns: string with element name or list
+    """
+    if isinstance(elements, osm.Element):
+        return tags_to_dict(elements.tags)[key]
+    else:
+        return [tags_to_dict(element.tags)[key] for element in elements]
+
+def serialize_element(id):
+    element = osm.Element.query.filter_by(id=id).first()
+    serialized = {'name': get_tag_value(element, 'name'),
+                  'type': get_tag_value(element, 'type'),
                   'element_id': element.id,
                   'tags': {},
-                  'elements': []}
-    for tag in element.tags:
-        serialized['tags'][tag.key] = tag.value
-    for child in element.children:
-        child_dict = {'tags': {}}
-        for tag in child.tags:
-            child_dict['tags'][tag.key] = tag.value
-        serialized['elements'] = serialized['elements'] + [child_dict]
+                  'children': [],
+                  'parents': [],
+                  'predecessors': [],
+                  'successors': []}
+    serialized['tags'] = tags_to_dict(element.tags)
+    serialized['children'] = get_tag_value(element.children, 'name')
+    serialized['parents'] = get_tag_value(element.parents, 'name')
+    serialized['predecessors'] = get_tag_value(element.predecessors, 'name')
+    serialized['successors'] = get_tag_value(element.successors, 'name')
     return serialized
 
-@app.route('/scenario/<scenario_name>/JSON')
+@app.route('/element/<int:id>/JSON')
 #@fl.login_required
-def provide_scenario_json(scenario_name):
-    return flask.jsonify(serialize_scenario(scenario_name))
+def provide_element_json(id):
+    return flask.jsonify(serialize_element(id))
 
 ##### Persistence code ends here ##############################################
 
