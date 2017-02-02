@@ -799,6 +799,10 @@ def get_tag_value(elements, key):
     else:
         return [tags_to_dict(element.tags)[key] for element in elements]
 
+# TODO: very dirty. gnn has to make it better
+def get_element_id(name):
+    return osm.Tag.query.filter_by(value=name).first().elements[0].id
+
 def serialize_element(id):
     element = osm.Element.query.filter_by(id=id).first()
     serialized = {'name': get_tag_value(element, 'name'),
@@ -816,10 +820,22 @@ def serialize_element(id):
     serialized['successors'] = get_tag_value(element.successors, 'name')
     return serialized
 
-@app.route('/element/<int:id>/JSON')
+# lean API
+@app.route('/element/<int:id>/LAPI')
 #@fl.login_required
-def provide_element_json(id):
+def provide_lean_element_json(id):
     return flask.jsonify(serialize_element(id))
+
+# extended API
+@app.route('/element/<int:id>/XAPI')
+#@fl.login_required
+def provide_extended_element_json(id):
+    serialized = serialize_element(id)
+    children_list = []
+    for child in serialized['children']:
+        children_list.append(serialize_element(get_element_id(child)))
+    serialized['children'] = children_list
+    return flask.jsonify(serialized)
 
 ##### Persistence code ends here ##############################################
 
