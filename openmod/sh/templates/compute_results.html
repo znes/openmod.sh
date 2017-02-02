@@ -1,0 +1,37 @@
+{% extends "base_layout.html" %}
+{% block body %}
+
+Your are using the {{model}} - model
+
+   <form action="{{ url_for('show_results') }}" method="post" name="compute">
+      <table>
+          <tr>
+              <td>Select Scenario:</td>
+              <td>{{ form.scn_name(size=24) }}</td>
+          </tr>
+          <tr>
+              <td>Start:</td>
+              <td>{{ form.start(cols=32, rows=4) }}</td>
+          </tr>
+          <tr>
+              <td>End:</td>
+              <td>{{ form.end(cols=32, rows=4) }}</td>
+          </tr>
+          <tr>
+              <td>Solver</td>
+              <td><select name="Solver">
+                      <option value="glpk">GLPK</option>
+                      <option value="cbc">CBC</option>
+                  </select>
+              </td>
+
+              <td></td>
+              <td></td>
+          </tr>
+      </table>
+    <input type="submit" value="Compute">
+  </form>
+
+
+{% endblock %}
+

@@ -837,6 +837,59 @@ def provide_extended_element_json(id):
     serialized['children'] = children_list
     return flask.jsonify(serialized)
 
+
+
+@app.route('/scenario_overview')
+def show_scenarios():
+    model='pypsa'
+
+    scenario_tags = osm.Tag.query.filter_by(value='scenario').first()
+    scenario_elements = []
+    if isinstance(scenario_tags, list):
+        for st in scenario_tags:
+            scenario_elements.extend(st.elements)
+    else:
+        scenario_elements.extend(scenario_tags.elements)
+
+    serialized_scenarios = {}
+    for e in scenario_elements:
+        serialized_scenarios[get_tag_value(e, 'name')] = serialize_element(e.id)
+
+    return flask.render_template('show_scenarios.html',
+                                 scenarios=serialized_scenarios,
+                                 model=model)
+
+class ComputeForm(wtfl.FlaskForm):
+    scn_name = wtf.StringField('scn_name',
+                                validators=[wtf.validators.DataRequired()])
+    start = wtf.IntegerField('start')
+    end = wtf.IntegerField('end')
+
+@app.route('/compute_results', methods=['GET', 'POST'])
+def compute_results(model='oemof'):
+    # model will come l
+    form = ComputeForm()
+    if form.validate_on_submit():
+        scn_name = form.scn_name.data
+        return flask.redirect(flask.url_for('/show_results'))
+    if model == 'pypsa':
+        return flask.render_template('compute_results.html',
+                                     model=model,
+                                     form=form)
+    if model == 'oemof':
+        return flask.render_template('compute_results.html',
+                                     model=model,
+                                     form=form)
+@app.route('/show_results', methods=['GET', 'POST'])
+def show_results():
+    flask.flash('Processing results...')
+    return flask.render_template('show_results.html')
+
+
+@app.route('/main_menu')
+def main_menu():
+    return flask.render_template('main_menu.html')
+
 ##### Persistence code ends here ##############################################
 
 

@@ -1,0 +1,26 @@
+{% extends "base_layout.html" %}
+{% block body %}
+
+
+ <table border='1' align="center">
+    <tr>
+        <th>Scenario Name</th>
+        <th>Number of children</th>
+        <th>Select Scenario</th>
+    </tr>
+         {% for k,v in scenarios.items() %}
+    <tr>
+        <td>{{ scenarios[k]['tags']['name'] }}</td>
+        <td>{{ scenarios[k]['children']  }}</td>
+        <td>{{ scenarios[k]['tags']['type'] }}</td>
+    </tr>
+        {% endfor %}
+  </table>
+
+  <form action="{{ url_for('compute_results') }}" method="post" name="compute">
+
+     <input type="submit" value="Compute Scenario">
+ </form>
+
+{% endblock %}
+
