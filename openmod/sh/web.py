@@ -15,6 +15,7 @@ import flask_cors as cors # TODO: Check whether the `@cors.cross_origin()`
 import flask_login as fl
 import flask_wtf as wtfl
 import wtforms as wtf
+from werkzeug.utils import secure_filename
 
 import oemof.db
 
@@ -837,7 +838,38 @@ def provide_extended_element_json(id):
     serialized['children'] = children_list
     return flask.jsonify(serialized)
 
+ALLOWED_EXTENSIONS = set(['json'])
 
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@app.route('/import', methods=['GET', 'POST'])
+def upload_file():
+    if flask.request.method == 'POST':
+        # check if the post request has the file part
+        if 'file' not in flask.request.files:
+            flash('No file part')
+            return redirect(request.url)
+        file = flask.request.files['file']
+        # if user does not select file, browser also
+        # submit a empty part without filename
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(flask.request.url)
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            #file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            return file.read()
+    return '''
+    <!doctype html>
+    <title>Upload new File</title>
+    <h1>Upload new File</h1>
+    <form method=post enctype=multipart/form-data>
+      <p><input type=file name=file>
+         <input type=submit value=Upload>
+    </form>
+    '''
 
 @app.route('/scenario_overview')
 def show_scenarios():
