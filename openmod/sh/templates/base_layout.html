@@ -7,8 +7,8 @@
     <header>
         </br></br>
 
-         <div align="right">
-         <a href={{ url_for('main_menu') }}>Go back to main menu list</a>
+         <div align="right", id="boxlink">
+         <a href={{ url_for('main_menu') }}>Go back to main menu</a>
          </div>
     </header>
 
@@ -17,5 +17,12 @@
 
         {% endblock %}
     </main>
-    <footer> COPYRIGHT @IGUT/energiekolletik </footer>
+
+
+    <footer>
+    <div style="position:fixed; bottom:10px; height:auto;margin-top:40px;width:100%;text-align:center">
+            COPYRIGHT @IGUT/energiekollektiv<br>
+            <em>openmod.sh: an oemof based modelling software.</em>
+    </div>
+    </footer>
 </html>

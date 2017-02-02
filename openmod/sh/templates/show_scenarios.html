@@ -2,7 +2,7 @@
 {% block body %}
 
 
- <table border='1' align="center">
+ <table border='1' align="center", id="hor-minimalist-a">
     <tr>
         <th>Scenario Name</th>
         <th>Number of children</th>
@@ -12,15 +12,15 @@
     <tr>
         <td>{{ scenarios[k]['tags']['name'] }}</td>
         <td>{{ scenarios[k]['children']  }}</td>
-        <td>{{ scenarios[k]['tags']['type'] }}</td>
+        <td>  <form action="{{ url_for('compute_results', scenario=scenarios[k]['tags']['name']) }}"
+                method=post>
+        <input type=submit value="Compute">
+              </form>
+        </td>
     </tr>
         {% endfor %}
   </table>
 
-  <form action="{{ url_for('compute_results') }}" method="post" name="compute">
-
-     <input type="submit" value="Compute Scenario">
- </form>
 
 {% endblock %}
 

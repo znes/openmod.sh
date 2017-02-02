@@ -866,20 +866,18 @@ class ComputeForm(wtfl.FlaskForm):
     end = wtf.IntegerField('end')
 
 @app.route('/compute_results', methods=['GET', 'POST'])
-def compute_results(model='oemof'):
+def compute_results(model='oemof', scenario="Name..."):
     # model will come l
     form = ComputeForm()
     if form.validate_on_submit():
         scn_name = form.scn_name.data
         return flask.redirect(flask.url_for('/show_results'))
-    if model == 'pypsa':
-        return flask.render_template('compute_results.html',
-                                     model=model,
-                                     form=form)
+
     if model == 'oemof':
         return flask.render_template('compute_results.html',
                                      model=model,
-                                     form=form)
+                                     form=form,
+                                     scenario_default=scenario)
 @app.route('/show_results', methods=['GET', 'POST'])
 def show_results():
     flask.flash('Processing results...')
