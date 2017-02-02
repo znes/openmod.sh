@@ -1,10 +1,17 @@
 
 <html>
-    <head>openMod.sh</head>
-    <header>   </br></br>
-    <a href={{ url_for('main_menu') }}>Go back to main menu list</a></header>
-    <main>
+    <head> <link rel="stylesheet" type="text/css" href="static/iD/iD.css">
+           <title>openMod.sh</title>
+   </head>
+
+    <header>
+        </br></br>
+        <a href={{ url_for('main_menu') }}>Go back to main menu list</a>
+    </header>
+
+    <main class="header">
         {% block body %}
+
         {% endblock %}
     </main>
     <footer> COPYRIGHT @IGUT/energiekolletik </footer>
