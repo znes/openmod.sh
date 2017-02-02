@@ -18,7 +18,7 @@ import wtforms as wtf
 
 import oemof.db
 
-from .schemas import osm
+from .schemas import oms as osm
 from .schemas.osm import Element_Relation_Associations as ERAs
 import openmod.sh.scenario
 
@@ -778,53 +778,64 @@ def get_relations():
     template = flask.render_template('relations.xml', relations=relations)
     return xml_response(template)
 
-def serialize(osm_type, id):
-    if osm_type == 'element':
-        id_tag = 'element_id'
-        element = osm.Element.query.filter_by(element_id=id).first()
-    elif osm_type == 'node':
-        id_tag = 'id'
-        element = osm.Node.query.filter_by(id=id).first()
-    elif osm_type == 'way':
-        id_tag = 'id'
-        element = osm.Way.query.filter_by(id=id).first()
-    elif osm_type == 'relation':
-        id_tag = 'id'
-        element = osm.Relation.query.filter_by(id=id).first()
+def tags_to_dict(tags):
+    """
+    tags: list of osm.Tag objects
+    returns: dictionary
+    """
+    tag_dict = {}
+    for tag in tags:
+        tag_dict[tag.key] = tag.value
+    return tag_dict
+
+def get_tag_value(elements, key):
+    """
+    elements: osm.Element object or list
+    key: string with tag key
+    returns: string with element name or list
+    """
+    if isinstance(elements, osm.Element):
+        return tags_to_dict(elements.tags)[key]
     else:
-        raise Exception("Unknown osm type")
-    serialized = {}
-    serialized[osm_type+'_id'] = id
-    serialized['tags'] = {}
-    for key, value in element.tags.items():
-        serialized['tags'][key] = value
-    serialized['timeseries'] = {}
-    for key, value in element.timeseries.items():
-        serialized['timeseries'][key] = value
+        return [tags_to_dict(element.tags)[key] for element in elements]
+
+# TODO: very dirty. gnn has to make it better
+def get_element_id(name):
+    return osm.Tag.query.filter_by(value=name).first().elements[0].id
+
+def serialize_element(id):
+    element = osm.Element.query.filter_by(id=id).first()
+    serialized = {'name': get_tag_value(element, 'name'),
+                  'type': get_tag_value(element, 'type'),
+                  'element_id': element.id,
+                  'tags': {},
+                  'children': [],
+                  'parents': [],
+                  'predecessors': [],
+                  'successors': []}
+    serialized['tags'] = tags_to_dict(element.tags)
+    serialized['children'] = get_tag_value(element.children, 'name')
+    serialized['parents'] = get_tag_value(element.parents, 'name')
+    serialized['predecessors'] = get_tag_value(element.predecessors, 'name')
+    serialized['successors'] = get_tag_value(element.successors, 'name')
     return serialized
 
-@app.route('/element/<int:element_id>/JSON')
+# lean API
+@app.route('/element/<int:id>/LAPI')
 #@fl.login_required
-def provide_element_json(element_id):
-    return flask.jsonify(serialize('element', element_id))
+def provide_lean_element_json(id):
+    return flask.jsonify(serialize_element(id))
 
-# json for nodes
-@app.route('/n/<int:node_id>/JSON')
+# extended API
+@app.route('/element/<int:id>/XAPI')
 #@fl.login_required
-def provide_node_json(node_id):
-    return flask.jsonify(serialize('node', node_id))
-
-# json for ways
-@app.route('/w/<int:way_id>/JSON')
-#@fl.login_required
-def provide_way_json(way_id):
-    return flask.jsonify(serialize('way', way_id))
-
-# json for relations
-@app.route('/r/<int:relation_id>/JSON')
-#@fl.login_required
-def provide_relation_json(relation_id):
-    return flask.jsonify(serialize('relation', relation_id))
+def provide_extended_element_json(id):
+    serialized = serialize_element(id)
+    children_list = []
+    for child in serialized['children']:
+        children_list.append(serialize_element(get_element_id(child)))
+    serialized['children'] = children_list
+    return flask.jsonify(serialized)
 
 
 
