@@ -1,10 +1,8 @@
-
-<html>
-    <head> <link rel="stylesheet" type="text/css" href="static/iD/iD.css">
-           <title>openMod.sh</title>
-   </head>
+{% extends "base_layout.html" %}
+{% block body %}
 
     <h1>What do you want to do?</h1>
+
     <a href={{ url_for('show_scenarios', model=model) }}>Show existing scenarios / datasets </a>
     <br>
     <a href={{ url_for('root') }}>Go to ID-Editor </a>
@@ -13,3 +11,4 @@
 </html>
 
 
+{% endblock %}
