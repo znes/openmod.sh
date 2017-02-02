@@ -63,10 +63,15 @@ Element_Sequence_Associations = DB.Table(
         DB.Column('sequence_id', DB.Integer, DB.ForeignKey('sequence.id')),
         DB.Column('element_id', DB.Integer, DB.ForeignKey('element.id')))
 
-Element_Element_Associations = DB.Table(
-        'element_element_associations',
+Parent_Children_Associations = DB.Table(
+        'parent_children_associations',
         DB.Column('element_parent_id', DB.Integer, DB.ForeignKey('element.id')),
         DB.Column('element_child_id', DB.Integer, DB.ForeignKey('element.id')))
+
+Predecessor_Successor_Associations = DB.Table(
+        'predecessor_successor_associations',
+        DB.Column('element_predecessor_id', DB.Integer, DB.ForeignKey('element.id')),
+        DB.Column('element_successor_id', DB.Integer, DB.ForeignKey('element.id')))
 
 # No association tables anymore. These are regular models.
 class Tag(DB.Model):
@@ -114,10 +119,16 @@ class Element(DB.Model):
                                 secondary=Element_Sequence_Associations)
     children = DB.relationship(
             'Element',
-            secondary=Element_Element_Associations,
-            primaryjoin=id==Element_Element_Associations.c.element_parent_id,
-            secondaryjoin=id==Element_Element_Associations.c.element_child_id,
+            secondary=Parent_Children_Associations,
+            primaryjoin=id==Parent_Children_Associations.c.element_parent_id,
+            secondaryjoin=id==Parent_Children_Associations.c.element_child_id,
             backref='parents')
+    successors = DB.relationship(
+            'Element',
+            secondary=Predecessor_Successor_Associations,
+            primaryjoin=id==Predecessor_Successor_Associations.c.element_predecessor_id,
+            secondaryjoin=id==Predecessor_Successor_Associations.c.element_successor_id,
+            backref='predecessors')
 
     def __init__(self, **kwargs):
         for k in kwargs:
