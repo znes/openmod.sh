@@ -1,0 +1,59 @@
+{
+  "type": "scenario",
+  "name": "status_quo",
+  "children": [
+    {
+      "type": "volatile_generator",
+      "name": "kiel_solar",
+      "tags": {
+        "installed_power": "251",
+        "hub": [
+          "kiel"
+        ]
+      }
+    },
+    {
+      "type": "volatile_generator",
+      "name": "kiel_wind",
+      "tags": {
+        "installed_power": "0",
+        "hub": [
+          "kiel"
+        ]
+      }
+    },
+    {
+      "type": "volatile_generator",
+      "name": "nms_solar_rural",
+      "tags": {
+        "installed_power": "12768",
+        "hub": [
+          "nms"
+        ]
+      }
+    },
+    {
+      "type": "volatile_generator",
+      "name": "nms_wind",
+      "tags": {
+        "installed_power": "44.78",
+        "hub": [
+          "nms"
+        ]
+      }
+    },
+    {
+      "type": "demand",
+      "name": "nms_demand",
+      "tags": {
+        "demand": "100000",
+        "hub": [
+          "nms"
+        ]
+      }
+    }
+  ],
+  "tags": {
+    "description": "Status Quo Scenario SH Kiel und NMS"
+  }
+}
