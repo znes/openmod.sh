@@ -886,8 +886,19 @@ def show_scenarios():
     for e in scenario_elements:
         serialized_scenarios[get_tag_value(e, 'name')] = serialize_element(e.id)
 
+
+    table_data = {}
+    for k,v in serialized_scenarios.items():
+        name = serialized_scenarios[k]['name']
+        table_data[name] = {}
+        # number of children
+        table_data[name]['children'] = len(serialized_scenarios[k]['children'])
+        table_data[name]['link'] = "/API/element?id="+str(serialized_scenarios[k]['element_id'])+"&expand=children"
+
+    import pdb
+    pdb.set_trace()
     return flask.render_template('show_scenarios.html',
-                                 scenarios=serialized_scenarios,
+                                 scenarios=table_data,
                                  model=model)
 
 class ComputeForm(wtfl.FlaskForm):

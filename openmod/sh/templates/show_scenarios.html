@@ -6,13 +6,15 @@
     <tr>
         <th>Scenario Name</th>
         <th>Number of children</th>
+        <th>Show JSON - dataset</th>
         <th>Select Scenario</th>
     </tr>
          {% for k,v in scenarios.items() %}
     <tr>
-        <td>{{ scenarios[k]['tags']['name'] }}</td>
+        <td>{{ k }}</td>
         <td>{{ scenarios[k]['children']  }}</td>
-        <td>  <form action="{{ url_for('compute_results', scenario=scenarios[k]['tags']['name']) }}"
+         <td> <a href="{{ scenarios[k]['link']  }}">Show</a></td>
+        <td> <form action="{{ url_for('compute_results', scenario=k) }}"
                 method=post>
         <input type=submit value="Compute">
               </form>
