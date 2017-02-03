@@ -864,6 +864,12 @@ def upload_file():
             return file.read()
     return flask.render_template('import.html')
 
+
+@app.route('/export')
+def export_dataset():
+    return flask.render_template('export.html')
+
+
 @app.route('/scenario_overview')
 def show_scenarios():
     model='pypsa'

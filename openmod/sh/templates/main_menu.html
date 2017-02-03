@@ -3,14 +3,15 @@
 
     <h1>What do you want to do?</h1>
 
-    <a href={{ url_for('show_scenarios', model=model) }}>Show existing scenarios / datasets </a>
+    <a href={{ url_for('show_scenarios', model=model) }}>Scenario overview</a>
     <br>
     <a href={{ url_for('root') }}>Go to ID-Editor </a>
     <br>
     <a href={{ url_for('compute_results') }}>Compute results</a>
     <br>
-    <a href={{ url_for('upload_file') }}>Upload dataset</a>
-
+    <a href={{ url_for('upload_file') }}>Import dataset</a>
+    <br>
+    <a href={{ url_for('export_dataset') }}>Export dataset</a>
 
 
 {% endblock %}
