@@ -821,22 +821,23 @@ def serialize_element(id):
     serialized['successors'] = get_tag_value(element.successors, 'name')
     return serialized
 
-# lean API
-@app.route('/element/<int:id>/LAPI')
-#@fl.login_required
-def provide_lean_element_json(id):
-    return flask.jsonify(serialize_element(id))
-
-# extended API
-@app.route('/element/<int:id>/XAPI')
-#@fl.login_required
-def provide_extended_element_json(id):
-    serialized = serialize_element(id)
-    children_list = []
-    for child in serialized['children']:
-        children_list.append(serialize_element(get_element_id(child)))
-    serialized['children'] = children_list
-    return flask.jsonify(serialized)
+# API for elements
+@app.route('/API/element')
+def provide_element_api():
+    if flask.request.method == 'GET':
+        args = flask.request.args.to_dict()
+        if 'id' in args.keys():
+            if 'expand' in args.keys():
+                """expand: children, parents, successors or predecessors"""
+                serialized = serialize_element(args['id'])
+                expand_list = []
+                for element in serialized[args['expand']]:
+                    expand_list.append(serialize_element(get_element_id(element)))
+                serialized[args['expand']] = expand_list
+                return flask.jsonify(serialized)
+            else:
+                return flask.jsonify(serialize_element(args['id']))
+        return "Please provide correct query parameters"
 
 ALLOWED_EXTENSIONS = set(['json'])
 

@@ -11,18 +11,21 @@ There are the following protected keys:
 
 * name                 <string>
 * type                 <string>
-* predecessor  	       <array>
-* successor 	       <array>
+* predecessors         <array>
+* successors           <array>
 * tags                 <object>
 * parents              <array>
 * children             <array>
 
 
-LAPI
+element API
 -------------------------------
-LAPI stand for lean API. If an element has 'children', all these elementes i.e.
-children - objects are  stored under the key 'children' with their name
-(i.e. a reference to the  object) and not the object itself.
+If an element has 'children', all these elementes i.e. children - objects are
+stored under the key 'children' with their name (i.e. a reference to the object)
+and not the object itself.
+
+The API can be accessed via:
+http://host:port/API/element?id=X
 
 
 .. code:: python
@@ -52,14 +55,8 @@ children - objects are  stored under the key 'children' with their name
 }
 
 
-
-
-XAPI
-------------------------------
-XAPI stand for extended API. The difference to the LAPI interface is the handling
-of children elements. In contrast to the LAPI, the values of the children key
-will not be an array of strings containing the names of the children. Instead,
-it will be an array of objects, containing the objects of the children with all
-their information.
-
+If you do not want just a reference to a child, parent, successor or
+predecessor, you can submit an additional query parameter 'expand'. Then the
+values of the desired key will not be an array of strings containing just the
+names, but it will be an array of the objects itself.
 
