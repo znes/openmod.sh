@@ -856,7 +856,7 @@ def provide_element_api():
     if flask.request.method == 'POST':
         data = flask.request.get_json()
         json_to_db(data)
-        return "Imported successfully"
+        return flask.render_template('imported_successfully.html')
 
 ALLOWED_EXTENSIONS = set(['json'])
 
