@@ -1,0 +1,11 @@
+{% extends "base_layout.html" %}
+{% block body %}
+
+    <title>Import Dataset</title>
+    <h1>Upload your dataset (JSON)</h1>
+    <form method=post enctype=multipart/form-data>
+      <input type=file name=file><br>
+      <input type=submit value=Upload>
+    </form>
+
+{% endblock %}
