@@ -789,6 +789,9 @@ def tags_to_dict(tags):
         tag_dict[tag.key] = tag.value
     return tag_dict
 
+def dict_to_tags(dic):
+    return [osm.Tag(k, v) for k,v in dic.items()]
+
 def get_tag_value(elements, key):
     """
     elements: osm.Element object or list
@@ -821,8 +824,20 @@ def serialize_element(id):
     serialized['successors'] = get_tag_value(element.successors, 'name')
     return serialized
 
+def create_element_from_json(json):
+    tags = [osm.Tag('name', json['name']), osm.Tag('type', json['type'])]
+    tags.extend(dict_to_tags(json['tags']))
+    element = osm.Element(tags=tags)
+    return element
+
+def json_to_db(json):
+    element = create_element_from_json(json)
+    element.children = [create_element_from_json(e) for e in json['children']]
+    osm.DB.session.add(element)
+    osm.DB.session.commit()
+
 # API for elements
-@app.route('/API/element')
+@app.route('/API/element', methods=['GET', 'POST'])
 def provide_element_api():
     if flask.request.method == 'GET':
         args = flask.request.args.to_dict()
@@ -838,6 +853,10 @@ def provide_element_api():
             else:
                 return flask.jsonify(serialize_element(args['id']))
         return "Please provide correct query parameters"
+    if flask.request.method == 'POST':
+        data = flask.request.get_json()
+        json_to_db(data)
+        return "Imported successfully"
 
 ALLOWED_EXTENSIONS = set(['json'])
 
@@ -861,7 +880,8 @@ def upload_file():
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             #file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            return file.read()
+            json_to_db(json.loads(str(file.read(), 'utf-8')))
+            return "Imported successfully"
     return flask.render_template('import.html')
 
 
