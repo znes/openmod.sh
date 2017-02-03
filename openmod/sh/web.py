@@ -891,8 +891,9 @@ class ComputeForm(wtfl.FlaskForm):
     end = wtf.IntegerField('end')
 
 @app.route('/compute_results', methods=['GET', 'POST'])
-def compute_results(model='oemof', scenario="Name..."):
+def compute_results(model='oemof'):
     # model will come l
+    scenario = flask.request.args.get('scenario', '')
     form = ComputeForm()
     if form.validate_on_submit():
         scn_name = form.scn_name.data
