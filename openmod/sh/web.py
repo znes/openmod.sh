@@ -881,7 +881,7 @@ def upload_file():
             filename = secure_filename(file.filename)
             #file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             json_to_db(json.loads(str(file.read(), 'utf-8')))
-            return "Imported successfully"
+            return flask.render_template('imported_successfully.html')
     return flask.render_template('import.html')
 
 
