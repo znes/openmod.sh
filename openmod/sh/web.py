@@ -894,7 +894,7 @@ def export_dataset():
 def show_scenarios():
     model='pypsa'
 
-    scenario_tags = osm.Tag.query.filter_by(value='scenario').first()
+    scenario_tags = list(osm.Tag.query.filter_by(value='scenario'))
     scenario_elements = []
     if isinstance(scenario_tags, list):
         for st in scenario_tags:
@@ -916,7 +916,7 @@ def show_scenarios():
         table_data[name]['link'] = "/API/element?id="+str(serialized_scenarios[k]['element_id'])+"&expand=children"
 
     import pdb
-    pdb.set_trace()
+#    pdb.set_trace()
     return flask.render_template('show_scenarios.html',
                                  scenarios=table_data,
                                  model=model)
