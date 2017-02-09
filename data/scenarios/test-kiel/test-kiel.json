@@ -18,7 +18,7 @@
       "name": "nms_solar_rural",
       "type": "volatile_generator",
       "tags": {
-        "sector" : "electricity",
+        "sector": "electricity",
         "installed_power": "12768",
         "potential_power": "12000",
         "hub": [
@@ -31,7 +31,7 @@
       "type": "flexible_generator",
       "tags": {
         "installed_power": "300",
-        "fuel_type" :"gas",
+        "fuel_type": "gas",
         "efficiency": "0.45",
         "variable_costs": "40",
         "hub": [
@@ -39,73 +39,90 @@
         ]
       }
     },
-     {
+    {
       "name": "gas_chp",
       "type": "combined_flexible_generator",
       "tags": {
         "sector": "powerheat",
         "installed_power": "300",
-        "fuel_type" :"gas",
+        "fuel_type": "gas",
         "electrical_efficiency": "0.45",
         "thermal_efficiency": "0.4",
         "variable_costs": "35",
         "hub": [
-          "kiel_elec", "kiel_heat" 
+          "kiel_elec",
+          "kiel_heat"
         ]
       }
     },
-    { "name": "kiel_demand_elec",
-      "type": "demand",
+    {
+      "name": "kiel_power_to_heat",
+      "type": "flexible_generator",
       "tags": {
-        "energy_sector" : "electricity",
-        "energy_amount" : "100000",
-        "hub": [
-          "kiel_elec"
-        ]
-      }
-    },
-     {
-      "type": "demand",
-      "name": "kiel_demand_heat",
-      "tags": {
-        "energy_sector" : "heat",
-        "energy_amount" : "100000",
+        "installed_power": "20",
+        "fuel_type": "electricity",
+        "efficiency": "0.99",
+        "variable_costs": "0",
         "hub": [
           "kiel_heat"
         ]
       }
     },
-  {
-    "name": "gas_emission",
-    "type": "emission", 
-    "children": [],
-    "tags": { 
-      "value": "0.21",
-      "fuel_type": "gas"
-  },
-  {
-    "name": "biomass_emission",
-    "type": "emission", 
-    "children": []
-    "tags": { 
-      "value": "0.01"
-      "sector" : "resource",
-      "fuel_type": "biomass"
-  },
-  {
-    "name": "unit_power"
-    "type": "unit", 
-    "tags" : {
-      "value": "MW"
+    {
+      "name": "kiel_demand_elec",
+      "type": "demand",
+      "tags": {
+        "sector": "electricity",
+        "energy_amount": "100000",
+        "hub": [
+          "kiel_elec"
+        ]
+      }
+    },
+    {
+      "type": "demand",
+      "name": "kiel_demand_heat",
+      "tags": {
+        "sector": "heat",
+        "energy_amount": "100000",
+        "hub": [
+          "kiel_heat"
+        ]
+      }
+    },
+    {
+      "name": "gas_emission",
+      "type": "emission",
+      "children": [],
+      "tags": {
+        "value": "0.21",
+        "fuel_type": "gas"
+      }
+    },
+    {
+      "name": "biomass_emission",
+      "type": "emission",
+      "children": [],
+      "tags": {
+        "value": "0.01",
+        "sector": "resource",
+        "fuel_type": "biomass"
+      }
+    },
+    {
+      "name": "unit_power",
+      "type": "unit",
+      "tags": {
+        "value": "MW"
+      }
+    },
+    {
+      "name": "unit_energy",
+      "type": "unit",
+      "tags": {
+        "value": "MWh"
+      }
     }
-  },
-  {
-    "name": "unit_energy"
-    "type": "unit", 
-    "tags" : {
-      "value": "MWh"
-    }
-  }
   ],
   "tags": {
     "description": "Status Quo Scenario SH Kiel und NMS"
