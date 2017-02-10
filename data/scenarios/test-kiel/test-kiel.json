@@ -7,7 +7,7 @@
       "tags": "true",
       "sequences": "false",
       "children": "true",
-      "parent": "false",
+      "parents": "false",
       "predecessors": "true",
       "successors": "true",
       "expand": "children",
