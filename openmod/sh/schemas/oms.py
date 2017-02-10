@@ -108,9 +108,10 @@ class Element(DB.Model):
     """ Common base class
     """
     id = DB.Column(DB.Integer, primary_key=True)
+    name = DB.Column(DB.String(255), nullable=False)
+    type = DB.Column(DB.String(255), nullable=False)
     uid = DB.Column(DB.Integer, DB.ForeignKey(User.id))
     user = DB.relationship(User, uselist=False)
-    # TODO: is it possible to remove geom_id?
     geom_id = DB.Column(DB.Integer, DB.ForeignKey(Geom.id))
     geom = DB.relationship(Geom, uselist=False)
     tags = DB.relationship('Tag', secondary=Element_Tag_Associations,
