@@ -16,14 +16,14 @@
     "manual_conversion": "children of commodities and units are missing"
   },
   "type": "scenario",
-  "name": "status_quo_2015",
+  "name": "2020",
   "children": [
     {
       "name": "kiel_solar",
       "type": "volatile_generator",
       "tags": {
         "fuel_type": "solar",
-        "potential_power": "1000"
+        "potential_power": "251"
       },
       "successors": ["kiel_electricity"]
     },
@@ -32,7 +32,7 @@
       "type": "volatile_generator",
       "tags": {
         "fuel_type": "solar_rural",
-        "potential_power": "12000"
+        "potential_power": "12768"
       },
       "successors": ["nms_electricity"]
     },
@@ -43,7 +43,7 @@
         "fuel_type": "gas",
         "installed_power": "300",
         "efficiency": "0.45",
-        "variable_costs": "40"
+        "variable_cost": "40"
       },
       "successors": ["kiel_electricity"]
     },
@@ -55,7 +55,7 @@
         "fuel_type": "gas",
         "electrical_efficiency": "0.45",
         "thermal_efficiency": "0.4",
-        "variable_costs": "35"
+        "variable_cost": "35"
       },
       "successors": ["kiel_electricity", "kiel_heat"]
     },
@@ -66,7 +66,7 @@
         "installed_power": "20",
         "fuel_type": "electricity",
         "efficiency": "0.99",
-        "variable_costs": "0"
+        "variable_cost": "0"
       },
       "successors": ["kiel_heat"]
     },
@@ -77,6 +77,19 @@
         "amount": "100000"
       },
       "predecessors": ["kiel_electricity"]
+    },
+    {
+      "name": "kiel_storage_heat",
+      "type": "storage",
+      "tags": {
+        "installed_power": "10",
+        "installed_energy": "100",
+        "input_efficiency": "1",
+        "output_efficiency": "1",
+        "losses": "0"
+      },
+      "predecessors": ["kiel_heat"],
+      "successors": ["kiel_heat"]
     },
     {
       "type": "demand",
@@ -106,7 +119,6 @@
     },
     {
       "name": "co2_commodity",
-      "type": "commodity",
       "tags": {
         "commodity_type": "co2",
         "emission_cost": "123"
@@ -116,15 +128,19 @@
       "name": "units",
       "type": "unit",
       "tags": {
-        "power": "MW",
-        "energy": "MWh",
+        "installed_power": "MW",
+        "potential_power": "MW",
+        "amount": "MWh",
+        "installed_energy": "MWh",
+        "variable_cost": "EUR/(MWh output)", 
         "fuel_cost": "EUR/MWh",
-        "emission_factor": "t/MWh",
+        "emission_factor": "t/(MWh input)",
         "emission_cost": "EUR/t"
       }
     }
   ],
   "tags": {
-    "description": "2020 Scenario Masterplan Kiel"
+    "description": "2020 Scenario Masterplan Kiel",
+    "model": "mceb"
   }
 }
