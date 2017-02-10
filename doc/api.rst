@@ -73,7 +73,7 @@ output is determined by query parameters. The following query parameters exist
 * hubs_as_elements <boolean>
 * sequences <boolean>
 
-The follwoing example shows a member of an API output from this query:
+The following example shows a member of an API output from this query:
 
 .. code:: bash
 
@@ -88,18 +88,18 @@ file will contain the following query parameter information:
 
 .. code:: python
 
-{
-  "api_parameters": {
-    "api_version": "0.1",
-    "api_type": "element",
-    "query": {
-      "geom": "false",
-      "tags": "true",
-      "expand": "children",
-    },
+	{
+	  "api_parameters": {
+	    "api_version": "0.1",
+	    "api_type": "element",
+	    "query": {
+	      "geom": "false",
+	      "tags": "true",
+	      "expand": "children",
+	    }
 
 
-The detailed description of the query parameters behaviour below.
+The detailed description of the query parameters behaviour is given below.
 
 
 expand
