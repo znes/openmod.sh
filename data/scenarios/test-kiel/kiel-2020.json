@@ -25,7 +25,7 @@
         "fuel_type": "solar",
         "potential_power": "1000"
       },
-      "successors": ["kiel_elec"]
+      "successors": ["kiel_electricity"]
     },
     {
       "name": "nms_solar_rural",
@@ -34,7 +34,7 @@
         "fuel_type": "solar_rural",
         "potential_power": "12000"
       },
-      "successors": ["nms_elec"]
+      "successors": ["nms_electricity"]
     },
     {
       "name": "gas_powerplant",
@@ -45,7 +45,7 @@
         "efficiency": "0.45",
         "variable_costs": "40"
       },
-      "successors": ["kiel_elec"]
+      "successors": ["kiel_electricity"]
     },
     {
       "name": "gas_chp",
@@ -57,7 +57,7 @@
         "thermal_efficiency": "0.4",
         "variable_costs": "35"
       },
-      "successors": ["kiel_elec", "kiel_heat"]
+      "successors": ["kiel_electricity", "kiel_heat"]
     },
     {
       "name": "kiel_power_to_heat",
@@ -71,18 +71,18 @@
       "successors": ["kiel_heat"]
     },
     {
-      "name": "kiel_demand_elec",
+      "name": "kiel_demand_electricity",
       "type": "demand",
       "tags": {
-        "energy_amount": "100000"
+        "amount": "100000"
       },
-      "predecessors": ["kiel_elec"]
+      "predecessors": ["kiel_electricity"]
     },
     {
       "type": "demand",
       "name": "kiel_demand_heat",
       "tags": {
-        "energy_amount": "100000"
+        "amount": "100000"
       },
       "predecessors": ["kiel_heat"]
     },
