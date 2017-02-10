@@ -1,4 +1,4 @@
 
 
-.. include:: <api.rst>
+.. include:: api.rst
 
