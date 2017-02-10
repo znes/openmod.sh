@@ -83,8 +83,8 @@ http://host:port/API/element?id=X&geom=false&tags=true&expand=children
 The query member of api-parameters holds all information of the query. This will
 we  provided when you receive data from the API. It will also be possible to set
 these query parameters when you hand data over to the API.
-Besides the element of id=X with all their expanded children, the JSON-output
-file will contain the following query parameter information:
+Besides the queried element with all their expanded children, the JSON-output
+file will contain the query parameter information:
 
 .. code:: python
 
@@ -96,8 +96,10 @@ file will contain the following query parameter information:
 	      "geom": "false",
 	      "tags": "true",
 	      "expand": "children",
-	    }
-
+	    },
+	   "type"="scenario",
+           "children" = [...]
+         } 
 
 The detailed description of the query parameters behaviour is given below.
 
