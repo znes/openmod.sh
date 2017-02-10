@@ -43,7 +43,7 @@
         "fuel_type": "gas",
         "installed_power": "300",
         "efficiency": "0.45",
-        "variable_costs": "40"
+        "variable_cost": "40"
       },
       "successors": ["kiel_electricity"]
     },
@@ -55,7 +55,7 @@
         "fuel_type": "gas",
         "electrical_efficiency": "0.45",
         "thermal_efficiency": "0.4",
-        "variable_costs": "35"
+        "variable_cost": "35"
       },
       "successors": ["kiel_electricity", "kiel_heat"]
     },
@@ -66,7 +66,7 @@
         "installed_power": "20",
         "fuel_type": "electricity",
         "efficiency": "0.99",
-        "variable_costs": "0"
+        "variable_cost": "0"
       },
       "successors": ["kiel_heat"]
     },
@@ -77,6 +77,19 @@
         "amount": "100000"
       },
       "predecessors": ["kiel_electricity"]
+    },
+    {
+      "name": "kiel_storage_heat",
+      "type": "storage",
+      "tags": {
+        "installed_power": "10",
+        "installed_energy": "100",
+        "input_efficiency": "1",
+        "output_efficiency": "1",
+        "losses": "0"
+      },
+      "predecessors": ["kiel_heat"],
+      "successors": ["kiel_heat"]
     },
     {
       "type": "demand",
@@ -116,15 +129,18 @@
       "name": "units",
       "type": "unit",
       "tags": {
-        "power": "MW",
-        "energy": "MWh",
+        "installed_power": "MW",
+        "amount": "MWh",
+        "installed_energy": "MWh",
+        "variable_cost": "EUR/(MWh output)", 
         "fuel_cost": "EUR/MWh",
-        "emission_factor": "t/MWh",
+        "emission_factor": "t/(MWh input)",
         "emission_cost": "EUR/t"
       }
     }
   ],
   "tags": {
-    "description": "Status Quo Scenario Masterplan Kiel"
+    "description": "Status Quo Scenario Masterplan Kiel",
+    "model": "mceb"
   }
 }
