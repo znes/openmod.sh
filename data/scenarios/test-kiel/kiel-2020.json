@@ -23,7 +23,6 @@
       "type": "volatile_generator",
       "tags": {
         "fuel_type": "solar",
-        "installed_power": "251",
         "potential_power": "1000"
       },
       "successors": ["kiel_elec"]
@@ -33,7 +32,6 @@
       "type": "volatile_generator",
       "tags": {
         "fuel_type": "solar_rural",
-        "installed_power": "12768",
         "potential_power": "12000"
       },
       "successors": ["nms_elec"]
@@ -127,6 +125,6 @@
     }
   ],
   "tags": {
-    "description": "Status Quo Scenario SH Kiel und NMS"
+    "description": "2020 Scenario Masterplan Kiel"
   }
 }
