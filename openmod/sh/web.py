@@ -191,32 +191,31 @@ def osm_map():
         #      editor without a selected scenario.
 
     # Get all nodes in the given bounding box.
-    nodes = osm.Node.query.filter(minx <= osm.Node.lat, miny <= osm.Node.lon,
-                                  maxx >= osm.Node.lat, maxy >= osm.Node.lon)
-    if nodes.count() == 0:
-        template = flask.render_template('map.xml', nodes=(), ways=(),
-                                                    relations=(),
-                                                    minlon=miny, maxlon=maxy,
-                                                    minlat=minx, maxlat=maxx)
-        return xml_response(template)
+    #nodes = osm.Node.query.filter(minx <= osm.Node.lat, miny <= osm.Node.lon,
+    #                              maxx >= osm.Node.lat, maxy >= osm.Node.lon)
 
     # Get all ways referencing the above nodes.
     ways = set(way for node in nodes for way in node.ways)
+
     # Get all relations referencing the above ways.
-    relations = set(relation for way in ways
-                             for relation in way.referencing_relations)
+    # relations = set(relation for way in ways
+    #                          for relation in way.referencing_relations)
+
     # Add possibly missing nodes (from outside the bounding box) referenced by
     # the ways retrieved above.
-    nodes = set(itertools.chain([n for way in ways for n in way.nodes], nodes))
-    relations = set(itertools.chain((r for n in nodes
-                                       for r in n.referencing_relations),
-                                    (s for r in relations
-                                       for s in r.referencing_relations),
-                                    relations))
+    #nodes = set(itertools.chain([n for way in ways for n in way.nodes], nodes))
+    nodes = set()
+    #relations = set(itertools.chain((r for n in nodes
+    #                                   for r in n.referencing_relations),
+    #                                (s for r in relations
+    #                                   for s in r.referencing_relations),
+    #                                relations))
+    relations = set()
     template = flask.render_template('map.xml', nodes=nodes, ways=ways,
                                           relations=relations,
                                           minlon=miny, maxlon=maxy,
                                           minlat=minx, maxlat=maxx)
+
     return xml_response(template)
 
 @app.route('/simulate', methods=['PUT'])
