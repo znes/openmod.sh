@@ -185,6 +185,11 @@ def osm_map():
     left, bottom, right, top = map(float, flask.request.args['bbox'].split(","))
     minx, maxx = sorted([top, bottom])
     miny, maxy = sorted([left, right])
+    scenario = flask.session.get("scenario")
+    if (not scenario):
+        #TODO: Return an error code here. In the new design we don't use the iD
+        #      editor without a selected scenario.
+
     # Get all nodes in the given bounding box.
     nodes = osm.Node.query.filter(minx <= osm.Node.lat, miny <= osm.Node.lon,
                                   maxx >= osm.Node.lat, maxy >= osm.Node.lon)
@@ -194,12 +199,6 @@ def osm_map():
                                                     minlon=miny, maxlon=maxy,
                                                     minlat=minx, maxlat=maxx)
         return xml_response(template)
-
-    # Limit nodes to the one's contained in the selected scenario.
-    scenario = flask.session.get("scenario")
-    if (scenario):
-        scenario = osm.Relation.query.filter_by(id=scenario).first()
-        nodes = set(nodes).intersection(scenario.reachable_nodes())
 
     # Get all ways referencing the above nodes.
     ways = set(way for node in nodes for way in node.ways)
