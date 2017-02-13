@@ -2,6 +2,7 @@
 from datetime import datetime, timezone as tz
 from itertools import chain, groupby
 from flask_sqlalchemy import SQLAlchemy
+from geoalchemy2 import types as geotypes
 from sqlalchemy import MetaData
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.orderinglist import ordering_list
@@ -97,8 +98,7 @@ class Sequence(DB.Model):
 class Geom(DB.Model):
     id = DB.Column(DB.Integer, primary_key=True)
     type = DB.Column(DB.String(255), nullable=False)
-    # TODO: Add postgis geometry type instead of string
-    geom = DB.Column(DB.String(255), nullable=False)
+    geom = DB.Column(geotypes.Geometry(), nullable=False)
 
     def __init__(self, type, geom):
         self.type = type
