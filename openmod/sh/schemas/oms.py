@@ -102,7 +102,7 @@ class Sequence(DB.Model):
 class Geom(DB.Model):
     id = DB.Column(DB.Integer, primary_key=True)
     type = DB.Column(DB.String(255), nullable=False)
-    geom = DB.Column(geotypes.Geometry(), nullable=False)
+    geom = DB.Column(DB.String(255), nullable=False)
 
     def __init__(self, type, geom):
         self.type = type
