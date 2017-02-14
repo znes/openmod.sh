@@ -46,7 +46,6 @@ for e in json_input:
     if e.get('geom', None):
         geom = oms.Geom(e['geom'].split('(')[0], 'SRID=4326;' + e['geom'])
         element.geom = geom
-        print(geom.elements)
     if e.get('predecessors', None):
         element.predecessors = [elements[i] for i in e['predecessors']]
     if e.get('successors', None):
