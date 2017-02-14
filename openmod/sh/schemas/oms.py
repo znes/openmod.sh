@@ -117,7 +117,7 @@ class Element(DB.Model):
     uid = DB.Column(DB.Integer, DB.ForeignKey(User.id))
     user = DB.relationship(User, uselist=False)
     geom_id = DB.Column(DB.Integer, DB.ForeignKey(Geom.id))
-    geom = DB.relationship(Geom, uselist=False)
+    geom = DB.relationship(Geom, uselist=False, backref='elements')
     tags = DB.relationship('Tag', secondary=Element_Tag_Associations,
                            backref='elements')
     sequences = DB.relationship('Sequence',
