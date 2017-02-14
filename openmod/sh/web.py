@@ -188,7 +188,8 @@ def osm_map():
     miny, maxy = sorted([left, right])
     # TODO: Generate proper geometry for this bounding box to facilitate
     # intersection testing using GIS functions.
-    scenario = flask.session.get("scenario")
+    scenario_id = flask.session.get("scenario")
+    scenario = osm.Element.query.filter_by(id=scenario_id).first()
     nodes = set()
     ways = set()
     relations = set()
@@ -203,13 +204,14 @@ def osm_map():
         return xml_response(template)
 
     # Get all nodes in the given bounding box.
-    nodes = osm.Node.query.filter(minx <= osm.Node.lat, miny <= osm.Node.lon,
-                                  maxx >= osm.Node.lat, maxy >= osm.Node.lon)
-    nodes = osm.Element.query.filter(osm.Element in scenario.children,
-                                     osm.Element.geom.geom.ST_CoveredBy(bbox),
-                                     #osm.Element.geom.geom.ST_GeometryType() ==
-                                     #?Point?)
-                                     osm.Element.geom.type == 'Point')
+    nodes = [ {"lat": e[0], "lon": e[1],
+               "tags": {t.key: t.value for t in n.tags}}
+              for n in scenario.children
+              if n.geom.type == 'Point'
+              for e in [eval(n.geom.geom)]
+              if (minx <= e[0] and miny <= e[1] and
+                  maxx >= e[0] and maxy >= e[1])
+            ]
     # Note: wrapping those in ST_AsGeoJSON or ST_AsText could be an easy way
     #       to get at the coordinates.
     #       ST_DumpPoints to get at the points (usefull for lines and polys).
