@@ -779,15 +779,15 @@ def get_relations():
     template = flask.render_template('relations.xml', relations=relations)
     return xml_response(template)
 
-def tags_to_dict(tags):
+def objects_to_dict(objects):
     """
-    tags: list of osm.Tag objects
+    objects: list of osm.* objects
     returns: dictionary
     """
-    tag_dict = {}
-    for tag in tags:
-        tag_dict[tag.key] = tag.value
-    return tag_dict
+    o_dict = {}
+    for o in objects:
+        o_dict[o.key] = o.value
+    return o_dict
 
 def dict_to_tags(dic):
     return [osm.Tag(k, v) for k,v in dic.items()]
@@ -799,9 +799,9 @@ def get_tag_value(elements, key):
     returns: string with element name or list
     """
     if isinstance(elements, osm.Element):
-        return tags_to_dict(elements.tags)[key]
+        return objects_to_dict(elements.tags)[key]
     else:
-        return [tags_to_dict(element.tags)[key] for element in elements]
+        return [objects_to_dict(element.tags)[key] for element in elements]
 
 # TODO: very dirty. gnn has to make it better
 def get_element_id(name):
@@ -817,11 +817,12 @@ def serialize_element(id):
                   'parents': [],
                   'predecessors': [],
                   'successors': []}
-    serialized['tags'] = tags_to_dict(element.tags)
+    serialized['tags'] = objects_to_dict(element.tags)
     serialized['children'] = [e.name for e in element.children]
     serialized['parents'] = [e.name for e in element.parents]
     serialized['predecessors'] = [e.name for e in element.predecessors]
     serialized['successors'] = [e.name for e in element.successors]
+    serialized['sequences'] = objects_to_dict(element.tags)
     return serialized
 
 def create_element_from_json(json):
@@ -861,7 +862,8 @@ def provide_element_api():
                     expand_list.append(serialize_element(get_element_id(element)))
                 serialized[args['expand']] = expand_list
             for k,v in args.items():
-                if k in ['tags', 'children', 'parents', 'predecessors', 'successors']:
+                if k in ['tags', 'children', 'parents', 'predecessors',
+                         'successors', 'sequences']:
                     if v == 'false':
                         serialized.pop(k)
             return flask.jsonify(serialized)
