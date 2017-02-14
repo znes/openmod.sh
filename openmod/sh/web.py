@@ -262,10 +262,10 @@ def simulation(job):
 @fl.login_required
 def scenarios():
     scenarios = list(sorted(
-        [ {"value": r.tags['name'], "title": r.id}
-          for r in osm.Relation.query.all()
-          if r.tags.get("type") == "scenario"
-          if r.tags.get('name')],
+        [ {"value": e.name, "title": e.id}
+          for e in osm.Element.query.all()
+          if e.type == "scenario"
+          ],
         key=lambda d: d['value']))
     if (flask.session.get("scenario")):
         scenarios = ([{"title": None, "value": "Deselect selected scenario"}] +
@@ -281,8 +281,8 @@ def scenario(s):
     if flask.request.method == 'GET':
         if not scenario_id:
             return ""
-        scenario = osm.Relation.query.filter_by(id=scenario_id).first()
-        return json.dumps({'value': getattr(scenario, 'tags', {}).get('name'),
+        scenario = osm.Element.query.filter_by(id=scenario_id).first()
+        return json.dumps({'value': scenario.name,
                            'title': scenario_id})
     elif s and not json.loads(s) and "scenario" in flask.session:
         del flask.session["scenario"]
