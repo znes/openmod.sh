@@ -824,26 +824,50 @@ def get_tag_value(elements, key):
 def get_element_id(name):
     return osm.Tag.query.filter_by(value=name).first().elements[0].id
 
-# TODO; allow for tyoe and name query as well
 def serialize_element(element):
     serialized = {'name': element.name,
-                  'type': element.type,
-                  'tags': {},
-                  'children': [],
-                  'parents': [],
-                  'predecessors': [],
-                  'successors': []}
+                  'type': element.type}
+    # TODO: Make work for geom
+    if element.geom:
+        serialized['geom'] = element.geom.type
+    else:
+        serialized['geom'] = ''
     serialized['tags'] = objects_to_dict(element.tags)
+    serialized['sequences'] = objects_to_dict(element.tags)
     serialized['children'] = [e.name for e in element.children]
     serialized['parents'] = [e.name for e in element.parents]
     serialized['predecessors'] = [e.name for e in element.predecessors]
     serialized['successors'] = [e.name for e in element.successors]
-    serialized['sequences'] = objects_to_dict(element.tags)
     return serialized
+
+def subset_json(json, query_defaults, query_args={}):
+    """
+    Args:
+        json (dict): with default element representation
+        query_args (dict): e.g {'children': 'true'}
+    """
+
+    # update api default query parameters by args
+    for k,v in query_args.items():
+        if k in query_defaults:
+            if v != query_defaults[k]:
+                json['api_parameters']['query'][k] = v
+    # remove objects if api parameters are false (for args and defaults)
+    for k in query_defaults:
+        if json['api_parameters']['query'][k] == 'false':
+            json.pop(k)
+    return json
+
+def expand_element(element, expand):
+    """expand: children, parents, successors or predecessors"""
+    expand_list = []
+    for e in getattr(element, expand):
+        expand_list.append(serialize_element(e))
+    return expand_list
 
 def get_elements(query_parameters):
     """
-    works for name and typename
+    works for name and type
     """
     query = osm.Element.query
     if 'name' in query_parameters.keys():
@@ -870,50 +894,44 @@ def json_to_db(json):
 @app.route('/API/element', methods=['GET', 'POST'])
 def provide_element_api():
     """
-    default values:
-      "geom": "false",
-      "tags": "true",
-      "sequences": "false",
-      "children": "true",
-      "parents": "true",
-      "predecessors": "true",
-      "successors": "true"
-      "sequences": "false"
-    """
-    query_defaults = {'geom': 'false',
-                      'tags': 'true',
-                      'children': 'true',
-                      'parents': 'true',
-                      'predecessors': 'true',
-                      'successors': 'true',
-                      'sequences': 'false'}
+    This is Element API version 0.0.1
 
+    mandatory query parameters: 
+      id
+
+    default values for optional query parameters if not provided:
+      geom: true,
+      tags: true,
+      sequences: true,
+      children: true,
+      parents: true,
+      predecessors: true,
+      successors: true
+    
+    additional optional query parameters:
+      expand
+    
+    """
     if flask.request.method == 'GET':
-        args = flask.request.args.to_dict()
-        if 'id' in args.keys():
-            serialized = serialize_element(osm.Element.query.filter_by(id=args['id']).first())
-            serialized['api_parameters'] = {'version': '0.0.1',
-                                            'type': 'element'}
-            serialized['api_parameters']['query'] = query_defaults
-            if 'expand' in args.keys():
-                """expand: children, parents, successors or predecessors"""
-                expand_list = []
-                for element in serialized[args['expand']]:
-                    expand_list.append(serialize_element(element))
-                serialized[args['expand']] = expand_list
-            # update api default query parameters by args
-            for k,v in args.items():
-                if k in query_defaults:
-                    if v != query_defaults[k]:
-                        serialized['api_parameters']['query'][k] = v
-            # remove objects if api parameters are false (for args and defaults)
-            for k in query_defaults:
-                if serialized['api_parameters']['query'][k] == 'false':
-                # TODO remov once geom table exist
-                    if k != 'geom':
-                        serialized.pop(k)
-            return flask.jsonify(serialized)
-        return "Please provide correct query parameters"
+        query_args = flask.request.args.to_dict()
+        if 'id' in query_args.keys():
+            query_defaults = {'geom': 'true',
+                              'tags': 'true',
+                              'sequences': 'true',
+                              'children': 'true',
+                              'parents': 'true',
+                              'predecessors': 'true',
+                              'successors': 'true'}
+            element = osm.Element.query.filter_by(id=query_args['id']).first()
+            json = serialize_element(element)
+            json['api_parameters'] = {'version': '0.0.1',
+                                      'type': 'element'}
+            json['api_parameters']['query'] = query_defaults
+            json = subset_json(json, query_defaults, query_args)
+            if 'expand' in query_args.keys():
+                json[query_args['expand']] = expand_element(element, query_args['expand'])
+            return flask.jsonify(json)
+        return "Please provide correct query parameters. At least 'id'."
     if flask.request.method == 'POST':
         data = flask.request.get_json()
         json_to_db(data)
@@ -923,13 +941,52 @@ def provide_element_api():
 @app.route('/API/elements', methods=['GET', 'POST'])
 def provide_elements_api():
     """
+    This is Elements API version 0.0.1
+
+    main query parameters, if non of them is provided all elements will be taken into account:
+      name
+      type
+
+    default values for optional query parameters if not provided:
+      geom: true,
+      tags: true,
+      sequences: true,
+      children: true,
+      parents: true,
+      predecessors: true,
+      successors: true
+
+    additional optional query parameters:
+      expand
+
     """
     if flask.request.method == 'GET':
-        elements = get_elements(query_parameters = flask.request.args.to_dict())
-        json = []
+        query_defaults = {'geom': 'true',
+                          'tags': 'true',
+                          'sequences': 'true',
+                          'children': 'true',
+                          'parents': 'true',
+                          'predecessors': 'true',
+                          'successors': 'true'}
+        query_args = flask.request.args.to_dict()
+        elements = get_elements(query_args)
+        outer_json = {}
+        outer_json['api_parameters'] = {'version': '0.0.1',
+                                         'type': 'elements'}
+        outer_json['api_parameters']['query'] = query_defaults
+        for k,v in query_args.items():
+            if k in query_defaults:
+                if v != query_defaults[k]:
+                    outer_json['api_parameters']['query'][k] = v
         for element in elements:
-            json.append(serialize_element(element))
-        return flask.jsonify(json)
+            json = serialize_element(element)
+            json['api_parameters'] = {'version': '0.0.1',
+                                      'type': 'element'}
+            json['api_parameters']['query'] = query_defaults
+            json = subset_json(json, query_defaults, query_args)
+            json.pop('api_parameters')
+            outer_json[str(element.id)] = json
+        return flask.jsonify(outer_json)
 
 ALLOWED_EXTENSIONS = set(['json'])
 
