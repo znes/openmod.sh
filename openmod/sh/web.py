@@ -836,7 +836,7 @@ def serialize_element(element):
     else:
         serialized['geom'] = ''
     serialized['tags'] = objects_to_dict(element.tags)
-    serialized['sequences'] = objects_to_dict(element.tags)
+    serialized['sequences'] = objects_to_dict(element.sequences)
     serialized['children'] = [e.name for e in element.children]
     serialized['parents'] = [e.name for e in element.parents]
     serialized['predecessors'] = [e.name for e in element.predecessors]
