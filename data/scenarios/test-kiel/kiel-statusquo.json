@@ -21,6 +21,7 @@
     {
       "name": "kiel_solar",
       "type": "volatile_generator",
+      "geom": "POINT(9.5 54.2)",
       "tags": {
         "fuel_type": "solar",
         "installed_power": "251"
