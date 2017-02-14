@@ -882,9 +882,14 @@ def get_elements(query_parameters):
 
 def create_element_from_json(json):
     tags = dict_to_tags(json['tags'])
-    sequences = dict_to_sequences(json['sequences'])
-    element = osm.Element(name=json['name'], type=json['type'],tags=tags,
-                          sequences=sequences)
+
+    if json.get('sequences') is not None:
+        sequences = dict_to_sequences(json['sequences'])
+        element = osm.Element(name=json['name'], type=json['type'],tags=tags,
+                              sequences=sequences)
+    else:
+        element = osm.Element(name=json['name'], type=json['type'],tags=tags)
+
     return element
 
 def json_to_db(json):
