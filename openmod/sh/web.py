@@ -896,6 +896,8 @@ def provide_element_api():
     """
     This is Element API version 0.0.1
 
+    GET and POST
+
     mandatory query parameters: 
       id
 
@@ -938,10 +940,12 @@ def provide_element_api():
         return flask.render_template('imported_successfully.html')
 
 # TODO: Add query parameters geom tags etc
-@app.route('/API/elements', methods=['GET', 'POST'])
+@app.route('/API/elements', methods=['GET'])
 def provide_elements_api():
     """
     This is Elements API version 0.0.1
+
+    ONLY GET
 
     main query parameters, if non of them is provided all elements will be taken into account:
       name
@@ -960,35 +964,34 @@ def provide_elements_api():
       expand
 
     """
-    if flask.request.method == 'GET':
-        query_defaults = {'geom': 'true',
-                          'tags': 'true',
-                          'sequences': 'true',
-                          'children': 'true',
-                          'parents': 'true',
-                          'predecessors': 'true',
-                          'successors': 'true'}
-        query_args = flask.request.args.to_dict()
-        elements = get_elements(query_args)
-        outer_json = {}
-        outer_json['api_parameters'] = {'version': '0.0.1',
-                                         'type': 'elements'}
-        outer_json['api_parameters']['query'] = query_defaults
-        for k,v in query_args.items():
-            if k in query_defaults:
-                if v != query_defaults[k]:
-                    outer_json['api_parameters']['query'][k] = v
-        for element in elements:
-            json = serialize_element(element)
-            json['api_parameters'] = {'version': '0.0.1',
-                                      'type': 'element'}
-            json['api_parameters']['query'] = query_defaults
-            json = subset_json(json, query_defaults, query_args)
-            if 'expand' in query_args.keys():
-                json[query_args['expand']] = expand_element(element, query_args['expand'])
-            json.pop('api_parameters')
-            outer_json[str(element.id)] = json
-        return flask.jsonify(outer_json)
+    query_defaults = {'geom': 'true',
+                      'tags': 'true',
+                      'sequences': 'true',
+                      'children': 'true',
+                      'parents': 'true',
+                      'predecessors': 'true',
+                      'successors': 'true'}
+    query_args = flask.request.args.to_dict()
+    elements = get_elements(query_args)
+    outer_json = {}
+    outer_json['api_parameters'] = {'version': '0.0.1',
+                                     'type': 'elements'}
+    outer_json['api_parameters']['query'] = query_defaults
+    for k,v in query_args.items():
+        if k in query_defaults:
+            if v != query_defaults[k]:
+                outer_json['api_parameters']['query'][k] = v
+    for element in elements:
+        json = serialize_element(element)
+        json['api_parameters'] = {'version': '0.0.1',
+                                  'type': 'element'}
+        json['api_parameters']['query'] = query_defaults
+        json = subset_json(json, query_defaults, query_args)
+        if 'expand' in query_args.keys():
+            json[query_args['expand']] = expand_element(element, query_args['expand'])
+        json.pop('api_parameters')
+        outer_json[str(element.id)] = json
+    return flask.jsonify(outer_json)
 
 ALLOWED_EXTENSIONS = set(['json'])
 
