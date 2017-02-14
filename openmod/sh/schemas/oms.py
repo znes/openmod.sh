@@ -102,7 +102,7 @@ class Sequence(DB.Model):
 class Geom(DB.Model):
     id = DB.Column(DB.Integer, primary_key=True)
     type = DB.Column(DB.String(255), nullable=False)
-    geom = DB.Column(DB.String(255), nullable=False)
+    geom = DB.Column(geotypes.Geometry(srid=4326), nullable=False)
 
     def __init__(self, type, geom):
         self.type = type
@@ -117,11 +117,12 @@ class Element(DB.Model):
     uid = DB.Column(DB.Integer, DB.ForeignKey(User.id))
     user = DB.relationship(User, uselist=False)
     geom_id = DB.Column(DB.Integer, DB.ForeignKey(Geom.id))
-    geom = DB.relationship(Geom, uselist=False)
+    geom = DB.relationship(Geom, uselist=False, backref='elements')
     tags = DB.relationship('Tag', secondary=Element_Tag_Associations,
                            backref='elements')
     sequences = DB.relationship('Sequence',
-                                secondary=Element_Sequence_Associations)
+                                secondary=Element_Sequence_Associations,
+                                backref='elements')
     children = DB.relationship(
             'Element',
             secondary=Parent_Children_Associations,
