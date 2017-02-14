@@ -984,6 +984,8 @@ def provide_elements_api():
                                       'type': 'element'}
             json['api_parameters']['query'] = query_defaults
             json = subset_json(json, query_defaults, query_args)
+            if 'expand' in query_args.keys():
+                json[query_args['expand']] = expand_element(element, query_args['expand'])
             json.pop('api_parameters')
             outer_json[str(element.id)] = json
         return flask.jsonify(outer_json)
