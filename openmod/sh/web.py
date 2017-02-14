@@ -823,8 +823,6 @@ def wkt_to_geom(wkt):
     if wkt is None :
         return None
     else:
-        import pdb
-        pdb.set_trace()
         geom = osm.Geom(wkt.split('(')[0], 'SRID=4326;' + wkt)
         return geom
 
@@ -936,10 +934,10 @@ def provide_element_api():
       parents: true,
       predecessors: true,
       successors: true
-    
+
     additional optional query parameters:
       expand
-    
+
     """
     if flask.request.method == 'GET':
         query_args = flask.request.args.to_dict()
@@ -1077,8 +1075,6 @@ def show_scenarios():
         table_data[name]['children'] = len(serialized_scenarios[k]['children'])
         table_data[name]['link'] = "/API/element?id="+str(serialized_scenarios[k]['element_id'])+"&expand=children"
 
-    import pdb
-#    pdb.set_trace()
     return flask.render_template('show_scenarios.html',
                                  scenarios=table_data,
                                  model=model)
