@@ -14,7 +14,8 @@ import flask_cors as cors # TODO: Check whether the `@cors.cross_origin()`
                           #       served from within this app.
 import flask_login as fl
 import flask_wtf as wtfl
-from geoalchemy2 import functions as g2fs
+#from geoalchemy2 import functions as g2fs
+from geoalchemy2 import shape
 import wtforms as wtf
 from werkzeug.utils import secure_filename
 
@@ -847,9 +848,9 @@ def serialize_element(element):
                   'type': element.type}
     # TODO: Make work for geom
     if element.geom:
-        serialized['geom'] = element.geom.type
+        serialized['geom'] = shape.to_shape(element.geom.geom).wkt
     else:
-        serialized['geom'] = ''
+        serialized['geom'] = None
     serialized['tags'] = objects_to_dict(element.tags)
     serialized['sequences'] = objects_to_dict(element.sequences)
     serialized['children'] = [e.name for e in element.children]
