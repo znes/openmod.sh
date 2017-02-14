@@ -823,7 +823,7 @@ def wkt_to_geom(wkt):
     if wkt is None :
         return None
     else:
-        geom = osm.Geom(wkt.split('(')[0], 'SRID=4326;' + wkt)
+        geom = osm.Geom(wkt.split('(')[0].strip(), 'SRID=4326;' + wkt)
         return geom
 
 def get_tag_value(elements, key):
