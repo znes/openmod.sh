@@ -5,7 +5,7 @@ If your want your data to properly be displayed by the iD editor, your
 attributes are `openmod.sh.schemas.oms.Geom` objects with the following
 possible combinations of parameters:
 
-  - `type`: the string `'Point'`
+  - `type`: the string `'Point'`  
     `geom`: a string containing a lattitude longitude tuple, i.e
             `'(lattitude, longitude)'`
 
