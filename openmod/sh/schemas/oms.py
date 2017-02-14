@@ -135,7 +135,4 @@ class Element(DB.Model):
             secondaryjoin=id==Predecessor_Successor_Associations.c.element_successor_id,
             backref='predecessors')
 
-    def __init__(self, **kwargs):
-        for k in kwargs:
-            setattr(self, k, kwargs[k])
 
