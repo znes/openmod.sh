@@ -189,6 +189,9 @@ def osm_map():
     # TODO: Generate proper geometry for this bounding box to facilitate
     # intersection testing using GIS functions.
     scenario = flask.session.get("scenario")
+    nodes = set()
+    ways = set()
+    relations = set()
     if (not scenario):
         #TODO: Return an error code here. In the new design we don't use the iD
         #      editor without a selected scenario.
@@ -206,7 +209,6 @@ def osm_map():
     #       ST_DumpPoints to get at the points (usefull for lines and polys).
 
     # Get all ways referencing the above nodes.
-    ways = set(way for node in nodes for way in node.ways)
 
     # Get all relations referencing the above ways.
     # relations = set(relation for way in ways
@@ -215,13 +217,11 @@ def osm_map():
     # Add possibly missing nodes (from outside the bounding box) referenced by
     # the ways retrieved above.
     #nodes = set(itertools.chain([n for way in ways for n in way.nodes], nodes))
-    nodes = set()
     #relations = set(itertools.chain((r for n in nodes
     #                                   for r in n.referencing_relations),
     #                                (s for r in relations
     #                                   for s in r.referencing_relations),
     #                                relations))
-    relations = set()
     template = flask.render_template('map.xml', nodes=nodes, ways=ways,
                                           relations=relations,
                                           minlon=miny, maxlon=maxy,
