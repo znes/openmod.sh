@@ -78,21 +78,25 @@ class Tag(DB.Model):
     id = DB.Column(DB.Integer, primary_key=True)
     key = DB.Column(DB.String(255), nullable=False)
     value = DB.Column(DB.String(255), nullable=False)
+    type = DB.Column(DB.String(255))
 
-    def __init__(self, key, value):
+    def __init__(self, key, value, **kwargs):
         self.key = key
         self.value = value
+        for k in kwargs:
+            setattr(self, k, kwargs[k])
 
 class Sequence(DB.Model):
     id = DB.Column(DB.Integer, primary_key=True)
     key = DB.Column(DB.String(255), nullable=False)
-    # TODO: Could be as well an array of strings for a more generic approach
-    #       Additionally then perhaps sequence and tag could be merged...
     value = DB.Column(ARRAY(DB.Float, dimensions=1), nullable=False)
+    type = DB.Column(DB.String(255))
 
-    def __init__(self, key, value):
+    def __init__(self, key, value, **kwargs):
         self.key = key
         self.value = value
+        for k in kwargs:
+            setattr(self, k, kwargs[k])
 
 class Geom(DB.Model):
     id = DB.Column(DB.Integer, primary_key=True)
