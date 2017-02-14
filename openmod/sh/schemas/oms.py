@@ -121,7 +121,8 @@ class Element(DB.Model):
     tags = DB.relationship('Tag', secondary=Element_Tag_Associations,
                            backref='elements')
     sequences = DB.relationship('Sequence',
-                                secondary=Element_Sequence_Associations)
+                                secondary=Element_Sequence_Associations,
+                                backref='elements')
     children = DB.relationship(
             'Element',
             secondary=Parent_Children_Associations,
