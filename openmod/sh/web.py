@@ -809,6 +809,9 @@ def objects_to_dict(objects):
 def dict_to_tags(dic):
     return [osm.Tag(k, v) for k,v in dic.items()]
 
+def dict_to_sequences(dic):
+    return [osm.Sequence(k, v) for k,v in dic.items()]
+
 def get_tag_value(elements, key):
     """
     elements: osm.Element object or list
@@ -879,7 +882,9 @@ def get_elements(query_parameters):
 
 def create_element_from_json(json):
     tags = dict_to_tags(json['tags'])
-    element = osm.Element(name=json['name'], type=json['type'],tags=tags)
+    sequences = dict_to_sequences(json['sequences'])
+    element = osm.Element(name=json['name'], type=json['type'],tags=tags,
+                          sequences=sequences)
     return element
 
 def json_to_db(json):
