@@ -807,10 +807,25 @@ def objects_to_dict(objects):
     return o_dict
 
 def dict_to_tags(dic):
-    return [osm.Tag(k, v) for k,v in dic.items()]
+    if dic is None:
+        return []
+    else:
+        return [osm.Tag(k, v) for k,v in dic.items()]
 
 def dict_to_sequences(dic):
-    return [osm.Sequence(k, v) for k,v in dic.items()]
+    if dic is None:
+        return []
+    else:
+        return [osm.Sequence(k, v) for k,v in dic.items()]
+
+def wkt_to_geom(wkt):
+    if wkt is None :
+        return None
+    else:
+        import pdb
+        pdb.set_trace()
+        geom = osm.Geom(wkt.split('(')[0], 'SRID=4326;' + wkt)
+        return geom
 
 def get_tag_value(elements, key):
     """
@@ -883,12 +898,13 @@ def get_elements(query_parameters):
 def create_element_from_json(json):
     tags = dict_to_tags(json['tags'])
 
-    if json.get('sequences') is not None:
-        sequences = dict_to_sequences(json['sequences'])
-        element = osm.Element(name=json['name'], type=json['type'],tags=tags,
-                              sequences=sequences)
-    else:
-        element = osm.Element(name=json['name'], type=json['type'],tags=tags)
+    sequences = dict_to_sequences(json.get('sequences'))
+    geom = wkt_to_geom(json.get('geom'))
+
+    element = osm.Element(name=json['name'], type=json['type'],tags=tags,
+                          sequences=sequences, geom=geom)
+
+
 
     return element
 
