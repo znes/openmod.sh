@@ -808,8 +808,7 @@ def get_element_id(name):
     return osm.Tag.query.filter_by(value=name).first().elements[0].id
 
 # TODO; allow for tyoe and name query as well
-def serialize_element(id):
-    element = osm.Element.query.filter_by(id=id).first()
+def serialize_element(element):
     serialized = {'name': element.name,
                   'type': element.type,
                   'tags': {},
@@ -825,6 +824,18 @@ def serialize_element(id):
     serialized['sequences'] = objects_to_dict(element.tags)
     return serialized
 
+def get_elements(query_parameters):
+    """
+    works for name and typename
+    """
+    query = osm.Element.query
+    if 'name' in query_parameters.keys():
+        query = query.filter(osm.Element.name.like(query_parameters['name']))
+    if 'type' in query_parameters.keys():
+        query = query.filter(osm.Element.type.like(query_parameters['type']))
+    elements = query.all()
+    return elements
+
 def create_element_from_json(json):
     tags = dict_to_tags(json['tags'])
     element = osm.Element(name=json['name'], type=json['type'],tags=tags)
@@ -837,7 +848,7 @@ def json_to_db(json):
     osm.DB.session.commit()
 
 # API for elements
-# TODO: implement geom and sequences
+# TODO: implement geom
 # TODO: implement post and database upload
 @app.route('/API/element', methods=['GET', 'POST'])
 def provide_element_api():
@@ -863,17 +874,15 @@ def provide_element_api():
     if flask.request.method == 'GET':
         args = flask.request.args.to_dict()
         if 'id' in args.keys():
-            serialized = serialize_element(args['id'])
-            # add api parameters
+            serialized = serialize_element(osm.Element.query.filter_by(id=args['id']).first())
             serialized['api_parameters'] = {'version': '0.0.1',
                                             'type': 'element'}
             serialized['api_parameters']['query'] = query_defaults
-
             if 'expand' in args.keys():
                 """expand: children, parents, successors or predecessors"""
                 expand_list = []
                 for element in serialized[args['expand']]:
-                    expand_list.append(serialize_element(get_element_id(element)))
+                    expand_list.append(serialize_element(element))
                 serialized[args['expand']] = expand_list
             # update api default query parameters by args
             for k,v in args.items():
@@ -892,6 +901,18 @@ def provide_element_api():
         data = flask.request.get_json()
         json_to_db(data)
         return flask.render_template('imported_successfully.html')
+
+# TODO: Add query parameters geom tags etc
+@app.route('/API/elements', methods=['GET', 'POST'])
+def provide_elements_api():
+    """
+    """
+    if flask.request.method == 'GET':
+        elements = get_elements(query_parameters = flask.request.args.to_dict())
+        json = []
+        for element in elements:
+            json.append(serialize_element(element))
+        return flask.jsonify(json)
 
 ALLOWED_EXTENSIONS = set(['json'])
 
@@ -939,7 +960,7 @@ def show_scenarios():
 
     serialized_scenarios = {}
     for e in scenario_elements:
-        serialized_scenarios[get_tag_value(e, 'name')] = serialize_element(e.id)
+        serialized_scenarios[get_tag_value(e, 'name')] = serialize_element(e)
 
 
     table_data = {}
