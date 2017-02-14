@@ -14,6 +14,7 @@ import flask_cors as cors # TODO: Check whether the `@cors.cross_origin()`
                           #       served from within this app.
 import flask_login as fl
 import flask_wtf as wtfl
+from geoalchemy2 import functions as g2fs
 import wtforms as wtf
 from werkzeug.utils import secure_filename
 
@@ -185,14 +186,24 @@ def osm_map():
     left, bottom, right, top = map(float, flask.request.args['bbox'].split(","))
     minx, maxx = sorted([top, bottom])
     miny, maxy = sorted([left, right])
+    # TODO: Generate proper geometry for this bounding box to facilitate
+    # intersection testing using GIS functions.
     scenario = flask.session.get("scenario")
     if (not scenario):
         #TODO: Return an error code here. In the new design we don't use the iD
         #      editor without a selected scenario.
 
     # Get all nodes in the given bounding box.
-    #nodes = osm.Node.query.filter(minx <= osm.Node.lat, miny <= osm.Node.lon,
-    #                              maxx >= osm.Node.lat, maxy >= osm.Node.lon)
+    nodes = osm.Node.query.filter(minx <= osm.Node.lat, miny <= osm.Node.lon,
+                                  maxx >= osm.Node.lat, maxy >= osm.Node.lon)
+    nodes = osm.Element.query.filter(osm.Element in scenario.children,
+                                     osm.Element.geom.geom.ST_CoveredBy(bbox),
+                                     #osm.Element.geom.geom.ST_GeometryType() ==
+                                     #?Point?)
+                                     osm.Element.geom.type == 'Point')
+    # Note: wrapping those in ST_AsGeoJSON or ST_AsText could be an easy way
+    #       to get at the coordinates.
+    #       ST_DumpPoints to get at the points (usefull for lines and polys).
 
     # Get all ways referencing the above nodes.
     ways = set(way for node in nodes for way in node.ways)
