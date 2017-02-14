@@ -850,21 +850,41 @@ def provide_element_api():
       "parents": "true",
       "predecessors": "true",
       "successors": "true"
+      "sequences": "false"
     """
+    query_defaults = {'geom': 'false',
+                      'tags': 'true',
+                      'children': 'true',
+                      'parents': 'true',
+                      'predecessors': 'true',
+                      'successors': 'true',
+                      'sequences': 'false'}
+
     if flask.request.method == 'GET':
         args = flask.request.args.to_dict()
         if 'id' in args.keys():
             serialized = serialize_element(args['id'])
+            # add api parameters
+            serialized['api_parameters'] = {'version': '0.0.1',
+                                            'type': 'element'}
+            serialized['api_parameters']['query'] = query_defaults
+
             if 'expand' in args.keys():
                 """expand: children, parents, successors or predecessors"""
                 expand_list = []
                 for element in serialized[args['expand']]:
                     expand_list.append(serialize_element(get_element_id(element)))
                 serialized[args['expand']] = expand_list
+            # update api default query parameters by args
             for k,v in args.items():
-                if k in ['tags', 'children', 'parents', 'predecessors',
-                         'successors', 'sequences']:
-                    if v == 'false':
+                if k in query_defaults:
+                    if v != query_defaults[k]:
+                        serialized['api_parameters']['query'][k] = v
+            # remove objects if api parameters are false (for args and defaults)
+            for k in query_defaults:
+                if serialized['api_parameters']['query'][k] == 'false':
+                # TODO remov once geom table exist
+                    if k != 'geom':
                         serialized.pop(k)
             return flask.jsonify(serialized)
         return "Please provide correct query parameters"
