@@ -164,7 +164,7 @@ def logout():
 @app.route('/')
 @fl.login_required
 def root():
-    return flask.redirect('/static/iD/index.html')
+    return flask.redirect('/main_menu')
 
 @app.route('/iD/api/capabilities')
 @app.route('/osm/api/capabilities')
@@ -923,7 +923,7 @@ def provide_element_api():
 
     GET and POST
 
-    mandatory query parameters: 
+    mandatory query parameters:
       id
 
     default values for optional query parameters if not provided:
@@ -1048,6 +1048,10 @@ def upload_file():
 @app.route('/export')
 def export_dataset():
     return flask.render_template('export.html')
+
+@app.route('/id_editor')
+def id_editor():
+    return flask.redirect('/static/iD/index.html')
 
 
 @app.route('/scenario_overview')
