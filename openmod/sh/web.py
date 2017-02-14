@@ -218,8 +218,6 @@ def osm_map():
     #       to get at the coordinates.
     #       ST_DumpPoints to get at the points (usefull for lines and polys).
 
-    # Get all ways referencing the above nodes.
-
     # Get all relations referencing the above ways.
     # relations = set(relation for way in ways
     #                          for relation in way.referencing_relations)
