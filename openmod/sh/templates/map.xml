@@ -7,8 +7,8 @@
             {% include %}d templates.
         #}
   {% for node in nodes %}
-    <node id="{{node.id}}" visible="{{node.visible|string|lower}}"
-          version="{{node.version}}"
+    <node id="{{node.id}}" visible="true"
+          version="0"
           lat="{{node.lat}}" lon="{{node.lon}}">
       {{ tags(node) }}
     </node>

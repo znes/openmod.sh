@@ -14,6 +14,7 @@ import flask_cors as cors # TODO: Check whether the `@cors.cross_origin()`
                           #       served from within this app.
 import flask_login as fl
 import flask_wtf as wtfl
+from geoalchemy2 import functions as g2fs
 import wtforms as wtf
 from werkzeug.utils import secure_filename
 
@@ -185,39 +186,55 @@ def osm_map():
     left, bottom, right, top = map(float, flask.request.args['bbox'].split(","))
     minx, maxx = sorted([top, bottom])
     miny, maxy = sorted([left, right])
-    # Get all nodes in the given bounding box.
-    nodes = osm.Node.query.filter(minx <= osm.Node.lat, miny <= osm.Node.lon,
-                                  maxx >= osm.Node.lat, maxy >= osm.Node.lon)
-    if nodes.count() == 0:
-        template = flask.render_template('map.xml', nodes=(), ways=(),
-                                                    relations=(),
-                                                    minlon=miny, maxlon=maxy,
-                                                    minlat=minx, maxlat=maxx)
+    # TODO: Generate proper geometry for this bounding box to facilitate
+    # intersection testing using GIS functions.
+    scenario_id = flask.session.get("scenario")
+    scenario = osm.Element.query.filter_by(id=scenario_id).first()
+    nodes = set()
+    ways = set()
+    relations = set()
+    if (not scenario):
+        #TODO: Return an error code here. In the new design we don't use the iD
+        #      editor without a selected scenario.
+        template = flask.render_template('map.xml', nodes=nodes, ways=ways,
+                                         relations=relations,
+                                         minlon=miny, maxlon=maxy,
+                                         minlat=minx, maxlat=maxx)
+
         return xml_response(template)
 
-    # Limit nodes to the one's contained in the selected scenario.
-    scenario = flask.session.get("scenario")
-    if (scenario):
-        scenario = osm.Relation.query.filter_by(id=scenario).first()
-        nodes = set(nodes).intersection(scenario.reachable_nodes())
+    # Get all nodes in the given bounding box.
+    nodes = [ {"lat": e[0], "lon": e[1],
+               "tags": {t.key: t.value for t in n.tags}}
+              for n in scenario.children
+              if n.geom.type == 'Point'
+              for e in [eval(n.geom.geom)]
+              if (minx <= e[0] and miny <= e[1] and
+                  maxx >= e[0] and maxy >= e[1])
+            ]
+    # Note: wrapping those in ST_AsGeoJSON or ST_AsText could be an easy way
+    #       to get at the coordinates.
+    #       ST_DumpPoints to get at the points (usefull for lines and polys).
 
     # Get all ways referencing the above nodes.
-    ways = set(way for node in nodes for way in node.ways)
+
     # Get all relations referencing the above ways.
-    relations = set(relation for way in ways
-                             for relation in way.referencing_relations)
+    # relations = set(relation for way in ways
+    #                          for relation in way.referencing_relations)
+
     # Add possibly missing nodes (from outside the bounding box) referenced by
     # the ways retrieved above.
-    nodes = set(itertools.chain([n for way in ways for n in way.nodes], nodes))
-    relations = set(itertools.chain((r for n in nodes
-                                       for r in n.referencing_relations),
-                                    (s for r in relations
-                                       for s in r.referencing_relations),
-                                    relations))
+    #nodes = set(itertools.chain([n for way in ways for n in way.nodes], nodes))
+    #relations = set(itertools.chain((r for n in nodes
+    #                                   for r in n.referencing_relations),
+    #                                (s for r in relations
+    #                                   for s in r.referencing_relations),
+    #                                relations))
     template = flask.render_template('map.xml', nodes=nodes, ways=ways,
                                           relations=relations,
                                           minlon=miny, maxlon=maxy,
                                           minlat=minx, maxlat=maxx)
+
     return xml_response(template)
 
 @app.route('/simulate', methods=['PUT'])
@@ -247,10 +264,10 @@ def simulation(job):
 @fl.login_required
 def scenarios():
     scenarios = list(sorted(
-        [ {"value": r.tags['name'], "title": r.id}
-          for r in osm.Relation.query.all()
-          if r.tags.get("type") == "scenario"
-          if r.tags.get('name')],
+        [ {"value": e.name, "title": e.id}
+          for e in osm.Element.query.all()
+          if e.type == "scenario"
+          ],
         key=lambda d: d['value']))
     if (flask.session.get("scenario")):
         scenarios = ([{"title": None, "value": "Deselect selected scenario"}] +
@@ -266,8 +283,8 @@ def scenario(s):
     if flask.request.method == 'GET':
         if not scenario_id:
             return ""
-        scenario = osm.Relation.query.filter_by(id=scenario_id).first()
-        return json.dumps({'value': getattr(scenario, 'tags', {}).get('name'),
+        scenario = osm.Element.query.filter_by(id=scenario_id).first()
+        return json.dumps({'value': scenario.name,
                            'title': scenario_id})
     elif s and not json.loads(s) and "scenario" in flask.session:
         del flask.session["scenario"]
