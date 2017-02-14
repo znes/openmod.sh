@@ -195,6 +195,12 @@ def osm_map():
     if (not scenario):
         #TODO: Return an error code here. In the new design we don't use the iD
         #      editor without a selected scenario.
+        template = flask.render_template('map.xml', nodes=nodes, ways=ways,
+                                         relations=relations,
+                                         minlon=miny, maxlon=maxy,
+                                         minlat=minx, maxlat=maxx)
+
+        return xml_response(template)
 
     # Get all nodes in the given bounding box.
     nodes = osm.Node.query.filter(minx <= osm.Node.lat, miny <= osm.Node.lon,
