@@ -788,15 +788,15 @@ def get_relations():
     template = flask.render_template('relations.xml', relations=relations)
     return xml_response(template)
 
-def tags_to_dict(tags):
+def objects_to_dict(objects):
     """
-    tags: list of osm.Tag objects
+    objects: list of osm.* objects
     returns: dictionary
     """
-    tag_dict = {}
-    for tag in tags:
-        tag_dict[tag.key] = tag.value
-    return tag_dict
+    o_dict = {}
+    for o in objects:
+        o_dict[o.key] = o.value
+    return o_dict
 
 def dict_to_tags(dic):
     return [osm.Tag(k, v) for k,v in dic.items()]
@@ -808,35 +808,35 @@ def get_tag_value(elements, key):
     returns: string with element name or list
     """
     if isinstance(elements, osm.Element):
-        return tags_to_dict(elements.tags)[key]
+        return objects_to_dict(elements.tags)[key]
     else:
-        return [tags_to_dict(element.tags)[key] for element in elements]
+        return [objects_to_dict(element.tags)[key] for element in elements]
 
 # TODO: very dirty. gnn has to make it better
 def get_element_id(name):
     return osm.Tag.query.filter_by(value=name).first().elements[0].id
 
+# TODO; allow for tyoe and name query as well
 def serialize_element(id):
     element = osm.Element.query.filter_by(id=id).first()
-    serialized = {'name': get_tag_value(element, 'name'),
-                  'type': get_tag_value(element, 'type'),
-                  'element_id': element.id,
+    serialized = {'name': element.name,
+                  'type': element.type,
                   'tags': {},
                   'children': [],
                   'parents': [],
                   'predecessors': [],
                   'successors': []}
-    serialized['tags'] = tags_to_dict(element.tags)
-    serialized['children'] = get_tag_value(element.children, 'name')
-    serialized['parents'] = get_tag_value(element.parents, 'name')
-    serialized['predecessors'] = get_tag_value(element.predecessors, 'name')
-    serialized['successors'] = get_tag_value(element.successors, 'name')
+    serialized['tags'] = objects_to_dict(element.tags)
+    serialized['children'] = [e.name for e in element.children]
+    serialized['parents'] = [e.name for e in element.parents]
+    serialized['predecessors'] = [e.name for e in element.predecessors]
+    serialized['successors'] = [e.name for e in element.successors]
+    serialized['sequences'] = objects_to_dict(element.tags)
     return serialized
 
 def create_element_from_json(json):
-    tags = [osm.Tag('name', json['name']), osm.Tag('type', json['type'])]
-    tags.extend(dict_to_tags(json['tags']))
-    element = osm.Element(tags=tags)
+    tags = dict_to_tags(json['tags'])
+    element = osm.Element(name=json['name'], type=json['type'],tags=tags)
     return element
 
 def json_to_db(json):
@@ -846,21 +846,56 @@ def json_to_db(json):
     osm.DB.session.commit()
 
 # API for elements
+# TODO: implement geom and sequences
+# TODO: implement post and database upload
 @app.route('/API/element', methods=['GET', 'POST'])
 def provide_element_api():
+    """
+    default values:
+      "geom": "false",
+      "tags": "true",
+      "sequences": "false",
+      "children": "true",
+      "parents": "true",
+      "predecessors": "true",
+      "successors": "true"
+      "sequences": "false"
+    """
+    query_defaults = {'geom': 'false',
+                      'tags': 'true',
+                      'children': 'true',
+                      'parents': 'true',
+                      'predecessors': 'true',
+                      'successors': 'true',
+                      'sequences': 'false'}
+
     if flask.request.method == 'GET':
         args = flask.request.args.to_dict()
         if 'id' in args.keys():
+            serialized = serialize_element(args['id'])
+            # add api parameters
+            serialized['api_parameters'] = {'version': '0.0.1',
+                                            'type': 'element'}
+            serialized['api_parameters']['query'] = query_defaults
+
             if 'expand' in args.keys():
                 """expand: children, parents, successors or predecessors"""
-                serialized = serialize_element(args['id'])
                 expand_list = []
                 for element in serialized[args['expand']]:
                     expand_list.append(serialize_element(get_element_id(element)))
                 serialized[args['expand']] = expand_list
-                return flask.jsonify(serialized)
-            else:
-                return flask.jsonify(serialize_element(args['id']))
+            # update api default query parameters by args
+            for k,v in args.items():
+                if k in query_defaults:
+                    if v != query_defaults[k]:
+                        serialized['api_parameters']['query'][k] = v
+            # remove objects if api parameters are false (for args and defaults)
+            for k in query_defaults:
+                if serialized['api_parameters']['query'][k] == 'false':
+                # TODO remov once geom table exist
+                    if k != 'geom':
+                        serialized.pop(k)
+            return flask.jsonify(serialized)
         return "Please provide correct query parameters"
     if flask.request.method == 'POST':
         data = flask.request.get_json()
