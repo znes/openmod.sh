@@ -25,6 +25,9 @@
         "fuel_type": "solar",
         "installed_power": "251"
       },
+      "sequences": {   
+	"profile": [1, 2, 3, 6]
+      },
       "successors": ["kiel_electricity"]
     },
     {
