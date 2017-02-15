@@ -1076,26 +1076,17 @@ def id_editor():
 def show_scenarios():
     model='pypsa'
 
-    scenario_tags = list(osm.Tag.query.filter_by(value='scenario'))
-    scenario_elements = []
-    if isinstance(scenario_tags, list):
-        for st in scenario_tags:
-            scenario_elements.extend(st.elements)
-    else:
-        scenario_elements.extend(scenario_tags.elements)
 
-    serialized_scenarios = {}
-    for e in scenario_elements:
-        serialized_scenarios[get_tag_value(e, 'name')] = serialize_element(e)
-
+    scenarios = provide_elements_api({'type': 'scenario'})
+    scenarios.pop('api_parameters')
 
     table_data = {}
-    for k,v in serialized_scenarios.items():
-        name = serialized_scenarios[k]['name']
+    for k,v in scenarios.items():
+        name = scenarios[k]['name']
         table_data[name] = {}
         # number of children
-        table_data[name]['children'] = len(serialized_scenarios[k]['children'])
-        table_data[name]['link'] = "/API/element?id="+str(serialized_scenarios[k]['element_id'])+"&expand=children"
+        table_data[name]['children'] = len(scenarios[k]['children'])
+        table_data[name]['link'] = "/API/element?id="+str(k)+"&expand=children"
 
     return flask.render_template('show_scenarios.html',
                                  scenarios=table_data,
