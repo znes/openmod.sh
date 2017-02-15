@@ -10,6 +10,7 @@ psycopg2
 Flask-WTF
 WTForms
 geojson
+plotly
 
 # oemof.db which is not yet a package on PyPI
 -e git+https://github.com/oemof/oemof.db.git@dev#egg=oemof.db

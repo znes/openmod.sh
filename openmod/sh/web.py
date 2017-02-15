@@ -24,6 +24,8 @@ import oemof.db
 from .schemas import oms as osm
 from .schemas.osm import Element_Relation_Associations as ERAs
 import openmod.sh.scenario
+from openmod.sh.visualization import make_regionplot_dict
+import plotly
 
 
 app = flask.Flask(__name__)
@@ -1074,9 +1076,22 @@ def id_editor():
 @app.route('/edit_scenario', methods=['GET', 'POST'])
 def edit_scenario():
     query_args = flask.request.args.to_dict()
+    query_args['expand'] = 'children'
     scenario = provide_element_api(query_args)
+    
+    graphs = [make_regionplot_dict(scenario)]
 
-    return flask.render_template('edit_scenario.html', scenario=scenario)
+    # Add "ids" to each of the graphs to pass up to the client
+    # for templating
+    ids = ['graph-{}'.format(i) for i, _ in enumerate(graphs)]
+
+    # Convert the figures to JSON
+    # PlotlyJSONEncoder appropriately converts pandas, datetime, etc
+    # objects to their JSON equivalents
+    graphJSON = json.dumps(graphs, cls=plotly.utils.PlotlyJSONEncoder)
+
+    return flask.render_template('edit_scenario.html', scenario=scenario,
+                                 ids=ids, graphJSON=graphJSON)
 
 @app.route('/scenario_overview')
 def show_scenarios():
