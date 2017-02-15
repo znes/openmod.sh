@@ -7,7 +7,7 @@ app = Flask(__name__)
 app.debug = True
 
 
-def make_pydict():
+def make_regionplot_dict():
     fig = dict(
         data=[
             dict(
@@ -39,9 +39,6 @@ def make_pydict():
         }
     )
 
-    plot_url = py.plotly.plot(fig, filename='Kiel and friends')
-    print(plot_url)
-
     return fig
 
 @app.route('/')
@@ -58,7 +55,7 @@ def index():
     # objects to their JSON equivalents
     graphJSON = json.dumps(graphs, cls=py.utils.PlotlyJSONEncoder)
 
-    return render_template('region_plot.html',
+    return render_template('edit_scenario.html',
                            ids=ids,
                            graphJSON=graphJSON)
 
