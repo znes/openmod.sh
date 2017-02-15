@@ -7,7 +7,7 @@
 <h2>Select values</h2>
  <table style="width:50%">
   <tr>
-    <td>Wind</td>
+    <td>Solar</td>
     <td>
         <input type="range" min="0" max="50" value="0" step="5"
         onchange="showValue(this.value, installed_power_solar)" /></td>
@@ -16,7 +16,7 @@
     </td>
   </tr>
   <tr>
-    <td>Solar</td>
+    <td>Wind</td>
     <td>
         <input type="range" min="0" max="50" value="0" step="5"
         onchange="showValue(this.value, installed_power_wind)" />
@@ -53,6 +53,7 @@
         var graphs = {{graphJSON | safe}};
         var ids = {{ids | safe}};
         for(var i in graphs) {
+            console.log(graphs[i].data[4]['lat'])
             Plotly.plot(ids[i], // the ID of the div, created above
                         graphs[i].data,
                         graphs[i].layout || {});
