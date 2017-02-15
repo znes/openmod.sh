@@ -1121,11 +1121,16 @@ def compute_results(model='oemof'):
                                      model=model,
                                      form=form,
                                      scenario_default=scenario)
+
 @app.route('/show_results', methods=['GET', 'POST'])
 def show_results():
     flask.flash('Processing results...')
     return flask.render_template('show_results.html')
 
+@app.route('/graph')
+def graph_route():
+    from openmod.sh.visualization import make_graph
+    make_graph()
 
 @app.route('/main_menu')
 def main_menu():
