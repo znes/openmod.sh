@@ -2,17 +2,13 @@ from flask import Flask, render_template
 
 import json
 import plotly as py
-import plotly.graph_objs as go
-
-import pandas as pd
-import numpy as np
 
 app = Flask(__name__)
 app.debug = True
 
 
 def make_pydict():
-    fig = go.Figure(
+    fig = dict(
         data=[
             dict(
             type = 'scattergeo',
@@ -43,7 +39,7 @@ def make_pydict():
         }
     )
 
-    plot_url = py.plotly.plot(fig, filename='Canadian Cities')
+    plot_url = py.plotly.plot(fig, filename='Kiel and friends')
     print(plot_url)
 
     return fig
