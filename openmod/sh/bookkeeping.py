@@ -56,7 +56,7 @@ class PointIds:
         """ Given an unknown oid, generates and returns a new vid for it.
         """
         if not oid in self.vid:
-            self.oid[vid] = oid
+            self.oid[oid] = oid
             self.vid[oid] = oid
             return oid
         while self.min in self.oid:
