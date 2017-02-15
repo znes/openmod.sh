@@ -1071,6 +1071,13 @@ def export_dataset():
 def id_editor():
     return flask.redirect('/static/iD/index.html')
 
+@app.route('/edit_scenario')
+def edit_scenario():
+
+    query_args = flask.request.args.to_dict()
+    scenario = provide_element_api(query_args)
+
+    return flask.render_template('edit_scenario.html', scenario=scenario)
 
 @app.route('/scenario_overview')
 def show_scenarios():
