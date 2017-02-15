@@ -21,6 +21,7 @@ from werkzeug.utils import secure_filename
 
 import oemof.db
 
+from .bookkeeping import PointIds
 from .schemas import oms as osm
 from .schemas.osm import Element_Relation_Associations as ERAs
 import openmod.sh.scenario
@@ -136,6 +137,7 @@ def login():
         #if user is not None:
         if ((user is not None) and (user.check_pw(form.password.data))):
                 fl.login_user(user)
+                flask.session['id-tracker'] = PointIds()
                 #print("Current user: {}".format(fl.current_user))
         else:
                 flask.flash('Invalid username/password combination.')
