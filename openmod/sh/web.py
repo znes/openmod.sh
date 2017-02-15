@@ -1071,9 +1071,8 @@ def export_dataset():
 def id_editor():
     return flask.redirect('/static/iD/index.html')
 
-@app.route('/edit_scenario')
+@app.route('/edit_scenario', methods=['GET', 'POST'])
 def edit_scenario():
-
     query_args = flask.request.args.to_dict()
     scenario = provide_element_api(query_args)
 
@@ -1084,19 +1083,20 @@ def show_scenarios():
     model='pypsa'
 
 
-    scenarios = provide_elements_api({'type': 'scenario'})
+    scenarios = provide_elements_api({'type': 'scenario',
+                                      'parents': 'false',
+                                      'predecessors': 'false',
+                                      'successors': 'false',
+                                      'sequences': 'false',
+                                      'geom': 'false'})
     scenarios.pop('api_parameters')
 
-    table_data = {}
     for k,v in scenarios.items():
-        name = scenarios[k]['name']
-        table_data[name] = {}
-        # number of children
-        table_data[name]['children'] = len(scenarios[k]['children'])
-        table_data[name]['link'] = "/API/element?id="+str(k)+"&expand=children"
+        # additional information for scenario overview
+        scenarios[k]['json'] = "/API/element?id="+str(k)+"&expand=children"
 
     return flask.render_template('show_scenarios.html',
-                                 scenarios=table_data,
+                                 scenarios=scenarios,
                                  model=model)
 
 class ComputeForm(wtfl.FlaskForm):
