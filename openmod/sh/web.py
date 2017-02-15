@@ -1077,9 +1077,10 @@ def id_editor():
 def edit_scenario():
 
     query_args = flask.request.args.to_dict()
+    query_args['expand'] = 'children'
     scenario = provide_element_api(query_args)
     
-    graphs = [make_regionplot_dict()]
+    graphs = [make_regionplot_dict(scenario)]
 
     # Add "ids" to each of the graphs to pass up to the client
     # for templating
