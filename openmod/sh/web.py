@@ -21,7 +21,7 @@ from werkzeug.utils import secure_filename
 
 import oemof.db
 
-from .bookkeeping import PointIds
+from .bookkeeping import PointIds, InMemorySessionInterface as IMSI
 from .schemas import oms as osm
 from .schemas.osm import Element_Relation_Associations as ERAs
 import openmod.sh.scenario
@@ -32,6 +32,7 @@ app = flask.Flask(__name__)
 # and store it in a safe place.
 # See: http://flask.pocoo.org/docs/0.11/quickstart/#sessions
 app.secret_key = b"DON'T USE THIS IN PRODUCTION! " + b'\xdb\xcd\xb4\x8cp'
+app.session_interface = IMSI()
 
 # Set up a pool of workers to which jobs can be submitted and a dictionary
 # which stores the asynchronous result objects.
@@ -196,6 +197,7 @@ def osm_map():
     nodes = set()
     ways = set()
     relations = set()
+    idtracker = flask.session['id-tracker']
     if (not scenario):
         #TODO: Return an error code here. In the new design we don't use the iD
         #      editor without a selected scenario.
@@ -209,7 +211,7 @@ def osm_map():
     # Get all nodes in the given bounding box.
     nodes = [ {"lat": e.y, "lon": e.x,
                "tags": {t.key: t.value for t in n.tags},
-               "id": n.id}
+               "id": idtracker(oid=n.id)}
               for n in scenario.children
               if n.geom.type == 'POINT'
               for e in [shape.to_shape(n.geom.geom)]

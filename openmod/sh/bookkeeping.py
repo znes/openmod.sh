@@ -6,6 +6,47 @@ home so that it doesn't obscure the actual relevant parts in the code that
 needs to do bookkeping on top of it's regular duties.
 """
 
+from uuid import uuid4
+
+from flask.sessions import (SessionInterface as SI, SessionMixin as SM)
+
+
+class InMemorySession(dict, SM):
+    def __init__(self, sid, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.sid = sid
+
+class InMemorySessionInterface(dict, SI):
+
+    def _generate_sid(self):
+        return str(uuid4())
+
+    def open_session(self, app, request):
+        sid = request.cookies.get(app.session_cookie_name)
+        if not sid:
+          sid = self._generate_sid()
+          return InMemorySession(sid)
+
+        return InMemorySession(sid, self.get(sid, {}))
+
+    def save_session(self, app, session, response):
+        if not session:
+            if session.modified:
+                if session.sid in self:
+                    del self[session.sid]
+                response.delete_cookie(app.session_cookie_name,
+                                       domain=self.get_cookie_domain(app),
+                                       path=self.get_cookie_path(app))
+        self[session.sid] = self.get(session.sid, {})
+        self[session.sid].update(dict(session))
+        response.set_cookie(app.session_cookie_name, session.sid,
+                            expires=self.get_expiration_time(app, session),
+                            httponly=self.get_cookie_httponly(app),
+                            domain=self.get_cookie_domain(app),
+                            path=self.get_cookie_path(app),
+                            secure=self.get_cookie_secure(app))
+
+
 class PointIds:
     """ Keeps track of the virtual ids used to communicate with the iD editor.
 
