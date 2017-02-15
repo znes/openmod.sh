@@ -1,7 +1,8 @@
 from flask import Flask, render_template
 
 import json
-import plotly
+import plotly as py
+import plotly.graph_objs as go
 
 import pandas as pd
 import numpy as np
@@ -10,47 +11,47 @@ app = Flask(__name__)
 app.debug = True
 
 
+def make_pydict():
+    fig = go.Figure(
+        data=[
+            dict(
+            type = 'scattergeo',
+            lon = [ 9, 10, 11, 9 ],
+            lat = [ 54, 54, 55, 54 ],
+            mode = 'lines',
+            line = dict(
+                width = 1,
+                color = 'red',
+            ),
+            opacity = 0.5,
+        )
+        ],
+        layout={
+            "title": "Kiel and Region",
+            "geo": {
+                "lataxis": {
+                    "range": [53, 56]
+                },
+                "lonaxis": {
+                    "range": [8, 12]
+                },
+                "scope": "germany",
+                "showland": True,
+                "showsubunits": True,
+                "resolution": 50
+            }
+        }
+    )
+
+    plot_url = py.plotly.plot(fig, filename='Canadian Cities')
+    print(plot_url)
+
+    return fig
+
 @app.route('/')
 def index():
-    rng = pd.date_range('1/1/2011', periods=7500, freq='H')
-    ts = pd.Series(np.random.randn(len(rng)), index=rng)
-
-    graphs = [
-        dict(
-            data=[
-                dict(
-                    x=[1, 2, 3],
-                    y=[10, 20, 30],
-                    type='scatter'
-                ),
-            ],
-            layout=dict(
-                title='first graph'
-            )
-        ),
-
-        dict(
-            data=[
-                dict(
-                    x=[1, 3, 5],
-                    y=[10, 50, 30],
-                    type='bar'
-                ),
-            ],
-            layout=dict(
-                title='second graph'
-            )
-        ),
-
-        dict(
-            data=[
-                dict(
-                    x=ts.index,  # Can use the pandas data structures directly
-                    y=ts
-                )
-            ]
-        )
-    ]
+    
+    graphs = [make_pydict()]
 
     # Add "ids" to each of the graphs to pass up to the client
     # for templating
@@ -59,7 +60,7 @@ def index():
     # Convert the figures to JSON
     # PlotlyJSONEncoder appropriately converts pandas, datetime, etc
     # objects to their JSON equivalents
-    graphJSON = json.dumps(graphs, cls=plotly.utils.PlotlyJSONEncoder)
+    graphJSON = json.dumps(graphs, cls=py.utils.PlotlyJSONEncoder)
 
     return render_template('region_plot.html',
                            ids=ids,
