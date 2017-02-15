@@ -1018,6 +1018,24 @@ def provide_elements_api_route():
     json = provide_elements_api(query_args)
     return flask.jsonify(json)
 
+def provide_sequence_api(query_args):
+    """
+    needs at least id as query argument
+    """
+    sequence = osm.Sequence.query.filter_by(id=query_args['id']).first()
+    json = {}
+    if sequence:
+        json[sequence.key] = sequence.value
+    return json
+
+@app.route('/API/sequence', methods=['GET'])
+def provide_sequence_api_route():
+    query_args = flask.request.args.to_dict()
+    if 'id' in query_args.keys():
+        json = provide_sequence_api(query_args)
+        return flask.jsonify(json)
+    return "Provide at least id as query parameter."
+
 ALLOWED_EXTENSIONS = set(['json'])
 
 def allowed_file(filename):
