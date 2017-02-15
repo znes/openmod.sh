@@ -1,0 +1,49 @@
+{% extends "base_layout.html" %}
+{% block body %}
+
+
+<div style="float:left; width:50%;">
+
+ <table style="width:50%">6
+  <tr>
+    <td>Wind</td>
+    <td>
+        <input type="range" min="0" max="50" value="0" step="5"
+        onchange="showValue(this.value, installed_power_solar)" /></td>
+    <td>
+        <span id="installed_power_solar">0</span>
+    </td>
+  </tr>
+  <tr>
+    <td>Solar</td>
+    <td>
+        <input type="range" min="0" max="50" value="0" step="5"
+        onchange="showValue(this.value, installed_power_wind)" />
+    </td>
+    <td>
+        <span id="installed_power_wind">0</span>
+    </td>
+  </tr>
+</table>
+
+
+
+
+
+
+
+
+<script type="text/javascript">
+    function showValue(newValue, id)
+        {
+        	id.innerHTML=newValue;
+    }
+</script>
+</div>
+
+<div style="float:left; width:50%;">
+Here goes the on-the fly plottig
+</div>
+
+
+{% endblock %}
