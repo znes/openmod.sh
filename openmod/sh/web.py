@@ -14,7 +14,7 @@ import flask_cors as cors # TODO: Check whether the `@cors.cross_origin()`
                           #       served from within this app.
 import flask_login as fl
 import flask_wtf as wtfl
-from geoalchemy2 import shape
+from geoalchemy2.shape import to_shape
 import wtforms as wtf
 from werkzeug.utils import secure_filename
 
@@ -213,7 +213,7 @@ def osm_map():
                "id": idtracker(oid=n.id)}
               for n in scenario.children
               if n.geom.type == 'POINT'
-              for e in [shape.to_shape(n.geom.geom)]
+              for e in [to_shape(n.geom.geom)]
               if (minx <= e.y and miny <= e.x and
                   maxx >= e.y and maxy >= e.x)
             ]
@@ -850,7 +850,7 @@ def serialize_element(element):
                   'type': element.type}
     # TODO: Make work for geom
     if element.geom:
-        serialized['geom'] = shape.to_shape(element.geom.geom).wkt
+        serialized['geom'] = to_shape(element.geom.geom).wkt
     else:
         serialized['geom'] = None
     serialized['tags'] = objects_to_dict(element.tags)
