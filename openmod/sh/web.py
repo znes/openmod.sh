@@ -14,7 +14,9 @@ import flask_cors as cors # TODO: Check whether the `@cors.cross_origin()`
                           #       served from within this app.
 import flask_login as fl
 import flask_wtf as wtfl
-from geoalchemy2.shape import to_shape
+from geoalchemy2.shape import from_shape, to_shape
+from sqlalchemy.orm import aliased
+from shapely.geometry import box
 import wtforms as wtf
 from werkzeug.utils import secure_filename
 
@@ -189,6 +191,7 @@ def osm_map():
     left, bottom, right, top = map(float, flask.request.args['bbox'].split(","))
     minx, maxx = sorted([top, bottom])
     miny, maxy = sorted([left, right])
+    bbox = box(miny, minx, maxy, maxx)
     # TODO: Generate proper geometry for this bounding box to facilitate
     # intersection testing using GIS functions.
     scenario_id = flask.session.get("scenario")
@@ -208,14 +211,17 @@ def osm_map():
         return xml_response(template)
 
     # Get all nodes in the given bounding box.
+    nodes = osm.Element.query.filter(osm.Element.parents.any(id=scenario_id)
+        ).join(osm.Geom).filter(
+            osm.Geom.type == 'POINT',
+            from_shape(bbox, srid=4326).ST_Intersects(osm.Geom.geom)
+        ).all()
+
     nodes = [ {"lat": e.y, "lon": e.x,
                "tags": {t.key: t.value for t in n.tags},
                "id": idtracker(oid=n.id)}
-              for n in scenario.children
-              if n.geom.type == 'POINT'
+              for n in nodes
               for e in [to_shape(n.geom.geom)]
-              if (minx <= e.y and miny <= e.x and
-                  maxx >= e.y and maxy >= e.x)
             ]
     # Note: wrapping those in ST_AsGeoJSON or ST_AsText could be an easy way
     #       to get at the coordinates.
