@@ -14,7 +14,6 @@ import flask_cors as cors # TODO: Check whether the `@cors.cross_origin()`
                           #       served from within this app.
 import flask_login as fl
 import flask_wtf as wtfl
-#from geoalchemy2 import functions as g2fs
 from geoalchemy2 import shape
 import wtforms as wtf
 from werkzeug.utils import secure_filename
