@@ -2,9 +2,9 @@
 {% block body %}
 
 
-<div style="float:left; width:50%;">
+<div style="float:left; width:30%;">
 
-<h2>Select values</h2>
+<h3>Select values</h3>
  <table style="width:50%">
   <tr>
     <td>Solar</td>
@@ -28,7 +28,7 @@
 </table>
 </div>
 
-<div style="float:left; width:50%;">
+<div style="float:left; width:70%;">
  <div class="tab">
   <a href="javascript:void(0)" class="tablinks" onclick="openCity(event, 'Region Plot')" id="defaultOpen">Region Plot</a>
   <a href="javascript:void(0)" class="tablinks" onclick="openCity(event, 'Other Plot')">Other Plot</a>
@@ -61,7 +61,6 @@
         slider_id.innerHTML=newValue;
     }
     function makePlot(newValue, plot_id, graph) {
-        console.log(graph)
         graph.data[4]['lat'][1]=graph.data[4]['lat'][0]+newValue/100.0;
         Plotly.newPlot(plot_id, // the ID of the div, created above
                     graph.data,
@@ -72,9 +71,9 @@
 {% endblock %}
 
 {% block footer %}
- <script>
-  makePlot(0, "{{id}}", {{graphJSON | safe}})
+ <script type="text/javascript">
   // Get the element with id="defaultOpen" and click on it
   document.getElementById("defaultOpen").click();
+  makePlot(0, "{{id}}", {{graphJSON | safe}})
  </script>
 {% endblock %}

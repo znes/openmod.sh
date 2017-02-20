@@ -1121,7 +1121,7 @@ def edit_scenario():
     # PlotlyJSONEncoder appropriately converts pandas, datetime, etc
     # objects to their JSON equivalents
     graphJSON = json.dumps(graph, cls=plotly.utils.PlotlyJSONEncoder)
-    print(graphJSON)
+
     return flask.render_template('edit_scenario.html', scenario=scenario,
                                  id=id, graphJSON=graphJSON)
 
