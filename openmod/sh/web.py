@@ -904,13 +904,26 @@ def create_element_from_json(json):
     element = osm.Element(name=json['name'], type=json['type'],tags=tags,
                           sequences=sequences, geom=geom)
 
-
-
     return element
 
 def json_to_db(json):
     element = create_element_from_json(json)
-    element.children = [create_element_from_json(e) for e in json['children']]
+
+    children_dct = {e['name']: create_element_from_json(e)
+                    for e in json['children']}
+    element.children = list(children_dct.values())
+
+    for e in children_dct:
+        for c in json['children']:
+            if c.get('predecessors'):
+                children_dct[c['name']].predecessors = [children_dct[p]
+                                                        for p in c['predecessors']]
+            if c.get('successors'):
+                for p in c['successors']:
+                    children_dct[c['name']].successors = [children_dct[p]
+                                                          for p in c['successors']]
+
+
     osm.DB.session.add(element)
     osm.DB.session.commit()
 
