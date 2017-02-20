@@ -29,8 +29,20 @@
 </div>
 
 <div style="float:left; width:50%;">
- <h3>{{id}}</h3>
- <div id="{{id}}"></div>
+ <div class="tab">
+  <a href="javascript:void(0)" class="tablinks" onclick="openCity(event, 'Region Plot')" id="defaultOpen">Region Plot</a>
+  <a href="javascript:void(0)" class="tablinks" onclick="openCity(event, 'Other Plot')">Other Plot</a>
+ </div>
+
+ <div id="Region Plot" class="tabcontent">
+  <h3>{{id}}</h3>
+  <div id="{{id}}"></div>
+ </div>
+
+ <div id="Other Plot" class="tabcontent">
+  <h3>Other Plot</h3>
+  <p>This is another Plot.</p>
+ </div>
 </div>
 
 <!-- D3.js -->
@@ -48,15 +60,21 @@
     function showValue(newValue, slider_id) {
         slider_id.innerHTML=newValue;
     }
-    function makePlot(newValue, plot_id, graphJSON) {
-        var graph = {{graphJSON | safe}};
+    function makePlot(newValue, plot_id, graph) {
+        console.log(graph)
         graph.data[4]['lat'][1]=graph.data[4]['lat'][0]+newValue/100.0;
         Plotly.newPlot(plot_id, // the ID of the div, created above
                     graph.data,
                     graph.layout || {});
     }
-    
-    makePlot(0, "{{id}}", {{graphJSON | safe}})
 </script>
 
+{% endblock %}
+
+{% block footer %}
+ <script>
+  makePlot(0, "{{id}}", {{graphJSON | safe}})
+  // Get the element with id="defaultOpen" and click on it
+  document.getElementById("defaultOpen").click();
+ </script>
 {% endblock %}
