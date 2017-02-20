@@ -1014,6 +1014,35 @@ def provide_elements_api(query_args):
         outer_json[str(element.id)] = json
     return outer_json
 
+def explicate_hubs(json):
+    """Takes elements names of hubs and add explicit hub elements to the dataset
+    """
+    existing_hubs = [h for h in json['children'] if h['type'] == 'hub']
+    if existing_hubs:
+        raise ValueError("Found explicit hub definition in JSON file!")
+
+    dct = {}
+    for child in json['children']:
+        for s in child.get('successors', []):
+            obj = {'type': 'hub',
+                   'name': s,
+                   'tags': {'sector': s.split('_')[-1]}
+                   }
+            dct[s] = dct.get(s, obj)
+            dct[s]['predecessors'] = dct[s].get('predecessors', [])
+            dct[s]['predecessors'].append(child['name'])
+        for p in child.get('predecessors', []):
+            obj = {'type': 'hub',
+                   'name': p,
+                   'tags': {'sector': p.split('_')[-1]}
+                   }
+            dct[p] = dct.get(p, obj)
+            dct[p]['successors'] = dct[p].get('successors', [])
+            dct[p]['successors'].append(child['name'])
+    json['children'].extend(dct.values())
+
+    return json
+
 @app.route('/API/elements', methods=['GET'])
 def provide_elements_api_route():
     query_args = flask.request.args.to_dict()
@@ -1058,9 +1087,12 @@ def upload_file():
             flask.flash('No selected file')
             return flask.redirect(flask.request.url)
         if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            #file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            json_to_db(json.loads(str(file.read(), 'utf-8')))
+            #filename = secure_filename(file.filename)
+            json_file = json.loads(str(file.read(), 'utf-8'))
+            if json_file['api_parameters']['query']['hubs_explicitly'] == 'false':
+                json_file = explicate_hubs(json_file)
+            json_to_db(json_file)
+
             return flask.render_template('imported_successfully.html')
     return flask.render_template('import.html')
 
