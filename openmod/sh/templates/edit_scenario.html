@@ -10,7 +10,7 @@
     <td>Solar</td>
     <td>
         <input type="range" min="0" max="50" value="0" step="5"
-        onchange="updateValue(this.value, installed_power_solar, '{{id}}')" /></td>
+        onchange="updateValue(this.value, installed_power_solar, '{{region_plot_id}}')" /></td>
     <td>
         <span id="installed_power_solar">0</span>
     </td>
@@ -30,18 +30,18 @@
 
 <div style="float:left; width:70%;">
  <div class="tab">
-  <a href="javascript:void(0)" class="tablinks" onclick="openCity(event, 'Region Plot')" id="defaultOpen">Region Plot</a>
-  <a href="javascript:void(0)" class="tablinks" onclick="openCity(event, 'Other Plot')">Other Plot</a>
+  <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab1')" id="defaultOpen">Region Plot</a>
+  <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab2')">Timeseries Plot</a>
  </div>
 
- <div id="Region Plot" class="tabcontent">
-  <h3>{{id}}</h3>
-  <div id="{{id}}"></div>
+ <div id="Tab1" class="tabcontent">
+  <h3>{{region_plot_id}}</h3>
+  <div id="{{region_plot_id}}"></div>
  </div>
 
- <div id="Other Plot" class="tabcontent">
-  <h3>Other Plot</h3>
-  <p>This is another Plot.</p>
+ <div id="Tab2" class="tabcontent">
+  <h3>{{timeseries_plot_id}}</h3>
+  <div id="{{timeseries_plot_id}}"></div>
  </div>
 </div>
 
@@ -50,22 +50,27 @@
 <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
 <!-- Plotly.js -->
-<script src="https://cdn.plot.ly/plotly-1.2.0.min.js"></script>
+<script src="https://cdn.plot.ly/plotly-1.23.1.min.js"></script>
 
 <script type="text/javascript">
-    function updateValue(newValue, slider_id, plot_id) {
-        showValue(newValue, slider_id);
-        makePlot(newValue, plot_id, {{graphJSON | safe}});
-    }
-    function showValue(newValue, slider_id) {
-        slider_id.innerHTML=newValue;
-    }
-    function makePlot(newValue, plot_id, graph) {
-        graph.data[4]['lat'][1]=graph.data[4]['lat'][0]+newValue/100.0;
-        Plotly.newPlot(plot_id, // the ID of the div, created above
-                    graph.data,
-                    graph.layout || {});
-    }
+ function updateValue(newValue, slider_id, plot_id) {
+  showValue(newValue, slider_id);
+  makeRegionPlot(newValue, plot_id, {{region_plot_json | safe}});
+ }
+ function showValue(newValue, slider_id) {
+  slider_id.innerHTML=newValue;
+ }
+ function makeRegionPlot(newValue, plot_id, graph) {
+ graph.data[4]['lat'][1]=graph.data[4]['lat'][0]+newValue/100.0;
+ Plotly.newPlot(plot_id, // the ID of the div, created above
+                graph.data,
+                graph.layout || {});
+ }
+ function makeTimeseriesPlot(plot_id, graph) {
+ Plotly.newPlot(plot_id,
+                graph.data,
+                graph.layout || {});
+}
 </script>
 
 {% endblock %}
@@ -74,6 +79,7 @@
  <script type="text/javascript">
   // Get the element with id="defaultOpen" and click on it
   document.getElementById("defaultOpen").click();
-  makePlot(0, "{{id}}", {{graphJSON | safe}})
+  makeRegionPlot(0, "{{region_plot_id}}", {{region_plot_json | safe}});
+  makeTimeseriesPlot("{{timeseries_plot_id}}", {{timeseries_plot_json | safe}});
  </script>
 {% endblock %}

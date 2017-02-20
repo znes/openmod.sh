@@ -24,7 +24,7 @@ import oemof.db
 from .schemas import oms as osm
 from .schemas.osm import Element_Relation_Associations as ERAs
 import openmod.sh.scenario
-from openmod.sh.visualization import make_regionplot_dict
+from openmod.sh.visualization import make_regionplot_dict, make_timeseriesplot_dict
 import plotly
 
 
@@ -1124,18 +1124,21 @@ def edit_scenario():
     scenario = provide_element_api(query_args)
     
     graph = make_regionplot_dict(scenario)
-
-    # Add "ids" to each of the graphs to pass up to the client
-    # for templating
-    id = "Region Graph"
-
+    region_plot_id = "Region Plot"
     # Convert the figures to JSON
     # PlotlyJSONEncoder appropriately converts pandas, datetime, etc
     # objects to their JSON equivalents
-    graphJSON = json.dumps(graph, cls=plotly.utils.PlotlyJSONEncoder)
+    region_plot_json = json.dumps(graph, cls=plotly.utils.PlotlyJSONEncoder)
+    
+    graph = make_timeseriesplot_dict(scenario)
+    timeseries_plot_id = "Timeseries Plot"
+    timeseries_plot_json = json.dumps(graph, cls=plotly.utils.PlotlyJSONEncoder)
 
     return flask.render_template('edit_scenario.html', scenario=scenario,
-                                 id=id, graphJSON=graphJSON)
+                                 region_plot_id=region_plot_id,
+                                 region_plot_json=region_plot_json,
+                                 timeseries_plot_id=timeseries_plot_id,
+                                 timeseries_plot_json=timeseries_plot_json)
 
 @app.route('/scenario_overview')
 def show_scenarios():

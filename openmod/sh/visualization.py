@@ -3,19 +3,6 @@ import plotly as py
 import shapely
 
 def make_regionplot_dict(scenario):
-    """
-    for variable bar_height on update of slider one could change d attribute of:
-    
-    <g class="trace scattergeo" style="opacity: 1;"><path class="js-line" d="M245.41489361702133,150.11702127659737L245.41489361702133,27.329787234046307" style="fill: none; stroke: rgb(0, 0, 255); stroke-opacity: 1; stroke-width: 10px;"></path></g>
-    
-    with javascript in html template
-    
-    or change
-    
-    graphs[i].data[4]['lat']
-    
-    see console.log in html template    
-    """
     bar_height = 0.3
     bar_width = 6
     bar_left_corner = (10.12, 54.3)
@@ -47,21 +34,50 @@ def make_regionplot_dict(scenario):
 #                color='rgba(68, 68, 68, 0)'
             )
         )
+    layout=dict(
+            title="Kiel and Region",
+            geo={"lataxis": {"range": [53.9, 54.7]},
+                 "lonaxis": {"range": [9.2, 10.8]},
+                 "scope": "germany",
+                 "resolution": 50},
+            showlegend=False)
+    fig = dict(data=data, layout=layout)
+    return fig
 
-    fig = dict(
-        data=data,
-        layout={
-            "title": "Kiel and Region",
-            "geo": {
-                "lataxis": {
-                    "range": [53.9, 54.7]
-                },
-                "lonaxis": {
-                    "range": [9.2, 10.8]
-                },
-                "scope": "germany",
-                "resolution": 50},
-            "showlegend": False
-         }
+def make_timeseriesplot_dict(scenario):
+    # take timeseries from scenario
+    from datetime import datetime, timedelta
+    from random import random
+    base = datetime(2020,1,1)
+    date_list = [base + timedelta(hours=x) for x in range(8760)]
+    ts = [ [random() for i in range(8760)] ]
+    data=[]
+    for t in ts:
+        data.append(
+            dict(type = 'scatter',
+                 x=date_list,
+                 y=t))
+
+    layout = dict(
+        title='Time series with range slider and selectors',
+        xaxis=dict(
+            rangeselector=dict(
+                buttons=list([
+                    dict(count=1,
+                         label='1m',
+                         step='month',
+                         stepmode='backward'),
+                    dict(count=3,
+                        label='3m',
+                        step='month',
+                        stepmode='backward'),
+                    dict(step='all')
+                ])
+            ),
+            rangeslider=dict(),
+            type='date'
+        )
     )
+
+    fig = dict(data=data, layout=layout)
     return fig
