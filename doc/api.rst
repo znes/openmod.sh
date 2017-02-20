@@ -71,7 +71,7 @@ output is determined by query parameters. The following query parameters exist
 * parents  <boolean>
 * tags     <boolean>
 * geom     <boolean>
-* hubs_as_elements <boolean>
+* hubs_explicitly <boolean>
 * sequences <boolean>
 
 **Example**
