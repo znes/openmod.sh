@@ -11,7 +11,7 @@
       "predecessors": "true",
       "successors": "true",
       "expand": "children",
-      "hubs_explicitly": "false"
+      "hubs_explicitly": "true"
     },
     "manual_conversion": "children of commodities and units are missing"
   },
