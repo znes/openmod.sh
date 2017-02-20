@@ -919,9 +919,8 @@ def json_to_db(json):
                 children_dct[c['name']].predecessors = [children_dct[p]
                                                         for p in c['predecessors']]
             if c.get('successors'):
-                for p in c['successors']:
-                    children_dct[c['name']].successors = [children_dct[p]
-                                                          for p in c['successors']]
+                children_dct[c['name']].successors = [children_dct[s]
+                                                      for s in c['successors']]
 
 
     osm.DB.session.add(element)
