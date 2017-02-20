@@ -10,7 +10,7 @@
     <td>Solar</td>
     <td>
         <input type="range" min="0" max="50" value="0" step="5"
-        onchange="showValue(this.value, installed_power_solar)" /></td>
+        onchange="updateValue(this.value, installed_power_solar, '{{id}}')" /></td>
     <td>
         <span id="installed_power_solar">0</span>
     </td>
@@ -26,40 +26,37 @@
     </td>
   </tr>
 </table>
-
-
-<script type="text/javascript">
-    function showValue(newValue, id)
-        {
-        	id.innerHTML=newValue;
-    }
-</script>
 </div>
 
 <div style="float:left; width:50%;">
-    {% for id in ids %}
-        <h3>{{id}}</h3>
-        <div id="{{id}}"></div>
-    {% endfor %}
-
-    <!-- D3.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
-    <!-- Plotly.js -->
-    <script src="https://cdn.plot.ly/plotly-1.2.0.min.js"></script>
-
-    <script type="text/javascript">
-        var graphs = {{graphJSON | safe}};
-        var ids = {{ids | safe}};
-        for(var i in graphs) {
-            console.log(graphs[i].data[4]['lat'])
-            Plotly.plot(ids[i], // the ID of the div, created above
-                        graphs[i].data,
-                        graphs[i].layout || {});
-        }
-    </script>
+ <h3>{{id}}</h3>
+ <div id="{{id}}"></div>
 </div>
 
+<!-- D3.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<!-- Plotly.js -->
+<script src="https://cdn.plot.ly/plotly-1.2.0.min.js"></script>
+
+<script type="text/javascript">
+    function updateValue(newValue, slider_id, plot_id) {
+        showValue(newValue, slider_id);
+        makePlot(newValue, plot_id, {{graphJSON | safe}});
+    }
+    function showValue(newValue, slider_id) {
+        slider_id.innerHTML=newValue;
+    }
+    function makePlot(newValue, plot_id, graphJSON) {
+        var graph = {{graphJSON | safe}};
+        graph.data[4]['lat'][1]=graph.data[4]['lat'][0]+newValue/100.0;
+        Plotly.newPlot(plot_id, // the ID of the div, created above
+                    graph.data,
+                    graph.layout || {});
+    }
+    
+    makePlot(0, "{{id}}", {{graphJSON | safe}})
+</script>
 
 {% endblock %}

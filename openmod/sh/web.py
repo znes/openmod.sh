@@ -1079,19 +1079,19 @@ def edit_scenario():
     query_args['expand'] = 'children'
     scenario = provide_element_api(query_args)
     
-    graphs = [make_regionplot_dict(scenario)]
+    graph = make_regionplot_dict(scenario)
 
     # Add "ids" to each of the graphs to pass up to the client
     # for templating
-    ids = ['graph-{}'.format(i) for i, _ in enumerate(graphs)]
+    id = "Region Graph"
 
     # Convert the figures to JSON
     # PlotlyJSONEncoder appropriately converts pandas, datetime, etc
     # objects to their JSON equivalents
-    graphJSON = json.dumps(graphs, cls=plotly.utils.PlotlyJSONEncoder)
+    graphJSON = json.dumps(graph, cls=plotly.utils.PlotlyJSONEncoder)
 
     return flask.render_template('edit_scenario.html', scenario=scenario,
-                                 ids=ids, graphJSON=graphJSON)
+                                 id=id, graphJSON=graphJSON)
 
 @app.route('/scenario_overview')
 def show_scenarios():

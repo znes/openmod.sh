@@ -60,7 +60,8 @@ def make_regionplot_dict(scenario):
                     "range": [9.2, 10.8]
                 },
                 "scope": "germany",
-                "resolution": 50}
+                "resolution": 50},
+            "showlegend": False
          }
     )
     return fig
