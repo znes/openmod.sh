@@ -19,7 +19,7 @@ There are the following protected keys:
 * children             <array>
 
 
-element API
+GET API
 ================================
 
 If an element has 'children', all these elementes i.e. children - objects are
@@ -126,6 +126,57 @@ Note:
 At the moment expand only works for one of the four names/keys (child, parent, successor,
 predecessor) at the same time.
 
+
+POST API
+================================
+
+Explicit vs. Implicit datasets
+--------------------------------
+
+To come...
+
+
+Update datasets
+--------------------------------
+
+Datasets / scnearios can be updated. An the structure of a update dataset is 
+given as an example below. The API will update all elements of a given 
+scenario and the elements in 'element_names'. The updated values can be
+'geom', 'sequences' and 'tags'.
+
+
+.. code:: python
+
+{
+  "scenario": "scn_name",
+  "update_type": "results",
+  "update": [
+    {
+      "element_names": [
+        "hub1",
+        "hub2"
+      ],
+      "geom": "<GEOMETRY>",
+      "sequences": {
+        "key1": "value1",
+        "key2": "value2"
+      },
+      "tags": {}
+    },
+    {
+      "element_names": [
+        "component1"
+      ],
+      "geom": "<GEOMETRY>",
+      "sequences": {
+        "key1": "value1"
+      },
+      "tags": {
+        "installed_power": "100"
+      }
+    }
+  ]
+}
 
 
 
