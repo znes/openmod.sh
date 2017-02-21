@@ -1,10 +1,10 @@
 from geoalchemy2 import shape
 
-from openmod.sh.schemas import oms as osm
+from openmod.sh.schemas import oms as schema
 
 def objects_to_dict(objects):
     """
-    objects: list of osm.* objects
+    objects: list of schema.* objects
     returns: dictionary
     """
     o_dict = {}
@@ -16,19 +16,19 @@ def dict_to_tags(dic):
     if dic is None:
         return []
     else:
-        return [osm.Tag(k, v) for k,v in dic.items()]
+        return [schema.Tag(k, v) for k,v in dic.items()]
 
 def dict_to_sequences(dic):
     if dic is None:
         return []
     else:
-        return [osm.Sequence(k, v) for k,v in dic.items()]
+        return [schema.Sequence(k, v) for k,v in dic.items()]
 
 def wkt_to_geom(wkt):
     if wkt is None :
         return None
     else:
-        geom = osm.Geom(wkt.split('(')[0].strip(), 'SRID=4326;' + wkt)
+        geom = schema.Geom(wkt.split('(')[0].strip(), 'SRID=4326;' + wkt)
         return geom
 
 def serialize_element(element):
@@ -75,11 +75,11 @@ def get_elements(query_parameters):
     """
     works for name and type
     """
-    query = osm.Element.query
+    query = schema.Element.query
     if 'name' in query_parameters.keys():
-        query = query.filter(osm.Element.name.like(query_parameters['name']))
+        query = query.filter(schema.Element.name.like(query_parameters['name']))
     if 'type' in query_parameters.keys():
-        query = query.filter(osm.Element.type.like(query_parameters['type']))
+        query = query.filter(schema.Element.type.like(query_parameters['type']))
     elements = query.all()
     return elements
 
@@ -89,7 +89,7 @@ def create_element_from_json(json):
     sequences = dict_to_sequences(json.get('sequences'))
     geom = wkt_to_geom(json.get('geom'))
 
-    element = osm.Element(name=json['name'], type=json['type'],tags=tags,
+    element = schema.Element(name=json['name'], type=json['type'],tags=tags,
                           sequences=sequences, geom=geom)
 
     return element
@@ -111,8 +111,8 @@ def json_to_db(json):
                                                       for s in c['successors']]
 
 
-    osm.DB.session.add(element)
-    osm.DB.session.commit()
+    schema.DB.session.add(element)
+    schema.DB.session.commit()
 
 # API for element and elements
 def provide_element_api(query_args):
@@ -142,7 +142,7 @@ def provide_element_api(query_args):
                       'parents': 'true',
                       'predecessors': 'true',
                       'successors': 'true'}
-    element = osm.Element.query.filter_by(id=query_args['id']).first()
+    element = schema.Element.query.filter_by(id=query_args['id']).first()
     json = serialize_element(element)
     json['api_parameters'] = {'version': '0.0.1',
                               'type': 'element'}
@@ -247,11 +247,12 @@ def explicate_hubs(json):
 
     return json
 
+
 def provide_sequence_api(query_args):
     """
     needs at least id as query argument
     """
-    sequence = osm.Sequence.query.filter_by(id=query_args['id']).first()
+    sequence = schema.Sequence.query.filter_by(id=query_args['id']).first()
     json = {}
     if sequence:
         json[sequence.key] = sequence.value
