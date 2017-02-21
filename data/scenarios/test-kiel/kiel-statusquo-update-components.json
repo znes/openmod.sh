@@ -1,0 +1,53 @@
+{
+  "scenario": "kiel-status-quo",
+  "update_type": "input",
+  "update": [
+    {
+      "element_names": [
+        "kiel_demand_electricity", 
+	"ploen_demand_electricity", 
+	"rdeck_demand_electricity", 
+	"nms_demand_electricity"
+      ],
+      "geom": "",
+      "sequences": {
+	"load_profile": [] 
+     },
+      "tags": {}
+    },
+    {
+      "element_names": [
+        "kiel_demand_heat"
+      ],
+      "geom": "",
+      "sequences": {
+	"load_profile": []},
+      "tags": {}
+    },
+    {
+      "element_names": [
+        "kiel_solar_rural", 
+	"kiel_solar", 
+	"rdeck_solar",
+	"rdeck_solar_rural",
+	"ploe_solar",
+	"ploe_solar_rural"
+      ],
+      "geom": "",
+      "sequences": {
+	"generator_profile": []},
+      "tags": {}
+    },
+    {
+      "element_names": [
+        "kiel_wind", 
+	"rdeck_wind",
+	"ploe_wind"
+      ],
+      "geom": "",
+      "sequences": {
+	"generator_profile": []},
+      "tags": {}
+    }
+  ]
+}

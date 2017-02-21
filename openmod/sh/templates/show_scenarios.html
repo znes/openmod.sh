@@ -5,18 +5,23 @@
  <table border='1' align="center", id="hor-minimalist-a">
     <tr>
         <th>Scenario Name</th>
-        <th>Number of children</th>
         <th>Show JSON - dataset</th>
         <th>Select Scenario</th>
+        <th>Edit Scenario</th>
     </tr>
          {% for k,v in scenarios.items() %}
     <tr>
-        <td>{{ k }}</td>
-        <td>{{ scenarios[k]['children']  }}</td>
-         <td> <a href="{{ scenarios[k]['link']  }}">Show</a></td>
+        <td>{{ scenarios[k]['name'] }}</td>
+         <td> <a href="{{ scenarios[k]['json']  }}">Show</a></td>
         <td> <form action="{{ url_for('compute_results', scenario=k) }}"
                 method=post>
         <input type=submit value="Compute">
+              </form>
+        </td>
+        <td>
+            <form action="{{ url_for('edit_scenario', id=k) }}"
+                method=post>
+            <input type=submit value="Edit">
               </form>
         </td>
     </tr>
@@ -25,4 +30,5 @@
 
 
 {% endblock %}
+
 

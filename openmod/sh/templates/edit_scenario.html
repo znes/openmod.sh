@@ -1,0 +1,85 @@
+{% extends "base_layout.html" %}
+{% block body %}
+
+
+<div style="float:left; width:30%;">
+
+<h3>Select values</h3>
+ <table style="width:50%">
+  <tr>
+    <td>Solar</td>
+    <td>
+        <input type="range" min="0" max="50" value="0" step="5"
+        onchange="updateValue(this.value, installed_power_solar, '{{region_plot_id}}')" /></td>
+    <td>
+        <span id="installed_power_solar">0</span>
+    </td>
+  </tr>
+  <tr>
+    <td>Wind</td>
+    <td>
+        <input type="range" min="0" max="50" value="0" step="5"
+        onchange="showValue(this.value, installed_power_wind)" />
+    </td>
+    <td>
+        <span id="installed_power_wind">0</span>
+    </td>
+  </tr>
+</table>
+</div>
+
+<div style="float:left; width:70%;">
+ <div class="tab">
+  <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab1')" id="defaultOpen">Region Plot</a>
+  <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab2')">Timeseries Plot</a>
+ </div>
+
+ <div id="Tab1" class="tabcontent">
+  <h3>{{region_plot_id}}</h3>
+  <div id="{{region_plot_id}}"></div>
+ </div>
+
+ <div id="Tab2" class="tabcontent">
+  <h3>{{timeseries_plot_id}}</h3>
+  <div id="{{timeseries_plot_id}}"></div>
+ </div>
+</div>
+
+<!-- D3.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<!-- Plotly.js -->
+<script src="https://cdn.plot.ly/plotly-1.23.1.min.js"></script>
+
+<script type="text/javascript">
+ function updateValue(newValue, slider_id, plot_id) {
+  showValue(newValue, slider_id);
+  makeRegionPlot(newValue, plot_id, {{region_plot_json | safe}});
+ }
+ function showValue(newValue, slider_id) {
+  slider_id.innerHTML=newValue;
+ }
+ function makeRegionPlot(newValue, plot_id, graph) {
+ graph.data[4]['lat'][1]=graph.data[4]['lat'][0]+newValue/100.0;
+ Plotly.newPlot(plot_id, // the ID of the div, created above
+                graph.data,
+                graph.layout || {});
+ }
+ function makeTimeseriesPlot(plot_id, graph) {
+ Plotly.newPlot(plot_id,
+                graph.data,
+                graph.layout || {});
+}
+</script>
+
+{% endblock %}
+
+{% block footer %}
+ <script type="text/javascript">
+  // Get the element with id="defaultOpen" and click on it
+  document.getElementById("defaultOpen").click();
+  makeRegionPlot(0, "{{region_plot_id}}", {{region_plot_json | safe}});
+  makeTimeseriesPlot("{{timeseries_plot_id}}", {{timeseries_plot_json | safe}});
+ </script>
+{% endblock %}
