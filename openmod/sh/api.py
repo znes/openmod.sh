@@ -196,13 +196,16 @@ def provide_elements_api(query_args):
         json['api_parameters']['query'] = query_defaults
         json = subset_json(json, query_defaults, query_args)
         if 'expand' in query_args.keys():
-            json[query_args['expand']] = expand_element(element, query_args['expand'])
+            json[query_args['expand']] = expand_element(element,
+                                                        query_args['expand'])
         json.pop('api_parameters')
         outer_json[str(element.id)] = json
     return outer_json
 
 def explicate_hubs(json):
-    """Takes elements names of hubs and add explicit hub elements to the dataset
+    """Takes elements names of hubs and add explicit hub elements to the
+    dataset
+
     """
     existing_hubs = [h for h in json['children'] if h['type'] == 'hub']
     if existing_hubs:
@@ -226,6 +229,20 @@ def explicate_hubs(json):
             dct[p] = dct.get(p, obj)
             dct[p]['successors'] = dct[p].get('successors', [])
             dct[p]['successors'].append(child['name'])
+        # add global hubs (kind of dirty...)
+        if child.get('tags'):
+            if (child['tags'].get('fuel_type')
+                and child['tags'].get('fuel_type')
+                        not in child.get('predecessors', [])
+                and child['type'] in ['combined_flexible_generator',
+                                      'flexible_generator']):
+                obj = {'type': 'hub',
+                       'name': child['tags']['fuel_type'],
+                       'tags': {'balanced': 'false'}}
+                dct[obj['name']] = dct.get(obj['name'], obj)
+                dct[obj['name']]['successors'] = dct[obj['name']].get('successors', [])
+                dct[obj['name']]['successors'].append(child['name'])
+
     json['children'].extend(dct.values())
 
     return json
