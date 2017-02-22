@@ -211,16 +211,15 @@ def osm_map():
         return xml_response(template)
 
     # Get all nodes in the given bounding box.
-    nodes = osm.Element.query.filter(osm.Element.parents.any(id=scenario_id)
+    elements = osm.Element.query.filter(osm.Element.parents.any(id=scenario_id)
         ).join(osm.Geom).filter(
-            osm.Geom.type == 'POINT',
             from_shape(bbox, srid=4326).ST_Intersects(osm.Geom.geom)
-        ).all()
+        )
 
     nodes = [ {"lat": e.y, "lon": e.x,
                "tags": {t.key: t.value for t in n.tags},
                "id": idtracker(oid=n.id)}
-              for n in nodes
+              for n in elements.filter(osm.Geom.type == 'POINT').all()
               for e in [to_shape(n.geom.geom)]
             ]
     # Note: wrapping those in ST_AsGeoJSON or ST_AsText could be an easy way
