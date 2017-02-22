@@ -1,0 +1,29 @@
+{% extends "base_layout.html" %}
+{% block body %}
+
+
+<div id="plot">
+</div>
+
+<!-- D3.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<!-- Plotly.js -->
+<script src="https://cdn.plot.ly/plotly-1.23.1.min.js"></script>
+
+<script type="text/javascript">
+ function makeGraphPlot(plot_id, graph) {
+ Plotly.newPlot(plot_id,
+                graph.data,
+                graph.layout || {});
+}
+</script>
+
+{% endblock %}
+
+{% block footer %}
+ <script type="text/javascript">
+  makeGraphPlot("plot", {{graph_plot_json | safe}});
+ </script>
+{% endblock %}

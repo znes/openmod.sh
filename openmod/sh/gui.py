@@ -5,7 +5,8 @@ from plotly.utils import PlotlyJSONEncoder
 from openmod.sh.web import app
 
 from openmod.sh.visualization import (make_regionplot_dict,
-                                      make_timeseriesplot_dict)
+                                      make_timeseriesplot_dict,
+                                      make_tree_plot)
 from openmod.sh.api import (provide_element_api, json_to_db, 
                            provide_elements_api, provide_sequence_api, 
                            allowed_file, explicate_hubs)
@@ -93,6 +94,15 @@ def edit_scenario():
                                  region_plot_json=region_plot_json,
                                  timeseries_plot_id=timeseries_plot_id,
                                  timeseries_plot_json=timeseries_plot_json)
+
+@app.route('/graph')
+def plot_graph():
+    query_args = flask.request.args.to_dict()
+    scenario = provide_element_api(query_args)
+    graph = make_tree_plot(scenario)
+    graph_plot_json = json.dumps(graph, cls=PlotlyJSONEncoder)
+    return flask.render_template('graph_plot.html',
+                                 graph_plot_json=graph_plot_json)
 
 @app.route('/scenario_overview')
 def show_scenarios():
