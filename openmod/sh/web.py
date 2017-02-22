@@ -222,22 +222,7 @@ def osm_map():
               for n in elements.filter(osm.Geom.type == 'POINT').all()
               for e in [to_shape(n.geom.geom)]
             ]
-    # Note: wrapping those in ST_AsGeoJSON or ST_AsText could be an easy way
-    #       to get at the coordinates.
-    #       ST_DumpPoints to get at the points (usefull for lines and polys).
 
-    # Get all relations referencing the above ways.
-    # relations = set(relation for way in ways
-    #                          for relation in way.referencing_relations)
-
-    # Add possibly missing nodes (from outside the bounding box) referenced by
-    # the ways retrieved above.
-    #nodes = set(itertools.chain([n for way in ways for n in way.nodes], nodes))
-    #relations = set(itertools.chain((r for n in nodes
-    #                                   for r in n.referencing_relations),
-    #                                (s for r in relations
-    #                                   for s in r.referencing_relations),
-    #                                relations))
     template = flask.render_template('map.xml', nodes=nodes, ways=ways,
                                           relations=relations,
                                           minlon=miny, maxlon=maxy,
