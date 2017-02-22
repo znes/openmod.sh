@@ -25,7 +25,7 @@ def dict_to_sequences(dic):
         return [schema.Sequence(k, v) for k,v in dic.items()]
 
 def wkt_to_geom(wkt):
-    if wkt is None :
+    if wkt is None or wkt == '':
         return None
     else:
         geom = schema.Geom(wkt.split('(')[0].strip(), 'SRID=4326;' + wkt)
