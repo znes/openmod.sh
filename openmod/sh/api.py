@@ -247,6 +247,44 @@ def explicate_hubs(json):
 
     return json
 
+def update_scenario(scenario_json=None, update_json=None):
+    """Update scenario takes a scenario and updates values inside this scenario
+    based on the update_json file
+
+    Parameters
+    ----------
+    scenario_json: dict
+        Scenario with expanded children (if not given, scenario_json will try
+        to get this from database)
+    update_json: dict
+        Dictionary containing information for update in 'update'-format
+    """
+    if scenario_json is None:
+        scenario_json = provide_elements_api({'name': update_json['scenario'],
+                                             'type':'scenario'})
+
+    if update_json['update_type'] == 'input':
+        elements = {e['name']: e for e in scenario_json['children']}
+        for u in update_json['update']:
+            for name in u['element_names']:
+                if elements.get(name):
+                    elements[name]['geom'] = u['geom']
+                    for k,v in u['sequences']:
+                        elements[name]['sequences'][k] = v
+                    for k,v in u['tags']:
+                        elements[name]['tags'][k] = v
+                else:
+                    print("The element with name {0} you are trying to update is"
+                        " not in the scenario {1}".format(name,
+                                                          scenario_json['name']))
+        scenario_json['children'] = list(elements.values())
+
+        return scenario_json
+
+    else:
+        raise NotImplementedError("Only 'input' update type implemented.")
+
+
 
 def provide_sequence_api(query_args):
     """
@@ -262,3 +300,4 @@ def allowed_file(filename):
     ALLOWED_EXTENSIONS = set(['json'])
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
