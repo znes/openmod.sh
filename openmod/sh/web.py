@@ -193,8 +193,6 @@ def osm_map():
     minx, maxx = sorted([top, bottom])
     miny, maxy = sorted([left, right])
     bounds = from_shape(box(miny, minx, maxy, maxx), srid=4326)
-    # TODO: Generate proper geometry for this bounding box to facilitate
-    # intersection testing using GIS functions.
     scenario_id = flask.session.get("scenario")
     idtracker = flask.session['id-tracker']
     if (not (scenario_id and
