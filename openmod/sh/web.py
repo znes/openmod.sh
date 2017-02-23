@@ -227,7 +227,7 @@ def osm_map():
         for w in [to_shape(l.geom.geom)]]
 
     tag = namedtuple('tag', ['key', 'value'])
-    polygons = [
+    ways = ways + [
         { "nodes": [ {"id": idtracker(oid=id(p)), "point": p}
                      for p in w.exterior.coords ],
           "id": idtracker(l.id),
@@ -246,7 +246,7 @@ def osm_map():
               {"lat": p["point"][1], "lon": p["point"][0],
                "id": p["id"],
                "tags": {}}
-              for e in itertools.chain(ways, polygons)
+              for e in ways
               for p in e["nodes"]
             ])
 
