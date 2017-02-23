@@ -232,7 +232,7 @@ def osm_map():
         { "nodes": [ {"id": idtracker(oid=id(p)), "point": p}
                      for p in w.exterior.coords ],
           "id": idtracker(l.id),
-          "tags": {t.key: t.value for t in l.tags + [tag("area", "true")]},
+          "tags": {t.key: t.value for t in l.tags + [tag("area", "yes")]},
           "version": "0", "visible": "true", "changeset": "0"}
         for l in elements.filter(osm.Geom.type == 'POLYGON').all()
         for w in [to_shape(l.geom.geom)]]
