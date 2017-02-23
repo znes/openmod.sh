@@ -6,7 +6,7 @@ from openmod.sh.web import app
 
 from openmod.sh.visualization import (make_regionplot_dict,
                                       make_timeseriesplot_dict,
-                                      make_tree_plot)
+                                      make_graph_plot)
 from openmod.sh.api import (provide_element_api, json_to_db, 
                            provide_elements_api, provide_sequence_api, 
                            allowed_file, explicate_hubs)
@@ -95,14 +95,14 @@ def edit_scenario():
                                  timeseries_plot_id=timeseries_plot_id,
                                  timeseries_plot_json=timeseries_plot_json)
 
-@app.route('/graph')
+@app.route('/graph_plot')
 def plot_graph():
     query_args = flask.request.args.to_dict()
     scenario = provide_element_api(query_args)
-    graph = make_tree_plot(scenario)
-    graph_plot_json = json.dumps(graph, cls=PlotlyJSONEncoder)
+    graph_svg = make_graph_plot()
     return flask.render_template('graph_plot.html',
-                                 graph_plot_json=graph_plot_json)
+                                 graph_svg=graph_svg,
+                                 make_graph_plot=make_graph_plot)
 
 @app.route('/scenario_overview')
 def show_scenarios():
