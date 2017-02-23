@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
 import json
+import time
 
 from oemof.network import Node
 from oemof.solph import (Sink, Source, LinearTransformer, Storage, Bus, Flow,
                          OperationalModel, EnergySystem, GROUPINGS)
 import oemof.outputlib as output
 
+first = time.time()
 # just for testing purposes
-scenario = json.load(open('../../data/scenarios/test-kiel/kiel-statusquo-explicit.json'))
+scenario = json.load(open('../../data/scenarios/kiel/kiel-statusquo-explicit-geoms-sequences.json'))
 
 ##### Utility Functions #######################################################
 def _float(obj, attr):
@@ -57,12 +59,12 @@ def create_energy_system(scenario):
     start = first + pd.DateOffset(
                 hours=int(scenario['tags'].get('start_timestep', 1))-1)
     end = first + pd.DateOffset(
-                hours=int(scenario['tags'].get('end_timestep', 8760))-1)
+                hours=int(scenario['tags'].get('nd_timestep', 4))-1)
     timeindex = pd.date_range(start=start, end=end, freq='H')
 
     # create energy sytem and disable automatic registry of node objects
     es = EnergySystem(groupings=GROUPINGS, timeindex=timeindex)
-    Node.registry = None
+    #Node.registry = None
 
     es.scenario_description = scenario['tags'].get('scenario_description',
                                                    'No description provided.')
@@ -72,7 +74,16 @@ es = create_energy_system(scenario)
 
 nodes = scenario['children']
 
-#def populate_energy_system(nodes=scenario['children']):
+#def populate_energy_system(es, nodes=scenario['children']):
+#    """Populates energy systems with oemof.solph - nodes created from the
+#       elements.
+#    Parameters
+#    ----------
+#    es : oemof.solph.EnergySystem
+#    nodes : dict
+#       Elements from
+#    """
+
 
 # create solph buses
 for n in nodes:
@@ -81,46 +92,69 @@ for n in nodes:
         # add all tags as attributes to hub/bus
         for k,v in n['tags'].items():
             setattr(b, k, v)
-        es.add(b)
+        #es.add(b)
 
 # create solph components
 for n in nodes:
     # create source objects for volatile generators
-#    if n['type'] == 'volatile_generator':
-#        ss = es.groups[n['successors'][0]]
-#        obj = Source(label=n['name'],
-#                     outputs={ss:
-#                         Flow(nominal_value=float(n['tags']['installed_power']),
-#                              actual_value=n['sequences']['profile'])})
-#        es.add(obj)
-#
-#    # create sink objects
-#    if n['type'] == 'demand':
-#        ps = es.groups[n['predecessors'][0]]
-#        # depending on the values inside the scenario def. -> calc
-#        # oemof.solph input values
-#        abs_profile = [i*float(n['tags']['amount'])
-#                       for i in  n['sequences']['load_profile']]
-#        av = [max(abs_profile) / i for i in abs_profile]
-#        nv = max(abs_profile)
-#        obj = Sink(label=n['name'],
-#                   inputs={ps:
-#                         Flow(nominal_value=nv,
-#                              actual_value=av)})
+    if n['type'] == "commodity" and n['successors']:
+        ss = es.groups.get(n['successors'][0])
+        if ss:
+            obj = Source(label=n['name'],
+                         outputs={ss:
+                             Flow(variable_costs=_float(n, 'variable_cost'))})
+            obj.type = n['type']
+        #es.add(obj)
+
+    if n['type'] == 'volatile_generator':
+        ss = es.groups[n['successors'][0]]
+
+        obj = Source(label=n['name'],
+                     outputs={ss:
+                         Flow(nominal_value=float(n['tags']['installed_power']),
+                              actual_value=n['sequences']['generator_profile'],
+                              fixed=True)})
+        obj.fuel_type = n['tags'].get('fuel_type')
+        obj.type = n['type']
+        #es.add(obj)
+
+    # create sink objects
+    if n['type'] == 'demand':
+        ps = es.groups[n['predecessors'][0]]
+        # depending on the values inside the scenario def. -> calc
+        # oemof.solph input values
+        abs_profile = [i*float(n['tags']['amount'])
+                       for i in  n['sequences']['load_profile']]
+        av = [i/max(abs_profile) for i in abs_profile]
+        nv = max(abs_profile)
+        obj = Sink(label=n['name'],
+                   inputs={ps:
+                         Flow(nominal_value=nv,
+                              actual_value=av,
+                              fixed=True)})
+        #es.add(obj)
 
     # create linear transformers for flexible generators
     if n['type'] == 'flexible_generator':
         ss = es.groups[n['successors'][0]]
         ps = es.groups[n['predecessors'][0]]
 
+        outflow = Flow(nominal_value=float(n['tags']['installed_power']),
+                    variable_costs=_float(n, 'variable_costs'))
+        # set additional outflow attributes
+
+        for k,v in n['tags'].items():
+            if k in vars(Flow()).keys():
+                setattr(outflow, k, float(v))
+
         obj = LinearTransformer(
             label=n['name'],
-            outputs={ss:
-                Flow(nominal_value=float(n['tags']['installed_power']))},
+            outputs={ss: outflow
+                },
             inputs={ps:
                 Flow()},
             conversion_factors={ss: float(n['tags']['efficiency'])})
-        es.add(obj)
+        #es.add(obj)
 
     # create linear transformers for combined flexible generators
     if n['type'] == 'combined_flexible_generator':
@@ -139,7 +173,7 @@ for n in nodes:
             conversion_factors = {
                 ss['heat']: float(n['tags']['thermal_efficiency']),
                 ss['electricity']: float(n['tags']['electrical_efficiency'])})
-        es.add(obj)
+        #es.add(obj)
 
     # create solph storage objects for storage elements
     if n['type'] == 'storage':
@@ -159,39 +193,128 @@ for n in nodes:
                     nominal_capacity=_float(n,'installed_energy'),
                     nominal_input_capacity_ratio=nicr,
                     nominal_output_capacity_ration=nocr)
-        es.add(obj)
+        #es.add(obj)
 
     # create linear transformer(s) for transmission elements
     if n['type'] == 'transmission':
-        pass
+        # create 2 LinearTransformers for a transmission element
+        ss = es.groups[n['successors'][0]]
+        ps = es.groups[n['predecessors'][0]]
 
+        obj1 = LinearTransformer(
+            label=n['name']+'_1',
+            outputs={ss:
+                Flow(nominal_value=float(n['tags']['installed_power']))},
+            inputs={ps:
+                Flow()},
+            conversion_factors={ss: float(n['tags']['efficiency'])})
+        #es.add(obj1)
 
-def compute_results(energysystem):
+        obj2 = LinearTransformer(
+            label=n['name']+'_2',
+            outputs={ps:
+                Flow(nominal_value=float(n['tags']['installed_power']))},
+            inputs={ss:
+                Flow()},
+            conversion_factors={ps: float(n['tags']['efficiency'])})
+        #es.add(obj2)
+
+def create_model(es):
     """
     """
-    # create solph model
-    om = OperationalModel(es=energysystem)
 
-    solver =  None
-    if solver is None:
-        solver = 'glpk'
+    es.model = OperationalModel(es=es)
 
-    om.solve(solver=solver,
-             solve_kwargs={'tee': True, 'keepfiles': False})
-
-    om.results()
-
-    return om
+    return es
 
 
-def simulate(scenario):
+
+def update_model(es, elements):
+    """ Updates 'installed_power' of elements of type 'volatile_generator',
+        'flexible_generator' and 'combined_flexible_generator'
+
+    Parameters
+    ----------
+    es : oemof.solph.EnergySystem
+        Energysystem object with instantiated OperationalModel (es.om)
+    elements : list
+        List with openmod API elements
+
+    #TODO : Code should be runtime optimized...
+    """
+
+    for t in es.timeindex:
+        for e in elements:
+            if e['type'] == 'volatile_generator':
+                # update flow in oemof model
+                es.model.flows[
+                     es.groups[e['name']],
+                     es.groups[e['successors'][0]]].nominal_value = \
+                         float(e['tags']['installed_power'])
+                # update flow in pyomo model
+                es.model.flow[
+                    es.groups[e['name']],
+                    es.groups[e['successors'][0]],t].value = \
+                        (float(e['tags']['installed_power']) *
+                            e['sequences']['generator_profile'][t])
+
+            if e['type'] in ['flexible_generator',
+                             'combined_flexible_generator']:
+                ss = {es.groups[s].sector: es.groups[s]
+                      for s in e['successors'] if s}
+                es.model.flow[
+                    es.groups[e['name']],
+                    ss['electricity'], t].setub(
+                        float(e['tags']['installed_power']))
+
+    return es
+
+def compute_results(es):
     """
     """
-    es = create_energy_system(scenario)
 
-    es = populate_energy_system(es)
+    if not hasattr(es, "model"):
+        raise ValueError("Energysystem has no model to compute results.")
 
-    om = compute_results(es)
+    solver = 'glpk'
 
-    return es, om
+    es.model.solve(solver=solver,
+                   solve_kwargs={'tee': True, 'keepfiles': False})
 
+    es.model.results()
+
+    es.rdf = output.DataFramePlot(energy_system=es)
+
+    return es
+
+
+es = create_model(es)
+
+es = compute_results(es)
+
+
+
+
+
+if __name__ == "__main__":
+    import graphviz as gv
+    import oemof.network as ntwk
+    G = gv.Digraph(format='svg', engine='dot')
+    for n in es.nodes:
+        if isinstance(n, ntwk.Component):
+            color='black'
+            shape = 'box'
+        else:
+            color = 'blue'
+            shape = None
+        if 'heat' in n.label:
+            color = 'red'
+        if 'GL' in n.label:
+            color='brown'
+        if '_el' in n.label:
+            color='blue'
+        G.node(n.label, color=color, shape=shape)
+    # add edges
+    for s,t in es.model.flows:
+        G.edge(s.label, t.label)
+    G.render('G')
