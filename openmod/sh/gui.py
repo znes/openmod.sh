@@ -1,15 +1,16 @@
-import flask
 import json
+
 from plotly.utils import PlotlyJSONEncoder
+import flask
+import flask_login as fl
 
-from openmod.sh.web import app
-
-from openmod.sh.visualization import (make_regionplot_dict,
-                                      make_timeseriesplot_dict)
-from openmod.sh.api import (provide_element_api, json_to_db, 
-                           provide_elements_api, provide_sequence_api, 
+from openmod.sh.api import (provide_element_api, json_to_db,
+                           provide_elements_api, provide_sequence_api,
                            allowed_file, explicate_hubs)
 from openmod.sh.forms import ComputeForm
+from openmod.sh.visualization import (make_regionplot_dict,
+                                      make_timeseriesplot_dict)
+from openmod.sh.web import app
 
 
 @app.route('/API/element', methods=['GET', 'POST'])
@@ -68,7 +69,13 @@ def export_dataset():
     return flask.render_template('export.html')
 
 @app.route('/id_editor')
+@fl.login_required
 def id_editor():
+    scenario_id = flask.request.args.get('id')
+    try:
+        flask.session["scenario"] = json.loads(scenario_id)
+    except:
+        pass
     return flask.redirect('/static/iD/index.html')
 
 @app.route('/edit_scenario', methods=['GET', 'POST'])
@@ -76,14 +83,14 @@ def edit_scenario():
     query_args = flask.request.args.to_dict()
     query_args['expand'] = 'children'
     scenario = provide_element_api(query_args)
-    
+
     graph = make_regionplot_dict(scenario)
     region_plot_id = "Region Plot"
     # Convert the figures to JSON
     # PlotlyJSONEncoder appropriately converts pandas, datetime, etc
     # objects to their JSON equivalents
     region_plot_json = json.dumps(graph, cls=PlotlyJSONEncoder)
-    
+
     graph = make_timeseriesplot_dict(scenario)
     timeseries_plot_id = "Timeseries Plot"
     timeseries_plot_json = json.dumps(graph, cls=PlotlyJSONEncoder)
