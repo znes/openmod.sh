@@ -196,16 +196,13 @@ def osm_map():
     # TODO: Generate proper geometry for this bounding box to facilitate
     # intersection testing using GIS functions.
     scenario_id = flask.session.get("scenario")
-    nodes = set()
-    ways = set()
-    relations = set()
     idtracker = flask.session['id-tracker']
     if (not (scenario_id and
              osm.Element.query.filter_by(id=scenario_id).first())):
         #TODO: Return an error code here. In the new design we don't use the iD
         #      editor without a selected scenario.
-        template = flask.render_template('map.xml', nodes=nodes, ways=ways,
-                                         relations=relations,
+        template = flask.render_template('map.xml', nodes=(), ways=(),
+                                         relations=(),
                                          minlon=miny, maxlon=maxy,
                                          minlat=minx, maxlat=maxx)
 
@@ -251,10 +248,8 @@ def osm_map():
               for p in e["nodes"]
             ])
 
-    relations = ()
-
     template = flask.render_template('map.xml', nodes=nodes, ways=ways,
-                                          relations=relations,
+                                          relations=(),
                                           minlon=miny, maxlon=maxy,
                                           minlat=minx, maxlat=maxx)
 
