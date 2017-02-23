@@ -1,17 +1,16 @@
-import flask
 import json
-from plotly.utils import PlotlyJSONEncoder
 
+from plotly.utils import PlotlyJSONEncoder
+import flask
 import flask_login as fl
 
-from openmod.sh.web import app
-
-from openmod.sh.visualization import (make_regionplot_dict,
-                                      make_timeseriesplot_dict)
 from openmod.sh.api import (provide_element_api, json_to_db,
                            provide_elements_api, provide_sequence_api,
                            allowed_file, explicate_hubs)
 from openmod.sh.forms import ComputeForm
+from openmod.sh.visualization import (make_regionplot_dict,
+                                      make_timeseriesplot_dict)
+from openmod.sh.web import app
 
 
 @app.route('/API/element', methods=['GET', 'POST'])
