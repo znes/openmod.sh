@@ -236,12 +236,19 @@ def osm_map():
         for l in elements.filter(osm.Geom.type == 'POLYGON').all()
         for w in [to_shape(l.geom.geom)]]
 
-    nodes = [ {"lat": e.y, "lon": e.x,
+    nodes = itertools.chain(
+            [ {"lat": e.y, "lon": e.x,
                "tags": {t.key: t.value for t in n.tags},
                "id": idtracker(oid=n.id)}
               for n in elements.filter(osm.Geom.type == 'POINT').all()
               for e in [to_shape(n.geom.geom)]
-            ]
+            ], [
+              {"lat": p["point"][1], "lon": p["point"][0],
+               "id": p["id"],
+               "tags": {}}
+              for e in itertools.chain(ways, polygons)
+              for p in e["nodes"]
+            ])
 
     relations = ()
 
