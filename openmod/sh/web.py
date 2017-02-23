@@ -1,3 +1,4 @@
+from collections import namedtuple
 from datetime import datetime, timezone as tz
 from urllib.parse import urlparse, urljoin
 from xml.etree.ElementTree import XML
@@ -14,13 +15,15 @@ import flask_cors as cors # TODO: Check whether the `@cors.cross_origin()`
                           #       served from within this app.
 import flask_login as fl
 import flask_wtf as wtfl
-#from geoalchemy2 import functions as g2fs
-from geoalchemy2 import shape
+from geoalchemy2.shape import from_shape, to_shape
+from sqlalchemy.orm import aliased
+from shapely.geometry import box
 import wtforms as wtf
 from werkzeug.utils import secure_filename
 
 import oemof.db
 
+from .bookkeeping import PointIds, InMemorySessionInterface as IMSI
 from .schemas import oms as osm
 from .schemas.osm import Element_Relation_Associations as ERAs
 
@@ -31,6 +34,7 @@ app = flask.Flask(__name__)
 # and store it in a safe place.
 # See: http://flask.pocoo.org/docs/0.11/quickstart/#sessions
 app.secret_key = b"DON'T USE THIS IN PRODUCTION! " + b'\xdb\xcd\xb4\x8cp'
+app.session_interface = IMSI()
 
 # Set up a pool of workers to which jobs can be submitted and a dictionary
 # which stores the asynchronous result objects.
@@ -136,6 +140,7 @@ def login():
         #if user is not None:
         if ((user is not None) and (user.check_pw(form.password.data))):
                 fl.login_user(user)
+                flask.session['id-tracker'] = PointIds()
                 #print("Current user: {}".format(fl.current_user))
         else:
                 flask.flash('Invalid username/password combination.')
@@ -187,6 +192,7 @@ def osm_map():
     left, bottom, right, top = map(float, flask.request.args['bbox'].split(","))
     minx, maxx = sorted([top, bottom])
     miny, maxy = sorted([left, right])
+    bbox = box(miny, minx, maxy, maxx)
     # TODO: Generate proper geometry for this bounding box to facilitate
     # intersection testing using GIS functions.
     scenario_id = flask.session.get("scenario")
@@ -194,6 +200,7 @@ def osm_map():
     nodes = set()
     ways = set()
     relations = set()
+    idtracker = flask.session['id-tracker']
     if (not scenario):
         #TODO: Return an error code here. In the new design we don't use the iD
         #      editor without a selected scenario.
@@ -205,31 +212,46 @@ def osm_map():
         return xml_response(template)
 
     # Get all nodes in the given bounding box.
-    nodes = [ {"lat": e.y, "lon": e.x,
+    elements = osm.Element.query.filter(osm.Element.parents.any(id=scenario_id)
+        ).join(osm.Geom).filter(
+            from_shape(bbox, srid=4326).ST_Intersects(osm.Geom.geom)
+        )
+
+    ways = [
+        { "nodes": [ {"id": idtracker(oid=id(p)), "point": p}
+                     for p in w.coords ],
+          "id": idtracker(l.id),
+          "tags": {t.key: t.value for t in l.tags},
+          "version": "0", "visible": "true", "changeset": "0"}
+        for l in elements.filter(osm.Geom.type == 'LINESTRING').all()
+        for w in [to_shape(l.geom.geom)]]
+
+    tag = namedtuple('tag', ['key', 'value'])
+    ways = ways + [
+        { "nodes": [ {"id": idtracker(oid=id(p)), "point": p}
+                     for p in w.exterior.coords ],
+          "id": idtracker(l.id),
+          "tags": {t.key: t.value for t in l.tags + [tag("area", "true")]},
+          "version": "0", "visible": "true", "changeset": "0"}
+        for l in elements.filter(osm.Geom.type == 'POLYGON').all()
+        for w in [to_shape(l.geom.geom)]]
+
+    nodes = itertools.chain(
+            [ {"lat": e.y, "lon": e.x,
                "tags": {t.key: t.value for t in n.tags},
-               "id": n.id}
-              for n in scenario.children
-              if n.geom.type == 'POINT'
-              for e in [shape.to_shape(n.geom.geom)]
-              if (minx <= e.y and miny <= e.x and
-                  maxx >= e.y and maxy >= e.x)
-            ]
-    # Note: wrapping those in ST_AsGeoJSON or ST_AsText could be an easy way
-    #       to get at the coordinates.
-    #       ST_DumpPoints to get at the points (usefull for lines and polys).
+               "id": idtracker(oid=n.id)}
+              for n in elements.filter(osm.Geom.type == 'POINT').all()
+              for e in [to_shape(n.geom.geom)]
+            ], [
+              {"lat": p["point"][1], "lon": p["point"][0],
+               "id": p["id"],
+               "tags": {}}
+              for e in ways
+              for p in e["nodes"]
+            ])
 
-    # Get all relations referencing the above ways.
-    # relations = set(relation for way in ways
-    #                          for relation in way.referencing_relations)
+    relations = ()
 
-    # Add possibly missing nodes (from outside the bounding box) referenced by
-    # the ways retrieved above.
-    #nodes = set(itertools.chain([n for way in ways for n in way.nodes], nodes))
-    #relations = set(itertools.chain((r for n in nodes
-    #                                   for r in n.referencing_relations),
-    #                                (s for r in relations
-    #                                   for s in r.referencing_relations),
-    #                                relations))
     template = flask.render_template('map.xml', nodes=nodes, ways=ways,
                                           relations=relations,
                                           minlon=miny, maxlon=maxy,
