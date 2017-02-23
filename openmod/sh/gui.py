@@ -2,6 +2,8 @@ import flask
 import json
 from plotly.utils import PlotlyJSONEncoder
 
+import flask_login as fl
+
 from openmod.sh.web import app
 
 from openmod.sh.visualization import (make_regionplot_dict,
@@ -68,6 +70,7 @@ def export_dataset():
     return flask.render_template('export.html')
 
 @app.route('/id_editor')
+@fl.login_required
 def id_editor():
     scenario_id = flask.request.args.get('id')
     try:
