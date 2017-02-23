@@ -8,8 +8,8 @@ from openmod.sh.web import app
 
 from openmod.sh.visualization import (make_regionplot_dict,
                                       make_timeseriesplot_dict)
-from openmod.sh.api import (provide_element_api, json_to_db, 
-                           provide_elements_api, provide_sequence_api, 
+from openmod.sh.api import (provide_element_api, json_to_db,
+                           provide_elements_api, provide_sequence_api,
                            allowed_file, explicate_hubs)
 from openmod.sh.forms import ComputeForm
 
@@ -84,14 +84,14 @@ def edit_scenario():
     query_args = flask.request.args.to_dict()
     query_args['expand'] = 'children'
     scenario = provide_element_api(query_args)
-    
+
     graph = make_regionplot_dict(scenario)
     region_plot_id = "Region Plot"
     # Convert the figures to JSON
     # PlotlyJSONEncoder appropriately converts pandas, datetime, etc
     # objects to their JSON equivalents
     region_plot_json = json.dumps(graph, cls=PlotlyJSONEncoder)
-    
+
     graph = make_timeseriesplot_dict(scenario)
     timeseries_plot_id = "Timeseries Plot"
     timeseries_plot_json = json.dumps(graph, cls=PlotlyJSONEncoder)
