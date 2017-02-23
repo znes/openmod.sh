@@ -69,6 +69,11 @@ def export_dataset():
 
 @app.route('/id_editor')
 def id_editor():
+    scenario_id = flask.request.args.get('id')
+    try:
+        flask.session["scenario"] = json.loads(scenario_id)
+    except:
+        pass
     return flask.redirect('/static/iD/index.html')
 
 @app.route('/edit_scenario', methods=['GET', 'POST'])
