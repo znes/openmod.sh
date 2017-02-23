@@ -192,7 +192,7 @@ def osm_map():
     left, bottom, right, top = map(float, flask.request.args['bbox'].split(","))
     minx, maxx = sorted([top, bottom])
     miny, maxy = sorted([left, right])
-    bbox = box(miny, minx, maxy, maxx)
+    bounds = from_shape(box(miny, minx, maxy, maxx), srid=4326)
     # TODO: Generate proper geometry for this bounding box to facilitate
     # intersection testing using GIS functions.
     scenario_id = flask.session.get("scenario")
@@ -213,9 +213,7 @@ def osm_map():
 
     # Get all nodes in the given bounding box.
     elements = osm.Element.query.filter(osm.Element.parents.any(id=scenario_id)
-        ).join(osm.Geom).filter(
-            from_shape(bbox, srid=4326).ST_Intersects(osm.Geom.geom)
-        )
+        ).join(osm.Geom).filter(bounds.ST_Intersects(osm.Geom.geom))
 
     ways = [
         { "nodes": [ {"id": idtracker(oid=id(p)), "point": p}
