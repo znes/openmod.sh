@@ -192,30 +192,26 @@ def osm_map():
     left, bottom, right, top = map(float, flask.request.args['bbox'].split(","))
     minx, maxx = sorted([top, bottom])
     miny, maxy = sorted([left, right])
-    bbox = box(miny, minx, maxy, maxx)
-    # TODO: Generate proper geometry for this bounding box to facilitate
-    # intersection testing using GIS functions.
+    bounds = from_shape(box(miny, minx, maxy, maxx), srid=4326)
     scenario_id = flask.session.get("scenario")
-    scenario = osm.Element.query.filter_by(id=scenario_id).first()
-    nodes = set()
-    ways = set()
-    relations = set()
     idtracker = flask.session['id-tracker']
-    if (not scenario):
+    if (not (scenario_id and
+             osm.Element.query.filter_by(id=scenario_id).first())):
         #TODO: Return an error code here. In the new design we don't use the iD
         #      editor without a selected scenario.
-        template = flask.render_template('map.xml', nodes=nodes, ways=ways,
-                                         relations=relations,
+        template = flask.render_template('map.xml', nodes=(), ways=(),
+                                         relations=(),
                                          minlon=miny, maxlon=maxy,
                                          minlat=minx, maxlat=maxx)
 
         return xml_response(template)
 
     # Get all nodes in the given bounding box.
-    elements = osm.Element.query.filter(osm.Element.parents.any(id=scenario_id)
-        ).join(osm.Geom).filter(
-            from_shape(bbox, srid=4326).ST_Intersects(osm.Geom.geom)
-        )
+    query = osm.DB.session.query
+    children = query(osm.Element.children).filter_by(id=scenario_id).subquery()
+    children = aliased(osm.Element, children)
+    elements = query(children).join(osm.Element.geom
+            ).filter(bounds.ST_Intersects(osm.Geom.geom))
 
     ways = [
         { "nodes": [ {"id": idtracker(oid=id(p)), "point": p}
@@ -231,7 +227,7 @@ def osm_map():
         { "nodes": [ {"id": idtracker(oid=id(p)), "point": p}
                      for p in w.exterior.coords ],
           "id": idtracker(l.id),
-          "tags": {t.key: t.value for t in l.tags + [tag("area", "true")]},
+          "tags": {t.key: t.value for t in l.tags + [tag("area", "yes")]},
           "version": "0", "visible": "true", "changeset": "0"}
         for l in elements.filter(osm.Geom.type == 'POLYGON').all()
         for w in [to_shape(l.geom.geom)]]
@@ -250,10 +246,8 @@ def osm_map():
               for p in e["nodes"]
             ])
 
-    relations = ()
-
     template = flask.render_template('map.xml', nodes=nodes, ways=ways,
-                                          relations=relations,
+                                          relations=(),
                                           minlon=miny, maxlon=maxy,
                                           minlat=minx, maxlat=maxx)
 
