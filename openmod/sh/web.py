@@ -1,3 +1,4 @@
+from collections import namedtuple
 from datetime import datetime, timezone as tz
 from urllib.parse import urlparse, urljoin
 from xml.etree.ElementTree import XML
@@ -216,12 +217,33 @@ def osm_map():
             from_shape(bbox, srid=4326).ST_Intersects(osm.Geom.geom)
         )
 
+    ways = [
+        { "nodes": [ {"id": idtracker(oid=id(p)), "point": p}
+                     for p in w.coords ],
+          "id": idtracker(l.id),
+          "tags": {t.key: t.value for t in l.tags},
+          "version": "0", "visible": "true", "changeset": "0"}
+        for l in elements.filter(osm.Geom.type == 'LINESTRING').all()
+        for w in [to_shape(l.geom.geom)]]
+
+    tag = namedtuple('tag', ['key', 'value'])
+    polygons = [
+        { "nodes": [ {"id": idtracker(oid=id(p)), "point": p}
+                     for p in w.exterior.coords ],
+          "id": idtracker(l.id),
+          "tags": {t.key: t.value for t in l.tags + [tag("area", "true")]},
+          "version": "0", "visible": "true", "changeset": "0"}
+        for l in elements.filter(osm.Geom.type == 'POLYGON').all()
+        for w in [to_shape(l.geom.geom)]]
+
     nodes = [ {"lat": e.y, "lon": e.x,
                "tags": {t.key: t.value for t in n.tags},
                "id": idtracker(oid=n.id)}
               for n in elements.filter(osm.Geom.type == 'POINT').all()
               for e in [to_shape(n.geom.geom)]
             ]
+
+    relations = ()
 
     template = flask.render_template('map.xml', nodes=nodes, ways=ways,
                                           relations=relations,
