@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
+import numpy as np
 import json
 import logging
 
@@ -11,7 +12,7 @@ import oemof.outputlib as output
 
 logger.define_logging()
 # just for testing purposes
-scenario = json.load(open('../../data/scenarios/kiel/kiel-statusquo-explicit-geoms-sequences.json'))
+scenario = json.load(open('../../data/scenarios/kiel-statusquo-explicit-geoms-sequences.json'))
 
 ##### Utility Functions #######################################################
 def _float(obj, attr):
@@ -19,9 +20,9 @@ def _float(obj, attr):
     to float with explicit value error message and default setting of
     attributes.
     """
-    defaults = {'installed_power': float('+inf'),
-                'amount': float('+inf'),
-                'summed_max': float('+inf'),
+    defaults = {'installed_power': None,
+                'amount': None,
+                'summed_max': None,
                 'variable_cost': 0,
                 'efficiency' : 1}
 
@@ -30,7 +31,7 @@ def _float(obj, attr):
         if obj['tags'].get(attr) is None:
             logging.info("Setting default value of {0} for attribute {1} of" \
                 " element {2}".format(defaults.get(attr), attr, obj['name']))
-            return float(defaults.get(attr))
+            return defaults.get(attr)
         else:
             return float(obj['tags'][attr])
     except:
@@ -78,7 +79,7 @@ def create_energy_system(scenario):
 
     # create energy sytem and disable automatic registry of node objects
     es = EnergySystem(groupings=GROUPINGS, timeindex=timeindex)
-    Node.registry = None
+    #Node.registry = None
 
     es.scenario_description = scenario['tags'].get('scenario_description',
                                                    'No description provided.')
@@ -108,7 +109,7 @@ for n in nodes:
         # add all tags as attributes to hub/bus
         for k,v in n['tags'].items():
             setattr(b, k, v)
-        es.add(b)
+        #es.add(b)
 
 # create solph components
 commodities = {}
@@ -119,14 +120,17 @@ for n in nodes:
         if not ss:
             missing_hub_warning(n, 'Successor')
         else:
+            # nominal_value is set to 1, to make summed max working!!!!!!!!
+            # contraints is: flow <= nominal_value * summed_max
             obj = Source(label=n['name'],
                          outputs={ss:
-                             Flow(variable_costs=_float(n, 'variable_cost'),
+                             Flow(nominal_value=1,
+                                  variable_costs=_float(n, 'variable_cost'),
                                   summed_max=_float(n, 'summed_max'))})
             obj.type = n['type']
             obj.emission_factor = _float(n, 'emission_factor')
 
-            es.add(obj)
+            #es.add(obj)
             commodities[n['name']] = obj
 
 for n in nodes:
@@ -143,7 +147,7 @@ for n in nodes:
                           Flow(nominal_value=_float(n, 'installed_power'),
                                variable_costs=_float(n, 'variable_cost'))})
             obj.type = n['type']
-            es.add(obj)
+            #es.add(obj)
 
     # create oemof solph source for sink elements  (e.g. export-slack)
     if n['type'] == 'source':
@@ -156,7 +160,7 @@ for n in nodes:
                           Flow(nominal_value=_float(n, 'installed_power'),
                                variable_costs=_float(n, 'variable_cost'))})
             obj.type = n['type']
-            es.add(obj)
+            #es.add(obj)
 
     # create oemof solph source object for volatile generator elements
     if n['type'] == 'volatile_generator':
@@ -172,7 +176,7 @@ for n in nodes:
                                   fixed=True)})
             obj.fuel_type = n['tags'].get('fuel_type')
             obj.type = n['type']
-            es.add(obj)    # create sink objects
+            #es.add(obj)    # create sink objects
 
     # cretae oemof solph sink object for demand elements
     if n['type'] == 'demand':
@@ -194,7 +198,7 @@ for n in nodes:
                                   actual_value=av,
                                   variable_costs=_float(n, 'variable_cost'),
                                   fixed=fixed)})
-            es.add(obj)
+            #es.add(obj)
 
     # create linear transformers for flexible generators
     if n['type'] == 'flexible_generator':
@@ -222,7 +226,7 @@ for n in nodes:
             inputs={ps:
                 Flow()},
             conversion_factors=conversion_factors)
-        es.add(obj)
+        #es.add(obj)
 
     # create linear transformers for combined flexible generators
     if n['type'] == 'combined_flexible_generator':
@@ -250,7 +254,7 @@ for n in nodes:
             inputs={ps:
                 Flow()},
             conversion_factors = conversion_factors)
-        es.add(obj)
+        #es.add(obj)
 
     # create solph storage objects for storage elements
     if n['type'] == 'storage':
@@ -285,7 +289,7 @@ for n in nodes:
             inputs={ps:
                 Flow()},
             conversion_factors={ss: _float(n, 'efficiency')})
-        es.add(obj1)
+        #es.add(obj1)
 
         obj2 = LinearTransformer(
             label=n['name']+'_2',
@@ -294,7 +298,7 @@ for n in nodes:
             inputs={ss:
                 Flow()},
             conversion_factors={ps: _float(n, 'efficiency')})
-        es.add(obj2)
+        #es.add(obj2)
 
 def create_model(es):
     """
@@ -368,7 +372,7 @@ def compute_results(es):
 
 es = create_model(es)
 es.model.write('test.lp', io_options={'symbolic_solver_labels':True})
-#es = compute_results(es)
+es = compute_results(es)
 
 
 if __name__ == "__main__":
