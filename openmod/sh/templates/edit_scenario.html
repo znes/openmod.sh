@@ -5,12 +5,13 @@
 <div style="float:left; width:50%;">
  Selected scenario: {{ scenario.get('name', 'NONE') }}
 </div>
-<div align="right", id="boxlink", style="float:left; width:25%;">
- <a href={{ url_for('main_menu') }}>Update scenario</a>
+<div align="right", id="boxlink", style="float:left; width:25%;"
+     onclick="updateScenario(scenario)">
+ <a href="javascript:void(0)">Update scenario</a>
 </div>
 <div align="right", id="boxlink", style="float:right; width:25%;"
-     onclick="newScenario(scenario)">
- Save New
+     onclick="saveNewScenario(scenario)">
+ <a href="javascript:void(0)">Save New</a>
 </div>
 
 {% endblock %}
@@ -87,10 +88,13 @@
                 graph.layout || {});
 }
 var scenario = {{ scenario | tojson }};
-function newScenario(scenario) {
+function saveNewScenario(scenario) {
  console.log(scenario);
  scenario['name'] = prompt("New name", scenario['name']);
  console.log(scenario);
+}
+function updateScenario(scenario) {
+ alert("Still to be implemented!")
 }
 </script>
 
