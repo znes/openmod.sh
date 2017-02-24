@@ -6,10 +6,15 @@
 
  <header>
   </br></br>
-
-  <div align="right", id="boxlink">
-   <a href={{ url_for('main_menu') }}>Go back to main menu</a>
+  <div style="float:left; width:70%;" class="base-header">
+  {% block header %}
+  {% endblock %}
   </div>
+  <div style="float:right; width:30%;" class="base-header">
+   <div align="right", id="boxlink">
+    <a href={{ url_for('main_menu') }}>Go back to main menu</a>
+   </div>
+  <div>
  </header>
 
  <main class="header">

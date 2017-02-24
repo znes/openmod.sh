@@ -1577,6 +1577,11 @@ color: #bbb;
 		background-color:#f5f5f5;
 	}
 
+ .base-header{
+  background-image:none;
+  background-color:#f5f5f5;
+ }
+
 
 
 /* IOS background fix */

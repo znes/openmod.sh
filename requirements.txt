@@ -11,7 +11,7 @@ Flask-WTF
 WTForms
 geojson
 plotly
-python-igraph
+pydot
 
 # oemof.db which is not yet a package on PyPI
 -e git+https://github.com/oemof/oemof.db.git@dev#egg=oemof.db
