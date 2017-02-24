@@ -13,7 +13,7 @@ import oemof.outputlib as output
 logger.define_logging()
 # just for testing purposes
 scenario = json.load(open('../../data/scenarios/kiel-statusquo-explicit-geoms-sequences.json'))
-
+updates = json.load(open('../../data/scenarios/update-elements.json'))
 ##### Utility Functions #######################################################
 def _float(obj, attr):
     """ Help function to convert string input from database string of tag[key]
@@ -74,12 +74,12 @@ def create_energy_system(scenario):
     start = first + pd.DateOffset(
                 hours=int(scenario['tags'].get('start_timestep', 1))-1)
     end = first + pd.DateOffset(
-                hours=int(scenario['tags'].get('end_timestep', 4))-1)
+                hours=int(scenario['tags'].get('end_timestep', 8760))-1)
     timeindex = pd.date_range(start=start, end=end, freq='H')
 
     # create energy sytem and disable automatic registry of node objects
     es = EnergySystem(groupings=GROUPINGS, timeindex=timeindex)
-    #Node.registry = None
+    Node.registry = None
 
     es.scenario_description = scenario['tags'].get('scenario_description',
                                                    'No description provided.')
@@ -109,7 +109,7 @@ for n in nodes:
         # add all tags as attributes to hub/bus
         for k,v in n['tags'].items():
             setattr(b, k, v)
-        #es.add(b)
+        es.add(b)
 
 # create solph components
 commodities = {}
@@ -130,7 +130,7 @@ for n in nodes:
             obj.type = n['type']
             obj.emission_factor = _float(n, 'emission_factor')
 
-            #es.add(obj)
+            es.add(obj)
             commodities[n['name']] = obj
 
 for n in nodes:
@@ -147,7 +147,7 @@ for n in nodes:
                           Flow(nominal_value=_float(n, 'installed_power'),
                                variable_costs=_float(n, 'variable_cost'))})
             obj.type = n['type']
-            #es.add(obj)
+            es.add(obj)
 
     # create oemof solph source for sink elements  (e.g. export-slack)
     if n['type'] == 'source':
@@ -160,7 +160,7 @@ for n in nodes:
                           Flow(nominal_value=_float(n, 'installed_power'),
                                variable_costs=_float(n, 'variable_cost'))})
             obj.type = n['type']
-            #es.add(obj)
+            es.add(obj)
 
     # create oemof solph source object for volatile generator elements
     if n['type'] == 'volatile_generator':
@@ -176,7 +176,7 @@ for n in nodes:
                                   fixed=True)})
             obj.fuel_type = n['tags'].get('fuel_type')
             obj.type = n['type']
-            #es.add(obj)    # create sink objects
+            es.add(obj)    # create sink objects
 
     # cretae oemof solph sink object for demand elements
     if n['type'] == 'demand':
@@ -198,7 +198,7 @@ for n in nodes:
                                   actual_value=av,
                                   variable_costs=_float(n, 'variable_cost'),
                                   fixed=fixed)})
-            #es.add(obj)
+            es.add(obj)
 
     # create linear transformers for flexible generators
     if n['type'] == 'flexible_generator':
@@ -226,7 +226,7 @@ for n in nodes:
             inputs={ps:
                 Flow()},
             conversion_factors=conversion_factors)
-        #es.add(obj)
+        es.add(obj)
 
     # create linear transformers for combined flexible generators
     if n['type'] == 'combined_flexible_generator':
@@ -254,7 +254,7 @@ for n in nodes:
             inputs={ps:
                 Flow()},
             conversion_factors = conversion_factors)
-        #es.add(obj)
+        es.add(obj)
 
     # create solph storage objects for storage elements
     if n['type'] == 'storage':
@@ -289,7 +289,7 @@ for n in nodes:
             inputs={ps:
                 Flow()},
             conversion_factors={ss: _float(n, 'efficiency')})
-        #es.add(obj1)
+        es.add(obj1)
 
         obj2 = LinearTransformer(
             label=n['name']+'_2',
@@ -298,7 +298,7 @@ for n in nodes:
             inputs={ss:
                 Flow()},
             conversion_factors={ps: _float(n, 'efficiency')})
-        #es.add(obj2)
+        es.add(obj2)
 
 def create_model(es):
     """
@@ -322,8 +322,8 @@ def update_model(es, elements):
 
     #TODO : Code should be runtime optimized...
     """
-
-    for t in es.timeindex:
+    logging.info('Update values in OperationalModel()...')
+    for t in range(len(es.timeindex)):
         for e in elements:
             if e['type'] == 'volatile_generator':
                 # update flow in oemof model
@@ -347,6 +347,8 @@ def update_model(es, elements):
                     ss['electricity'], t].setub(
                         float(e['tags']['installed_power']))
 
+    es.model.preprocess()
+
     return es
 
 def compute_results(es):
@@ -358,7 +360,7 @@ def compute_results(es):
 
     logging.info("Computing results...")
 
-    solver = 'glpk'
+    solver = 'cbc'
 
     es.model.solve(solver=solver,
                    solve_kwargs={'tee': True, 'keepfiles': False})
@@ -371,7 +373,7 @@ def compute_results(es):
 
 
 es = create_model(es)
-es.model.write('test.lp', io_options={'symbolic_solver_labels':True})
+#es.model.write('test.lp', io_options={'symbolic_solver_labels':True})
 es = compute_results(es)
 
 
