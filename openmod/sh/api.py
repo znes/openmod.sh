@@ -261,18 +261,25 @@ def update_scenario(scenario_json=None, update_json=None):
     """
     if scenario_json is None:
         scenario_json = provide_elements_api({'name': update_json['scenario'],
-                                             'type':'scenario'})
+                                              'type':'scenario'})
 
     if update_json['update_type'] == 'input':
+        # create elements dict for easier handling
         elements = {e['name']: e for e in scenario_json['children']}
         for u in update_json['update']:
             for name in u['element_names']:
                 if elements.get(name):
-                    elements[name]['geom'] = u['geom']
-                    for k,v in u['sequences'].items():
-                        elements[name]['sequences'][k] = v
-                    for k,v in u['tags'].items():
-                        elements[name]['tags'][k] = v
+                    # check for geom update
+                    if u.get('geom'):
+                        elements[name]['geom'] = u['geom']
+                    # check for sequence update
+                    if u.get('sequences'):
+                        for k,v in u['sequences'].items():
+                            elements[name]['sequences'][k] = v
+                    # check for geom update
+                    if u.get('tags'):
+                        for k,v in u['tags'].items():
+                            elements[name]['tags'][k] = v
                 else:
                     print("The element with name {0} you are trying to update is"
                         " not in the scenario {1}".format(name,
