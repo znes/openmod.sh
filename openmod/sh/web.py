@@ -811,4 +811,3 @@ def get_relations():
             for relation_id in flask.request.args['relations'].split(",")]
     template = flask.render_template('relations.xml', relations=relations)
     return xml_response(template)
-

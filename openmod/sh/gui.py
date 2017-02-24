@@ -9,7 +9,8 @@ from openmod.sh.api import (provide_element_api, json_to_db,
                            allowed_file, explicate_hubs)
 from openmod.sh.forms import ComputeForm
 from openmod.sh.visualization import (make_regionplot_dict,
-                                      make_timeseriesplot_dict)
+                                      make_timeseriesplot_dict,
+                                      make_graph_plot)
 from openmod.sh.web import app
 
 
@@ -78,7 +79,7 @@ def id_editor():
         pass
     return flask.redirect('/static/iD/index.html')
 
-@app.route('/edit_scenario', methods=['GET', 'POST'])
+@app.route('/edit_scenario', methods=['GET'])
 def edit_scenario():
     query_args = flask.request.args.to_dict()
     query_args['expand'] = 'children'
@@ -101,6 +102,14 @@ def edit_scenario():
                                  timeseries_plot_id=timeseries_plot_id,
                                  timeseries_plot_json=timeseries_plot_json)
 
+@app.route('/graph_plot', methods=['GET'])
+def plot_graph():
+    query_args = flask.request.args.to_dict()
+    query_args['expand'] = 'children'
+    scenario = provide_element_api(query_args)
+    graph_svg = make_graph_plot(scenario)
+    return flask.render_template('graph_plot.html',
+                                 graph_svg=graph_svg)
 @app.route('/scenario_overview')
 def show_scenarios():
     model='pypsa'
@@ -122,7 +131,7 @@ def show_scenarios():
                                  scenarios=scenarios,
                                  model=model)
 
-@app.route('/compute_results', methods=['GET', 'POST'])
+@app.route('/compute_results', methods=['GET'])
 def compute_results(model='oemof'):
     # model will come l
     scenario = flask.request.args.get('scenario', '')

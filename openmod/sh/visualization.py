@@ -1,6 +1,6 @@
 import json
-import plotly as py
 import shapely
+import pydot
 
 def make_regionplot_dict(scenario):
     bar_height = 0.3
@@ -81,3 +81,25 @@ def make_timeseriesplot_dict(scenario):
 
     fig = dict(data=data, layout=layout)
     return fig
+
+def make_graph_plot(scenario):
+    graph = pydot.Dot(graph_type='digraph')
+    graph.add_edge(pydot.Edge('parent', 'child', label='child'))
+    graph.add_edge(pydot.Edge('child', 'parent', label='parent', color='gray'))
+    graph.add_edge(pydot.Edge('predecessor', 'successor', label='pre', color='blue'))
+    graph.add_edge(pydot.Edge('successor', 'predecessor', label='suc', color='red'))
+    for child in scenario.get('children'):
+        edge = pydot.Edge(scenario.get('name'), child.get('name'))
+        graph.add_edge(edge)
+        for par in child.get('parents'):
+            edge = pydot.Edge(child.get('name'), par, color='gray')
+            graph.add_edge(edge)
+        for pre in child.get('predecessors'):
+            edge = pydot.Edge(pre, child.get('name'), color='blue')
+            graph.add_edge(edge)
+        for suc in child.get('successors'):
+            edge = pydot.Edge(child.get('name'), suc, color='red')
+            graph.add_edge(edge)
+    svgs = graph.create_svg()
+    svgs = svgs.decode('utf-8')
+    return svgs
