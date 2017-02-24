@@ -91,6 +91,7 @@ var scenario = {{ scenario | tojson }};
 function saveNewScenario(scenario) {
  console.log(scenario);
  scenario['name'] = prompt("New name", scenario['name']);
+ scenario['tags']['description'] = prompt("New description", scenario['tags']['description']);
  console.log(scenario);
 }
 function updateScenario(scenario) {
