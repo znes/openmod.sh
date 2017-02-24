@@ -79,7 +79,7 @@ def id_editor():
         pass
     return flask.redirect('/static/iD/index.html')
 
-@app.route('/edit_scenario', methods=['GET', 'POST'])
+@app.route('/edit_scenario', methods=['GET'])
 def edit_scenario():
     query_args = flask.request.args.to_dict()
     query_args['expand'] = 'children'
@@ -102,7 +102,7 @@ def edit_scenario():
                                  timeseries_plot_id=timeseries_plot_id,
                                  timeseries_plot_json=timeseries_plot_json)
 
-@app.route('/graph_plot')
+@app.route('/graph_plot', methods=['GET'])
 def plot_graph():
     query_args = flask.request.args.to_dict()
     query_args['expand'] = 'children'
@@ -131,7 +131,7 @@ def show_scenarios():
                                  scenarios=scenarios,
                                  model=model)
 
-@app.route('/compute_results', methods=['GET', 'POST'])
+@app.route('/compute_results', methods=['GET'])
 def compute_results(model='oemof'):
     # model will come l
     scenario = flask.request.args.get('scenario', '')

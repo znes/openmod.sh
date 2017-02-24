@@ -1,34 +1,52 @@
 {% extends "base_layout.html" %}
 {% block body %}
 
+<table border='1' align="center", id="hor-minimalist-a">
+ <tr>
+  <th>Scenario Name</th>
+  <th>Show JSON - dataset</th>
+  <th>Compute Scenario</th>
+  <th>Edit Scenario</th>
+  <th>Show Graph</th>
+ </tr>
 
- <table border='1' align="center", id="hor-minimalist-a">
-    <tr>
-        <th>Scenario Name</th>
-        <th>Show JSON - dataset</th>
-        <th>Select Scenario</th>
-        <th>Edit Scenario</th>
-    </tr>
-         {% for k,v in scenarios.items() %}
-    <tr>
-        <td>{{ scenarios[k]['name'] }}</td>
-         <td> <a href="{{ scenarios[k]['json']  }}">Show</a></td>
-        <td> <form action="{{ url_for('compute_results', scenario=k) }}"
-                method=post>
-        <input type=submit value="Compute">
-              </form>
-        </td>
-        <td>
-            <form action="{{ url_for('edit_scenario', id=k) }}"
-                method=post>
-            <input type=submit value="Edit">
-              </form>
-        </td>
-    </tr>
-        {% endfor %}
-  </table>
+ {% for k,v in scenarios.items() %}
 
+ <tr>
+  <td>{{ scenarios[k]['name'] }}</td>
+  <td>
+   <form action="{{ url_for('provide_element_api_route') }}"
+         method=get>
+    <input type=submit value="Show">
+    <input type="hidden" name="id" value={{k}}>
+    <input type="hidden" name="expand" value="children">
+   </form>
+  </td>
+  <td>
+   <form action="{{ url_for('compute_results') }}"
+         method=get>
+    <input type=submit value="Compute">
+    <input type="hidden" value="id" name={{k}}>
+   </form>
+  </td>
+  <td>
+   <form action="{{ url_for('edit_scenario') }}"
+         method=get>
+    <input type=submit value="Edit">
+    <input type="hidden" name="id" value={{k}}>
+   </form>
+  </td>
+  <td>
+   <form action="{{ url_for('plot_graph') }}"
+         method=get>
+    <input type=submit value="Show">
+    <input type="hidden" name="id" value={{k}}>
+   </form>
+  </td>
+ </tr>
+
+{% endfor %}
+
+</table>
 
 {% endblock %}
-
-
