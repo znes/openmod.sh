@@ -8,8 +8,9 @@
 <div align="right", id="boxlink", style="float:left; width:25%;">
  <a href={{ url_for('main_menu') }}>Update scenario</a>
 </div>
-<div align="right", id="boxlink", style="float:right; width:25%;">
- <a href={{ url_for('main_menu') }}>Save as new scenario</a>
+<div align="right", id="boxlink", style="float:right; width:25%;"
+     onclick="newScenario(scenario)">
+ Save New
 </div>
 
 {% endblock %}
@@ -84,6 +85,12 @@
  Plotly.newPlot(plot_id,
                 graph.data,
                 graph.layout || {});
+}
+var scenario = {{ scenario | tojson }};
+function newScenario(scenario) {
+ console.log(scenario);
+ scenario['name'] = prompt("New name", scenario['name']);
+ console.log(scenario);
 }
 </script>
 
