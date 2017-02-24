@@ -105,12 +105,11 @@ def edit_scenario():
 @app.route('/graph_plot')
 def plot_graph():
     query_args = flask.request.args.to_dict()
+    query_args['expand'] = 'children'
     scenario = provide_element_api(query_args)
-    graph_svg = make_graph_plot()
+    graph_svg = make_graph_plot(scenario)
     return flask.render_template('graph_plot.html',
-                                 graph_svg=graph_svg,
-                                 make_graph_plot=make_graph_plot)
-
+                                 graph_svg=graph_svg)
 @app.route('/scenario_overview')
 def show_scenarios():
     model='pypsa'

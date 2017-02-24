@@ -1,18 +1,11 @@
 {% extends "base_layout.html" %}
 {% block body %}
 
-<button onclick="makeGraphPlot()">Click me</button>
 <div id="graph_plot">
- {{ make_graph_plot() | safe }}
+ {{ graph_svg | safe }}
 </div>
 
 {% endblock %}
 
 {% block footer %}
-<script type=text/javascript>
- function makeGraphPlot() {
-  element = document.getElementById('graph_plot');
-  element.innerHTML = {{ make_graph_plot() | tojson }};
- }
-</script>
 {% endblock %}
