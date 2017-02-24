@@ -19,7 +19,8 @@ def _float(obj, attr):
     to float with explicit value error message and default setting of
     attributes.
     """
-    defaults = {'amount': float('+inf'),
+    defaults = {'installed_power': float('+inf'),
+                'amount': float('+inf'),
                 'summed_max': float('+inf'),
                 'variable_cost': 0,
                 'efficiency' : 1}
@@ -44,6 +45,11 @@ def sector_grouping(node):
           return 'electricity'
       if isinstance(node, Bus) and node.sector == 'heat':
           return 'heat'
+
+# warnings, infos etc
+def missing_hub_warning(n, hub):
+    logging.warning("{0} (hub) missing of element {1}. Skipping element..." \
+                    "Simulation will most likely fail.".format(hub, n['name']))
 
 #####fucntion for oemof workflow ##############################################
 
@@ -94,11 +100,6 @@ nodes = scenario['children']
 #       Elements from
 #    """
 
-def missing_hub_warning(n, hub):
-    logging.warning("{0} (hub) missing of element {1}. Skipping element..." \
-                    "Simulation will most likely fail.".format(hub, n['name']))
-
-
 # create solph buses
 logging.info("Creating hubs...")
 for n in nodes:
@@ -129,10 +130,9 @@ for n in nodes:
             commodities[n['name']] = obj
 
 for n in nodes:
-
     logging.info("Creating component {0}...".format(n['name']))
 
-    # create sinks for sink elements  (e.g. co2-sink)
+    # create oemof solph sinks for sink elements  (e.g. co2-sink, import-slack)
     if n['type'] == 'sink':
         ps = es.groups.get(n['predecessors'][0])
         if not ps:
@@ -140,11 +140,12 @@ for n in nodes:
         else:
             obj = Sink(label=n['name'],
                        inputs={ps:
-                          Flow(variable_costs=_float(n, 'variable_cost'))})
+                          Flow(nominal_value=_float(n, 'installed_power'),
+                               variable_costs=_float(n, 'variable_cost'))})
             obj.type = n['type']
             es.add(obj)
 
-    # create sinks for sink elements  (e.g. co2-sink)
+    # create oemof solph source for sink elements  (e.g. export-slack)
     if n['type'] == 'source':
         ss = es.groups.get(n['successors'][0])
         if not ss:
@@ -152,11 +153,12 @@ for n in nodes:
         else:
             obj = Source(label=n['name'],
                          outputs={ss:
-                          Flow(variable_costs=_float(n, 'variable_cost'))})
+                          Flow(nominal_value=_float(n, 'installed_power'),
+                               variable_costs=_float(n, 'variable_cost'))})
             obj.type = n['type']
             es.add(obj)
 
-
+    # create oemof solph source object for volatile generator elements
     if n['type'] == 'volatile_generator':
         ss = es.groups[n['successors'][0]]
         if not ss:
@@ -166,10 +168,13 @@ for n in nodes:
                          outputs={ss:
                              Flow(nominal_value=_float(n, 'installed_power'),
                                   actual_value=n['sequences']['generator_profile'],
+                                  variable_cost=_float(n, 'variable_cost'),
                                   fixed=True)})
             obj.fuel_type = n['tags'].get('fuel_type')
             obj.type = n['type']
             es.add(obj)    # create sink objects
+
+    # cretae oemof solph sink object for demand elements
     if n['type'] == 'demand':
         ps = es.groups[n['predecessors'][0]]
         if not ps:
@@ -187,6 +192,7 @@ for n in nodes:
                        inputs={ps:
                              Flow(nominal_value=nv,
                                   actual_value=av,
+                                  variable_costs=_float(n, 'variable_cost'),
                                   fixed=fixed)})
             es.add(obj)
 
