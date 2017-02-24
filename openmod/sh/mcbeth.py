@@ -22,7 +22,6 @@ def _float(obj, attr):
     """
     defaults = {'installed_power': None,
                 'amount': None,
-                'summed_max': None,
                 'variable_cost': 0,
                 'efficiency' : 1}
 
@@ -74,7 +73,7 @@ def create_energy_system(scenario):
     start = first + pd.DateOffset(
                 hours=int(scenario['tags'].get('start_timestep', 1))-1)
     end = first + pd.DateOffset(
-                hours=int(scenario['tags'].get('end_timestep', 8760))-1)
+                hours=int(scenario['tags'].get('end_timestep', 4))-1)
     timeindex = pd.date_range(start=start, end=end, freq='H')
 
     # create energy sytem and disable automatic registry of node objects
@@ -120,13 +119,13 @@ for n in nodes:
         if not ss:
             missing_hub_warning(n, 'Successor')
         else:
-            # nominal_value is set to 1, to make summed max working!!!!!!!!
+            # summe_max is set to 1, to make summed max working!!!!!!!!
             # contraints is: flow <= nominal_value * summed_max
             obj = Source(label=n['name'],
                          outputs={ss:
-                             Flow(nominal_value=1,
+                             Flow(nominal_value=_float(n, 'amount'),
                                   variable_costs=_float(n, 'variable_cost'),
-                                  summed_max=_float(n, 'summed_max'))})
+                                  summed_max=1)})
             obj.type = n['type']
             obj.emission_factor = _float(n, 'emission_factor')
 
@@ -373,7 +372,7 @@ def compute_results(es):
 
 
 es = create_model(es)
-#es.model.write('test.lp', io_options={'symbolic_solver_labels':True})
+es.model.write('test.lp', io_options={'symbolic_solver_labels':True})
 es = compute_results(es)
 
 
