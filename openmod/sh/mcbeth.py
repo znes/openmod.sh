@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
 import json
-import time
+import logging
 
+from oemof.tools import logger
 from oemof.network import Node
 from oemof.solph import (Sink, Source, LinearTransformer, Storage, Bus, Flow,
                          OperationalModel, EnergySystem, GROUPINGS)
 import oemof.outputlib as output
 
-first = time.time()
+logger.define_logging()
 # just for testing purposes
 scenario = json.load(open('../../data/scenarios/kiel/kiel-statusquo-explicit-geoms-sequences.json'))
 
@@ -18,15 +19,22 @@ def _float(obj, attr):
     to float with explicit value error message and default setting of
     attributes.
     """
-    defaults = {'variable_costs': 0,
+    defaults = {'amount': float('+inf'),
+                'summed_max': float('+inf'),
+                'variable_cost': 0,
                 'efficiency' : 1}
 
-    default = defaults.get(attr)
+
     try:
-        return float(obj['tags'].get(attr, default))
+        if obj['tags'].get(attr) is None:
+            logging.info("Setting default value of {0} for attribute {1} of" \
+                " element {2}".format(defaults.get(attr), attr, obj['name']))
+            return float(defaults.get(attr))
+        else:
+            return float(obj['tags'][attr])
     except:
-        raise ValueError('Your attribute {0} of object {1} is supposed to be\
-         a number. Did you specifiy it and use `.` as decimal sign?'.format(attr,
+        raise ValueError("Your attribute {0} of object {1} is supposed to be" \
+         " a number. Did you specifiy it and use `.` as decimal sign?".format(attr,
                                                             obj.get('name')))
 
 # mcbeth specific grouping function for energy system grouping argument
@@ -59,15 +67,17 @@ def create_energy_system(scenario):
     start = first + pd.DateOffset(
                 hours=int(scenario['tags'].get('start_timestep', 1))-1)
     end = first + pd.DateOffset(
-                hours=int(scenario['tags'].get('nd_timestep', 4))-1)
+                hours=int(scenario['tags'].get('end_timestep', 4))-1)
     timeindex = pd.date_range(start=start, end=end, freq='H')
 
     # create energy sytem and disable automatic registry of node objects
     es = EnergySystem(groupings=GROUPINGS, timeindex=timeindex)
-    #Node.registry = None
+    Node.registry = None
 
     es.scenario_description = scenario['tags'].get('scenario_description',
                                                    'No description provided.')
+    es.scenario_name = scenario['name']
+
     return es
 
 es = create_energy_system(scenario)
@@ -84,77 +94,129 @@ nodes = scenario['children']
 #       Elements from
 #    """
 
+def missing_hub_warning(n, hub):
+    logging.warning("{0} (hub) missing of element {1}. Skipping element..." \
+                    "Simulation will most likely fail.".format(hub, n['name']))
+
 
 # create solph buses
+logging.info("Creating hubs...")
 for n in nodes:
     if n['type'] == 'hub':
         b = Bus(label=n['name'], geo=n.get('geom'))
         # add all tags as attributes to hub/bus
         for k,v in n['tags'].items():
             setattr(b, k, v)
-        #es.add(b)
+        es.add(b)
 
 # create solph components
+commodities = {}
 for n in nodes:
     # create source objects for volatile generators
-    if n['type'] == "commodity" and n['successors']:
+    if n['type'] == "commodity":
         ss = es.groups.get(n['successors'][0])
-        if ss:
+        if not ss:
+            missing_hub_warning(n, 'Successor')
+        else:
             obj = Source(label=n['name'],
                          outputs={ss:
-                             Flow(variable_costs=_float(n, 'variable_cost'))})
+                             Flow(variable_costs=_float(n, 'variable_cost'),
+                                  summed_max=_float(n, 'summed_max'))})
             obj.type = n['type']
-        #es.add(obj)
+            obj.emission_factor = _float(n, 'emission_factor')
+
+            es.add(obj)
+            commodities[n['name']] = obj
+
+for n in nodes:
+
+    logging.info("Creating component {0}...".format(n['name']))
+
+    # create sinks for sink elements  (e.g. co2-sink)
+    if n['type'] == 'sink':
+        ps = es.groups.get(n['predecessors'][0])
+        if not ps:
+            missing_hub_warning(n, 'Predecessor')
+        else:
+            obj = Sink(label=n['name'],
+                       inputs={ps:
+                          Flow(variable_costs=_float(n, 'variable_cost'))})
+            obj.type = n['type']
+            es.add(obj)
+
+    # create sinks for sink elements  (e.g. co2-sink)
+    if n['type'] == 'source':
+        ss = es.groups.get(n['successors'][0])
+        if not ss:
+            missing_hub_warning(n, 'Successor')
+        else:
+            obj = Source(label=n['name'],
+                         outputs={ss:
+                          Flow(variable_costs=_float(n, 'variable_cost'))})
+            obj.type = n['type']
+            es.add(obj)
+
 
     if n['type'] == 'volatile_generator':
         ss = es.groups[n['successors'][0]]
-
-        obj = Source(label=n['name'],
-                     outputs={ss:
-                         Flow(nominal_value=float(n['tags']['installed_power']),
-                              actual_value=n['sequences']['generator_profile'],
-                              fixed=True)})
-        obj.fuel_type = n['tags'].get('fuel_type')
-        obj.type = n['type']
-        #es.add(obj)
-
-    # create sink objects
+        if not ss:
+            missing_hub_warning(n, 'Successor')
+        else:
+            obj = Source(label=n['name'],
+                         outputs={ss:
+                             Flow(nominal_value=_float(n, 'installed_power'),
+                                  actual_value=n['sequences']['generator_profile'],
+                                  fixed=True)})
+            obj.fuel_type = n['tags'].get('fuel_type')
+            obj.type = n['type']
+            es.add(obj)    # create sink objects
     if n['type'] == 'demand':
         ps = es.groups[n['predecessors'][0]]
-        # depending on the values inside the scenario def. -> calc
-        # oemof.solph input values
-        abs_profile = [i*float(n['tags']['amount'])
-                       for i in  n['sequences']['load_profile']]
-        av = [i/max(abs_profile) for i in abs_profile]
-        nv = max(abs_profile)
-        obj = Sink(label=n['name'],
-                   inputs={ps:
-                         Flow(nominal_value=nv,
-                              actual_value=av,
-                              fixed=True)})
-        #es.add(obj)
+        if not ps:
+            missing_hub_warning(n, 'Predecessor')
+        else:
+            # depending on the values inside the scenario def. -> calc
+            # oemof.solph input values
+            amount =_float(n, 'amount')
+            abs_profile = [i* amount for i in  n['sequences']['load_profile']]
+            nv = max(abs_profile)
+            av = [i/nv for i in abs_profile]
+            fixed = True
+
+            obj = Sink(label=n['name'],
+                       inputs={ps:
+                             Flow(nominal_value=nv,
+                                  actual_value=av,
+                                  fixed=fixed)})
+            es.add(obj)
 
     # create linear transformers for flexible generators
     if n['type'] == 'flexible_generator':
-        ss = es.groups[n['successors'][0]]
+        ss = {es.groups[i].sector: es.groups[i]
+              for i in n['successors'] if i}
         ps = es.groups[n['predecessors'][0]]
 
-        outflow = Flow(nominal_value=float(n['tags']['installed_power']),
-                    variable_costs=_float(n, 'variable_costs'))
-        # set additional outflow attributes
+        # select bus
+        sector = [v for (k,v) in ss.items() if k !='co2'][0]
+        conversion_factors = {
+            sector: _float(n, 'efficiency')}
+        outputs={
+            sector: Flow(nominval_value=_float(n, 'installed_power'))}
 
-        for k,v in n['tags'].items():
-            if k in vars(Flow()).keys():
-                setattr(outflow, k, float(v))
+        # if co2-successor exist, add conversion factors and Flow
+        if ss.get('co2'):
+            # select input of predecessor for transformer (commodity source)
+            conversion_factors[ss['co2']] = list(
+                es.groups[n['predecessors'][0]].inputs.keys())[0].emission_factor
+            outputs[ss['co2']] = Flow()
 
         obj = LinearTransformer(
             label=n['name'],
-            outputs={ss: outflow
-                },
+            outputs=outputs,
             inputs={ps:
                 Flow()},
-            conversion_factors={ss: float(n['tags']['efficiency'])})
-        #es.add(obj)
+            conversion_factors=conversion_factors)
+        es.add(obj)
 
     # create linear transformers for combined flexible generators
     if n['type'] == 'combined_flexible_generator':
@@ -162,18 +224,27 @@ for n in nodes:
               for i in n['successors'] if i}
         ps = es.groups[n['predecessors'][0]]
 
+        conversion_factors = {
+            ss['heat']: _float(n, 'thermal_efficiency'),
+            ss['electricity']: _float(n, 'electrical_efficiency')}
+
+        outputs={
+            ss['heat']: Flow(),
+            ss['electricity']: Flow(nominval_value=_float(n, 'installed_power'))}
+
+        if ss.get('co2'):
+            # select input of predecessor for transformer (commodity source)
+            conversion_factors[ss['co2']] = list(
+                es.groups[n['predecessors'][0]].inputs.keys())[0].emission_factor
+            outputs[ss['co2']] = Flow()
+
         obj = LinearTransformer(
             label=n['name'],
-            outputs={ss['heat']:
-                Flow(),
-                     ss['electricity']:
-                Flow(nominval_value=float(n['tags']['installed_power']))},
+            outputs=outputs,
             inputs={ps:
                 Flow()},
-            conversion_factors = {
-                ss['heat']: float(n['tags']['thermal_efficiency']),
-                ss['electricity']: float(n['tags']['electrical_efficiency'])})
-        #es.add(obj)
+            conversion_factors = conversion_factors)
+        es.add(obj)
 
     # create solph storage objects for storage elements
     if n['type'] == 'storage':
@@ -187,13 +258,13 @@ for n in nodes:
 
         obj = Storage(label=n['name'],
                     inputs={ps:
-                        Flow(variable_costs=0)},
+                        Flow(variable_costs=_float(n, 'variable_cost'))},
                     outputs={ss:
-                        Flow(variable_costs=0)},
+                        Flow(variable_costs=_float(n, 'variable_cost'))},
                     nominal_capacity=_float(n,'installed_energy'),
                     nominal_input_capacity_ratio=nicr,
                     nominal_output_capacity_ration=nocr)
-        #es.add(obj)
+        es.add(obj)
 
     # create linear transformer(s) for transmission elements
     if n['type'] == 'transmission':
@@ -207,8 +278,8 @@ for n in nodes:
                 Flow(nominal_value=float(n['tags']['installed_power']))},
             inputs={ps:
                 Flow()},
-            conversion_factors={ss: float(n['tags']['efficiency'])})
-        #es.add(obj1)
+            conversion_factors={ss: _float(n, 'efficiency')})
+        es.add(obj1)
 
         obj2 = LinearTransformer(
             label=n['name']+'_2',
@@ -216,18 +287,17 @@ for n in nodes:
                 Flow(nominal_value=float(n['tags']['installed_power']))},
             inputs={ss:
                 Flow()},
-            conversion_factors={ps: float(n['tags']['efficiency'])})
-        #es.add(obj2)
+            conversion_factors={ps: _float(n, 'efficiency')})
+        es.add(obj2)
 
 def create_model(es):
     """
     """
-
+    logging.info("Creating oemof.solph.OperationalModel instance for" \
+        "scenario {}...".format(es.scenario_name))
     es.model = OperationalModel(es=es)
 
     return es
-
-
 
 def update_model(es, elements):
     """ Updates 'installed_power' of elements of type 'volatile_generator',
@@ -276,6 +346,8 @@ def compute_results(es):
     if not hasattr(es, "model"):
         raise ValueError("Energysystem has no model to compute results.")
 
+    logging.info("Computing results...")
+
     solver = 'glpk'
 
     es.model.solve(solver=solver,
@@ -289,11 +361,8 @@ def compute_results(es):
 
 
 es = create_model(es)
-
-es = compute_results(es)
-
-
-
+es.model.write('test.lp', io_options={'symbolic_solver_labels':True})
+#es = compute_results(es)
 
 
 if __name__ == "__main__":
