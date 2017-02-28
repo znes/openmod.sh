@@ -8,6 +8,7 @@
   <th>Compute Scenario</th>
   <th>Edit Scenario</th>
   <th>Show Graph</th>
+  <th>Open in iD</th>
  </tr>
 
  {% for k,v in scenarios.items() %}
@@ -43,6 +44,13 @@
     <input type="hidden" name="id" value={{k}}>
    </form>
   </td>
+  <td>
+   <form action="{{url_for('id_editor') }}"
+         method=get>
+    <input type=submit value="Open">
+    <input type="hidden" name="id" value={{k}}>
+   </form>
+   </td>
  </tr>
 
 {% endfor %}
