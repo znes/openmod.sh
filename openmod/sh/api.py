@@ -308,3 +308,30 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def results_to_db(scenario_name, results_dict):
+    """
+    """
+    # get scenario element by name
+
+    scenario = schema.Element.query.filter(
+                    schema.Element.name.like(scenario_name)).first()
+
+    for source, v in results_dict.items():
+        for target, seq in v.items():
+            predecessor = schema.Element.query.filter(
+                                schema.Element.name.like(source.label)).first()
+            successor = schema.Element.query.filter(
+                                schema.Element.name.like(target.label)).first()
+
+            result = schema.ResultSequences(scenario=scenario,
+                                            predecessor=predecessor,
+                                            successor=successor,
+                                            type='result',
+                                            value=seq)
+
+            schema.DB.session.add(result)
+            schema.DB.session.flush()
+
+    schema.DB.session.commit()
+
+
