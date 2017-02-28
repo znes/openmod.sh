@@ -16,7 +16,7 @@
     "manual_conversion": "children of commodities and units are missing"
   },
   "type": "scenario",
-  "name": "status_quo_2014",
+  "name": "status_quo_2014_implicit",
   "children": [
 
    {
