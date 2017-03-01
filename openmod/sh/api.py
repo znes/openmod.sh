@@ -315,13 +315,23 @@ def results_to_db(scenario_name, results_dict):
     scenario = schema.Element.query.filter(
                     schema.Element.name.like(scenario_name)).first()
 
+    # TODO: Make the check/delete faster
+    scenario_exist = schema.ResultSequences.query.filter_by(
+                                                    scenario_id=scenario.id).all()
+    if scenario_exist:
+        for e in scenario_exist:
+            schema.DB.session.delete(e)
+        schema.DB.session.commit()
+
     for source, v in results_dict.items():
         predecessor = schema.Element.query.filter(
                                 schema.Element.name.like(source.label)).first()
+        if not predecessor:
+            raise Warning('Missing predeccesor element in db for oemof object {}.'.format(source.label))
+
         for target, seq in v.items():
             successor = schema.Element.query.filter(
                                 schema.Element.name.like(target.label)).first()
-            print(source.label, predecessor, target.label, successor)
             result = schema.ResultSequences(scenario=scenario,
                                             predecessor=predecessor,
                                             successor=successor,
