@@ -62,7 +62,7 @@
       "tags": {
         "sector": "electricity"
       },
-      "predecessors": ["wind"],
+      "predecessors": ["wind", "line"],
       "successors": ["line"]
     },
     {
@@ -72,7 +72,7 @@
         "sector": "electricity"
       },
       "predecessors": ["line", "solar"],
-      "successors": ["demand"]
+      "successors": ["demand", "line"]
     }
   ],
   "tags": {
