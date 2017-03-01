@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import json
 import logging
+import pyomo.environ as po
 
 from oemof.tools import logger
 from oemof.network import Node
@@ -51,6 +52,24 @@ def missing_hub_warning(n, hub):
     logging.warning("{0} (hub) missing of element {1}. Skipping element..." \
                     "Simulation will most likely fail.".format(hub, n['name']))
 
+def flow_ratio(om, f1, f2, ratio):
+    """ Create a constraint for all timesteps inside the model of the type:
+        f1 = f2 * share
+
+    Parameters
+    ----------
+    om : oemof.solph.OperatinalModel
+        Model instance to which constraints are added
+    f1/f2 : oemof.solph.Flow
+    ratio: float
+        Numeric value
+    """
+    def _rule(m, t):
+        return m.flow[f1, t] == m.flow[f2, t] * ratio
+    om.f_ratio_constraint = po.Constraint(om.TIMESTEPS, rule=_rule)
+
+
+
 #####fucntion for oemof workflow ##############################################
 
 def create_energy_system(scenario):
@@ -73,7 +92,7 @@ def create_energy_system(scenario):
     start = first + pd.DateOffset(
                 hours=int(scenario['tags'].get('start_timestep', 1))-1)
     end = first + pd.DateOffset(
-                hours=int(scenario['tags'].get('end_timestep', 4))-1)
+                hours=int(scenario['tags'].get('end_timestep', 24))-1)
     timeindex = pd.date_range(start=start, end=end, freq='H')
 
     # create energy sytem and disable automatic registry of node objects
@@ -375,6 +394,16 @@ es = create_model(es)
 es.model.write('test.lp', io_options={'symbolic_solver_labels':True})
 es = compute_results(es)
 
+
+from openmod.sh.api import results_to_db
+import openmod.sh.schemas.oms as oms
+from openmod.sh import web
+
+web.app.app_context().push()
+oms.DB.create_all()
+oms.DB.session.flush()
+
+results_to_db(scenario['name'], es.results)
 
 if __name__ == "__main__":
     import graphviz as gv
