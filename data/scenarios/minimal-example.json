@@ -53,8 +53,8 @@
         "capacity": "200",
         "efficiency": "0.9"
       },
-      "predecessors": ["hub1"],
-      "successors": ["hub2"]
+      "predecessors": ["hub1", "hub2"],
+      "successors": ["hub2", "hub1"]
     },
     {
       "name": "hub1",
