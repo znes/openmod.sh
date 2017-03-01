@@ -7,7 +7,7 @@
       "tags": "true",
       "sequences": "false",
       "children": "true",
-      "parent": "false",
+      "parents": "false",
       "predecessors": "true",
       "successors": "true",
       "expand": "children",
@@ -458,7 +458,7 @@
     }
   ],
   "tags": {
-    "description": "Status Quo Scenario Masterplan Kiel",
+    "description": "Status Quo Scenario Masterplan Kiel excluding hubs, geoms, and sequence",
     "model": "mcbeth"
   }
 }
