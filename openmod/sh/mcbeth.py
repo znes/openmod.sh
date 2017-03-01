@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
-import numpy as np
 import json
 import logging
-import pyomo.environ as po
 
 from oemof.tools import logger
 from oemof.network import Node
@@ -12,9 +10,7 @@ from oemof.solph import (Sink, Source, LinearTransformer, Storage, Bus, Flow,
 import oemof.outputlib as output
 
 logger.define_logging()
-# just for testing purposes
-scenario = json.load(open('../../data/scenarios/kiel-statusquo-explicit-geoms-sequences.json'))
-updates = json.load(open('../../data/scenarios/update-elements.json'))
+
 ##### Utility Functions #######################################################
 def _float(obj, attr):
     """ Help function to convert string input from database string of tag[key]
@@ -87,9 +83,6 @@ def create_energy_system(scenario):
 
     return es
 
-es = create_energy_system(scenario)
-
-nodes = scenario['children']
 
 def populate_energy_system(es, node_data):
     """Populates energy systems with oemof.solph - nodes created from the
@@ -378,7 +371,29 @@ def compute_results(es):
 
     return es
 
+def simulate(scenario):
+    """
 
+    Parameters
+    ----------
+
+    scenario : dict
+        Complete scenario definition including all elements.
+    """
+
+    # create an energy system object
+    es = create_energy_system(scenario)
+
+    # add the nodes to the energy system object
+    es = populate_energy_system(es=es, node_data=scenario['children'])
+
+    # create the optimization model
+    es = create_model(es)
+
+    # run the model
+    es = compute_results(es)
+
+    return es.results
 
 if __name__ == "__main__":
 
@@ -386,7 +401,9 @@ if __name__ == "__main__":
     import openmod.sh.schemas.oms as oms
     from openmod.sh import web
 
-
+    # just for testing purposes
+    scenario = json.load(open('../../data/scenarios/kiel-statusquo-explicit-geoms-sequences.json'))
+    #updates = json.load(open('../../data/scenarios/update-elements.json'))
     es = populate_energy_system(es=es, node_data=scenario['children'])
     es = create_model(es)
     es = compute_results(es)
