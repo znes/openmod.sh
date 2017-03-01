@@ -101,15 +101,14 @@ def json_to_db(json):
                     for e in json['children']}
     element.children = list(children_dct.values())
 
-    for e in children_dct:
-        for c in json['children']:
-            if c.get('predecessors'):
-                children_dct[c['name']].predecessors = [children_dct[p]
-                                                        for p in c['predecessors']]
-            if c.get('successors'):
-                children_dct[c['name']].successors = [children_dct[s]
-                                                      for s in c['successors']]
 
+    for child in json['children']:
+        if child.get('predecessors'):
+            children_dct[child['name']].predecessors = [
+                                children_dct[ps] for ps in child['predecessors']]
+        if child.get('successors'):
+            children_dct[child['name']].successors = [
+                                children_dct[ss] for ss in child['successors']]
 
     schema.DB.session.add(element)
     schema.DB.session.commit()
@@ -317,12 +316,12 @@ def results_to_db(scenario_name, results_dict):
                     schema.Element.name.like(scenario_name)).first()
 
     for source, v in results_dict.items():
-        for target, seq in v.items():
-            predecessor = schema.Element.query.filter(
+        predecessor = schema.Element.query.filter(
                                 schema.Element.name.like(source.label)).first()
+        for target, seq in v.items():
             successor = schema.Element.query.filter(
                                 schema.Element.name.like(target.label)).first()
-
+            print(source.label, predecessor, target.label, successor)
             result = schema.ResultSequences(scenario=scenario,
                                             predecessor=predecessor,
                                             successor=successor,
