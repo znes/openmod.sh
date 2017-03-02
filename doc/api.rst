@@ -18,6 +18,50 @@ There are the following protected keys:
 * parents              <array>
 * children             <array>
 
+Implicit Scenario Definition
+--------------------------------
+
+To define a scenario it will be easier using the 'implicit' JSON format, 
+where hubs are not part of the JSON-file as elements but only referenced inside
+the component ('component definition'). Here you need to make sure that naming 
+throughout the file is coherent (hub names and fuel types). 
+
+Hubs will be generated from the predessors/successors of components. For if no
+predecessors is given, the **fuel_type** tag will be used to create a hub. Therefore, 
+commodities should refer either to the **fuel_type** of components, the predecessors
+or both. In any case these field should be coherent, as shown in the example below.
+In this case the 'fuel_type' matches the successor of the gas commidity, which 
+will connect both components to the same hub with the name 'gas'. If these names 
+would differ, two hubs will be created where one of each component is connected to. 
+
+.. code:: python
+
+    {
+      "name": "gas_powerplant",
+      "type": "flexible_generator",
+      "tags": {
+        "fuel_type": "gas",
+        "installed_power": "300",
+        "efficiency": "0.45",
+        "variable_cost": "40"
+      },
+      "successors": ["electricity_hub"]
+    },
+    {
+      "name": "gas_commodity", 
+      "predecessors": [], 
+      "sequences": {}, 
+      "successors": ["gas"], 
+      "tags": {
+        "commodity_type": "gas", 
+        "emission_factor": "0.235", 
+        "variable_cost": "2"
+      }, 
+      "type": "commodity"
+    }
+
+
+
 
 GET API
 ================================

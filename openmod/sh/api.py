@@ -101,15 +101,14 @@ def json_to_db(json):
                     for e in json['children']}
     element.children = list(children_dct.values())
 
-    for e in children_dct:
-        for c in json['children']:
-            if c.get('predecessors'):
-                children_dct[c['name']].predecessors = [children_dct[p]
-                                                        for p in c['predecessors']]
-            if c.get('successors'):
-                children_dct[c['name']].successors = [children_dct[s]
-                                                      for s in c['successors']]
 
+    for child in json['children']:
+        if child.get('predecessors'):
+            children_dct[child['name']].predecessors = [
+                                children_dct[ps] for ps in child['predecessors']]
+        if child.get('successors'):
+            children_dct[child['name']].successors = [
+                                children_dct[ss] for ss in child['successors']]
 
     schema.DB.session.add(element)
     schema.DB.session.commit()
@@ -261,18 +260,25 @@ def update_scenario(scenario_json=None, update_json=None):
     """
     if scenario_json is None:
         scenario_json = provide_elements_api({'name': update_json['scenario'],
-                                             'type':'scenario'})
+                                              'type':'scenario'})
 
     if update_json['update_type'] == 'input':
+        # create elements dict for easier handling
         elements = {e['name']: e for e in scenario_json['children']}
         for u in update_json['update']:
             for name in u['element_names']:
                 if elements.get(name):
-                    elements[name]['geom'] = u['geom']
-                    for k,v in u['sequences'].items():
-                        elements[name]['sequences'][k] = v
-                    for k,v in u['tags'].items():
-                        elements[name]['tags'][k] = v
+                    # check for geom update
+                    if u.get('geom'):
+                        elements[name]['geom'] = u['geom']
+                    # check for sequence update
+                    if u.get('sequences'):
+                        for k,v in u['sequences'].items():
+                            elements[name]['sequences'][k] = v
+                    # check for geom update
+                    if u.get('tags'):
+                        for k,v in u['tags'].items():
+                            elements[name]['tags'][k] = v
                 else:
                     print("The element with name {0} you are trying to update is"
                         " not in the scenario {1}".format(name,
@@ -300,4 +306,41 @@ def allowed_file(filename):
     ALLOWED_EXTENSIONS = set(['json'])
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def results_to_db(scenario_name, results_dict):
+    """
+    """
+    # get scenario element by name
+
+    scenario = schema.Element.query.filter(
+                    schema.Element.name.like(scenario_name)).first()
+
+    # TODO: Make the check/delete faster
+    scenario_exist = schema.ResultSequences.query.filter_by(
+                                                    scenario_id=scenario.id).all()
+    if scenario_exist:
+        for e in scenario_exist:
+            schema.DB.session.delete(e)
+        schema.DB.session.commit()
+
+    for source, v in results_dict.items():
+        predecessor = schema.Element.query.filter(
+                                schema.Element.name.like(source.label)).first()
+        if not predecessor:
+            raise Warning('Missing predeccesor element in db for oemof object {}.'.format(source.label))
+
+        for target, seq in v.items():
+            successor = schema.Element.query.filter(
+                                schema.Element.name.like(target.label)).first()
+            result = schema.ResultSequences(scenario=scenario,
+                                            predecessor=predecessor,
+                                            successor=successor,
+                                            type='result',
+                                            value=seq)
+
+            schema.DB.session.add(result)
+            schema.DB.session.flush()
+
+    schema.DB.session.commit()
+
 

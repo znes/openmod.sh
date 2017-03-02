@@ -12,7 +12,7 @@ from openmod.sh.visualization import (make_regionplot_dict,
                                       make_timeseriesplot_dict,
                                       make_graph_plot)
 from openmod.sh.web import app
-
+from openmod.sh import mcbeth
 
 @app.route('/API/element', methods=['GET', 'POST'])
 def provide_element_api_route():
