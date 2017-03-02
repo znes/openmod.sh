@@ -5,12 +5,13 @@
 <div style="float:left; width:50%;">
  Selected scenario: {{ scenario.get('name', 'NONE') }}
 </div>
-<div align="right", id="boxlink", style="float:left; width:25%;">
- <a href={{ url_for('main_menu') }}>Update scenario</a>
+<div align="right", id="boxlink", style="float:left; width:25%;"
+     onclick="updateScenario(scenario)">
+ <a href="javascript:void(0)">Update scenario</a>
 </div>
 <div align="right", id="boxlink", style="float:right; width:25%;"
-     onclick="newScenario(scenario)">
- Save New
+     onclick="saveNewScenario(scenario)">
+ <a href="javascript:void(0)">Save New</a>
 </div>
 
 {% endblock %}
@@ -24,20 +25,20 @@
   <tr>
     <td>Solar</td>
     <td>
-        <input type="range" min="0" max="50" value="0" step="5"
-        onchange="updateValue(this.value, installed_power_solar, '{{region_plot_id}}')" /></td>
+        <input id="installed_power_solar_slider" type="range" min="0" max="50" value="0" step="5"
+        onchange="updateValue('installed_power_solar', this.value)" /></td>
     <td>
-        <span id="installed_power_solar">0</span>
+        <span id="installed_power_solar_display">0</span>
     </td>
   </tr>
   <tr>
     <td>Wind</td>
     <td>
-        <input type="range" min="0" max="50" value="0" step="5"
-        onchange="showValue(this.value, installed_power_wind)" />
+        <input id="installed_power_wind_slider" type="range" min="0" max="50" value="0" step="5"
+        onchange="updateValue('installed_power_wind', this.value)" />
     </td>
     <td>
-        <span id="installed_power_wind">0</span>
+        <span id="installed_power_wind_display">0</span>
     </td>
   </tr>
 </table>
@@ -50,57 +51,76 @@
  </div>
 
  <div id="Tab1" class="tabcontent">
-  <h3>{{region_plot_id}}</h3>
-  <div id="{{region_plot_id}}"></div>
+  <h3>tab1</h3>
+  <div id="region_plot"></div>
  </div>
 
  <div id="Tab2" class="tabcontent">
-  <h3>{{timeseries_plot_id}}</h3>
-  <div id="{{timeseries_plot_id}}"></div>
+  <h3>tab2</h3>
+  <div id="timeseries_plot"></div>
  </div>
 </div>
 
-<!-- D3.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
-<!-- jQuery -->
-<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
-<!-- Plotly.js -->
-<script src="https://cdn.plot.ly/plotly-1.23.1.min.js"></script>
-
-<script type="text/javascript">
- function updateValue(newValue, slider_id, plot_id) {
-  showValue(newValue, slider_id);
-  makeRegionPlot(newValue, plot_id, {{region_plot_json | safe}});
- }
- function showValue(newValue, slider_id) {
-  slider_id.innerHTML=newValue;
- }
- function makeRegionPlot(newValue, plot_id, graph) {
- //graph.data[4]['lat'][1]=graph.data[4]['lat'][0]+newValue/100.0;
- Plotly.newPlot(plot_id, // the ID of the div, created above
-                graph.data,
-                graph.layout || {});
- }
- function makeTimeseriesPlot(plot_id, graph) {
- Plotly.newPlot(plot_id,
-                graph.data,
-                graph.layout || {});
-}
-var scenario = {{ scenario | tojson }};
-function newScenario(scenario) {
- console.log(scenario);
- scenario['name'] = prompt("New name", scenario['name']);
- console.log(scenario);
-}
-</script>
 
 {% endblock %}
 
 {% block footer %}
- <script type="text/javascript">
-  // Get the element with id="defaultOpen" and click on it
-  document.getElementById("defaultOpen").click();
-  makeRegionPlot(0, "{{region_plot_id}}", {{region_plot_json | safe}});
-  makeTimeseriesPlot("{{timeseries_plot_id}}", {{timeseries_plot_json | safe}});
- </script>
+
+<script src="https://cdn.plot.ly/plotly-1.23.1.min.js"></script>
+
+<script type="text/javascript">
+function updateValue(slider_id, newValue) {
+ document.getElementById(slider_id+"_slider").value = newValue;
+ document.getElementById(slider_id+"_display").innerHTML=newValue;
+ var l = lookup[slider_id];
+ scenario.children_dict[l.child].tags[l.tag] = newValue;
+ makeTimeseriesPlot();}
+
+function makeTimeseriesPlot() {
+ var dates = Array.apply(null, Array(8760)).map(function (_, i) {return new Date(i*3600*1000);});
+ var solar = scenario.children_dict.kiel_solar.sequences.generator_profile;
+ solar = solar.map(function(i) {return i*scenario.children_dict.kiel_solar.tags.installed_power});
+ var wind = scenario.children_dict.kiel_wind.sequences.generator_profile;
+ wind = wind.map(function(i) {return i*scenario.children_dict.kiel_wind.tags.installed_power});
+ 
+ var ts = []
+ for (var i=0; i<solar.length; i++) {
+  ts.push(solar[i] + wind[i]);}
+ 
+ var selectorOptions = {
+  buttons: [{step: 'month', stepmode: 'backward', count: 1, label: '1m'},
+            {step: 'all'}]};
+ var layout = {
+  title: 'Summed up wind and solar production in Kiel',
+  xaxis: {rangeselector: selectorOptions, rangeslider: {}},
+  yaxis: {fixedrange: true}};
+ var data = [{
+  mode: 'lines',
+  x: dates,
+  y: ts}];
+ Plotly.newPlot('timeseries_plot', data, layout);}
+
+function saveNewScenario(scenario) {
+ console.log(scenario);
+ scenario['name'] = prompt("New name", scenario['name']);
+ scenario['tags']['description'] = prompt("New description", scenario['tags']['description']);
+ console.log(scenario);}
+
+function updateScenario(scenario) {
+ alert("Still to be implemented!")}
+
+// Get the element with id="defaultOpen" and click on it
+document.getElementById("defaultOpen").click();
+
+var scenario = {{ scenario | tojson }};
+scenario.children_dict = {};
+scenario.children.forEach(function(data) {
+scenario.children_dict[data.name] = data});
+
+lookup = {installed_power_solar: {child: "kiel_solar", tag: "installed_power"},
+          installed_power_wind: {child: "kiel_wind", tag: "installed_power"}};
+
+updateValue("installed_power_solar", 12);
+updateValue("installed_power_wind", 34);
+</script>
 {% endblock %}
