@@ -398,7 +398,7 @@ def simulate(scenario):
 if __name__ == "__main__":
 
     from openmod.sh.api import results_to_db
-    import openmod.sh.schemas.oms as oms
+    import openmod.sh.schemas.oms as schema
     from openmod.sh import web
 
     # just for testing purposes
@@ -410,8 +410,12 @@ if __name__ == "__main__":
 
 
     web.app.app_context().push()
-    oms.DB.create_all()
-    oms.DB.session.flush()
+    schema.DB.create_all()
+    schema.DB.session.flush()
+
+    schema.DB.session.delete(element)
+
+    schema.DB.session.commit()
 
     results_to_db(scenario['name'], es.results)
 
