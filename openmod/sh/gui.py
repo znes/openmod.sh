@@ -59,9 +59,14 @@ def upload_file():
             json_file = json.loads(str(file.read(), 'utf-8'))
             if json_file['api_parameters']['query']['hubs_explicitly'] == 'false':
                 json_file = explicate_hubs(json_file)
-            json_to_db(json_file)
+            val = json_to_db(json_file)
+            #
+            if val:
+                return flask.render_template('imported_successfully.html')
+            else:
+                # TODO: Here goes a 'request prompt to update new scenario name
+                raise ValueError('Scenario already Exist')
 
-            return flask.render_template('imported_successfully.html')
     return flask.render_template('import.html')
 
 
