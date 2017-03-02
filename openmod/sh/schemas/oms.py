@@ -111,6 +111,8 @@ class Geom(DB.Model):
 class Element(DB.Model):
     """ Common base class
     """
+    __table_args__ = (DB.UniqueConstraint('name', 'type', name='scenario'),)
+
     id = DB.Column(DB.Integer, primary_key=True)
     name = DB.Column(DB.String(255), nullable=False)
     type = DB.Column(DB.String(255), nullable=False)
