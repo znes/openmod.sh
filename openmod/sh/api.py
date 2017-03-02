@@ -299,6 +299,23 @@ def update_scenario(scenario_json=None, update_json=None):
         raise NotImplementedError("Only 'input' update type implemented.")
 
 
+def delete_from_db(json_element):
+    """
+    """
+    element = schema.Element.query.filter_by(name=json_element['name']).first()
+
+    # check if element has more than one parent, if so: raise error
+    for child in element.children:
+        parents = [parent for parent in child.parents]
+        if len(parents) > 1:
+            raise ValueError(
+                "Deleting element {0} with all its children failed. " \
+                "Child {1} does have more than one parent.".format(element.name,
+                                                                   child.name))
+
+    schema.DB.session.delete(element)
+
+    schema.DB.session.commit()
 
 def provide_sequence_api(query_args):
     """
