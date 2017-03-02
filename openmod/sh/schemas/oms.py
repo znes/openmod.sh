@@ -119,18 +119,19 @@ class Element(DB.Model):
     uid = DB.Column(DB.Integer, DB.ForeignKey(User.id))
     user = DB.relationship(User, uselist=False)
     geom_id = DB.Column(DB.Integer, DB.ForeignKey(Geom.id))
-    geom = DB.relationship(Geom, uselist=False, backref='elements')
+    geom = DB.relationship(Geom, uselist=False, backref='elements',
+                           cascade='all, delete')
     tags = DB.relationship('Tag', secondary=Element_Tag_Associations,
-                           backref='elements', cascade='delete')
+                           backref='elements', cascade='all, delete')
     sequences = DB.relationship('Sequence',
                                 secondary=Element_Sequence_Associations,
-                                backref='elements', cascade='delete')
+                                backref='elements', cascade='all, delete')
     children = DB.relationship(
             'Element',
             secondary=Parent_Children_Associations,
             primaryjoin=id==Parent_Children_Associations.c.element_parent_id,
             secondaryjoin=id==Parent_Children_Associations.c.element_child_id,
-            backref='parents', cascade='delete')
+            backref='parents', cascade='all, delete')
     successors = DB.relationship(
             'Element',
             secondary=Predecessor_Successor_Associations,
