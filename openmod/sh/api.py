@@ -1,5 +1,5 @@
 from geoalchemy2 import shape
-
+from sqlalchemy.exc import IntegrityError
 from openmod.sh.schemas import oms as schema
 
 def objects_to_dict(objects):
@@ -109,9 +109,17 @@ def json_to_db(json):
         if child.get('successors'):
             children_dct[child['name']].successors = [
                                 children_dct[ss] for ss in child['successors']]
+    if json['type'] == 'scenario':
+        try:
+            schema.DB.session.add(element)
+            schema.DB.session.commit()
+        except:
+            IntegrityError
+            return False
+    else:
+        schema.DB.session.add(element)
+        schema.DB.session.commit()
 
-    schema.DB.session.add(element)
-    schema.DB.session.commit()
 
 # API for element and elements
 def provide_element_api(query_args):
