@@ -400,25 +400,37 @@ if __name__ == "__main__":
     from openmod.sh.api import results_to_db
     import openmod.sh.schemas.oms as schema
     from openmod.sh import web
-
-    # just for testing purposes
+#
+#    # just for testing purposes
     scenario = json.load(open('../../data/scenarios/kiel-statusquo-explicit-geoms-sequences.json'))
-    #updates = json.load(open('../../data/scenarios/update-elements.json'))
+#    #updates = json.load(open('../../data/scenarios/update-elements.json'))
+    es = create_energy_system(scenario)
     es = populate_energy_system(es=es, node_data=scenario['children'])
     es = create_model(es)
     es = compute_results(es)
-
-
+#
+#
     web.app.app_context().push()
     schema.DB.create_all()
     schema.DB.session.flush()
+    schema.DB.session.commit()
+#
+    results_to_db(scenario['name'], es.results)
+
+    element = schema.Element.query.filter_by(name="status_quo_2014_explicit").first()
+
+    # check if element has more than one parent, if so: raise error
+    for child in element.children:
+        parents = [parent for parent in child.parents]
+        if len(parents) > 1:
+            raise ValueError(
+                "Deleting element {0} with all its children failed. " \
+                "Child {1} does have more than one parent.".format(element.name,
+                                                                   child.name))
 
     schema.DB.session.delete(element)
 
     schema.DB.session.commit()
-
-    results_to_db(scenario['name'], es.results)
-
 
 #    import graphviz as gv
 #    import oemof.network as ntwk
