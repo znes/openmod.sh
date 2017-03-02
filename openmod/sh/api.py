@@ -109,16 +109,15 @@ def json_to_db(json):
         if child.get('successors'):
             children_dct[child['name']].successors = [
                                 children_dct[ss] for ss in child['successors']]
-    if json['type'] == 'scenario':
-        try:
-            schema.DB.session.add(element)
-            schema.DB.session.commit()
-        except:
-            IntegrityError
-            return False
-    else:
-        schema.DB.session.add(element)
+
+    schema.DB.session.add(element)
+
+    try:
         schema.DB.session.commit()
+        return True
+    except:
+        IntegrityError
+        return False
 
 
 # API for element and elements
