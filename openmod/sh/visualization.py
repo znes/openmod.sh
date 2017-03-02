@@ -44,44 +44,6 @@ def make_regionplot_dict(scenario):
     fig = dict(data=data, layout=layout)
     return fig
 
-def make_timeseriesplot_dict(scenario):
-    # take timeseries from scenario
-    from datetime import datetime, timedelta
-    from random import random
-    base = datetime(2020,1,1)
-    date_list = [base + timedelta(hours=x) for x in range(8760)]
-    ts = [ [random() for i in range(8760)] ]
-    data=[]
-    for t in ts:
-        data.append(
-            dict(type = 'scatter',
-                 x=date_list,
-                 y=t))
-
-    layout = dict(
-        title='Time series with range slider and selectors',
-        xaxis=dict(
-            rangeselector=dict(
-                buttons=list([
-                    dict(count=1,
-                         label='1m',
-                         step='month',
-                         stepmode='backward'),
-                    dict(count=3,
-                        label='3m',
-                        step='month',
-                        stepmode='backward'),
-                    dict(step='all')
-                ])
-            ),
-            rangeslider=dict(),
-            type='date'
-        )
-    )
-
-    fig = dict(data=data, layout=layout)
-    return fig
-
 def make_graph_plot(scenario):
     graph = pydot.Dot(graph_type='digraph')
     graph.add_edge(pydot.Edge('parent', 'child', label='child'))
