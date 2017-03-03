@@ -56,6 +56,7 @@
  <div class="tab">
   <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab1')" id="defaultOpen">Region Plot</a>
   <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab2')">Timeseries Plot</a>
+  <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab3')">Heatmap Plot</a>
  </div>
 
  <div id="Tab1" class="tabcontent">
@@ -68,8 +69,13 @@
   <button type="button" onclick="reorderTimeseries()">Reorder</button>
   <div id="timeseries_plot" style="height 300px;"></div>
  </div>
-</div>
 
+
+ <div id="Tab3" class="tabcontent">
+  <h3>tab3</h3>
+  <div id="heatmap_plot"></div>
+ </div>
+</div>
 
 {% endblock %}
 
@@ -82,9 +88,40 @@ function updateValue(slider_id, newValue) {
  var l = lookup[slider_id];
  scenario.children_dict[l.child].tags[l.tag] = newValue;
  makeTimeseriesPlot();
- makeRegionPlot();}
+ makeRegionPlot();
+ makeHeatmapPlot();}
+
 
 var timeseriesOrder = false;
+
+function makeHeatmapPlot() {
+ var dates = Array.apply(null, Array(8760)).map(function (_, i) {return new Date(i*3600*1000);});
+ var heat = scenario.children_dict.kiel_demand_heat.sequences.load_profile;
+ heat = heat.map(function(i) {return i*scenario.children_dict.kiel_demand_heat.tags.amount});
+
+
+ var data = []
+
+ for (var i=0; i<24; i++) {
+    data[i] = []
+    for ( var j = 0; j < 365; j++ ) {
+        data[i].push(heat[j*24+i])
+  }
+ }
+
+ var layout = {
+  title: 'Heat demand MW in Kiel',
+  xaxis: {},
+  yaxis: {}};
+
+  var data = [
+   {
+    z: data,
+    type: 'heatmap'
+    }
+  ];
+
+  Plotly.newPlot('heatmap_plot', data, layout);}
 
 function reorderTimeseries(){
  timeseriesOrder = !timeseriesOrder;
@@ -96,15 +133,15 @@ function makeTimeseriesPlot() {
  solar = solar.map(function(i) {return i*scenario.children_dict.kiel_solar.tags.installed_power});
  var wind = scenario.children_dict.kiel_wind.sequences.generator_profile;
  wind = wind.map(function(i) {return i*scenario.children_dict.kiel_wind.tags.installed_power});
- 
+
  var ts = []
  for (var i=0; i<solar.length; i++) {
   ts.push(solar[i] + wind[i]);}
- 
+
  if (timeseriesOrder) {
   ts = ts.sort(function(a, b){return b-a});
   dates = Array.apply(null, Array(8760)).map(function (_, i) {return i+1;});}
- 
+
  var selectorOptions = {
   buttons: [{step: 'month', stepmode: 'backward', count: 1, label: '1m'},
             {step: 'all'}]};
