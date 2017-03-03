@@ -26,10 +26,17 @@
 
 {% block body %}
 
-<div style="float:left; width:30%;">
+<div style="float:left; width:35%;">
 
 <h3>Select values</h3>
  <table style="width:50%">
+  <caption>Kiel</caption>
+  <tr>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td>Area Usage</td>
+  </tr>
   <tr>
     <td>Solar</td>
     <td>
@@ -37,6 +44,9 @@
         onchange="updateValue('installed_power_solar', this.value)" /></td>
     <td>
         <span id="installed_power_solar_display">0</span>
+    </td>
+    <td>
+        <span id="installed_power_solar_area">0</span>
     </td>
   </tr>
   <tr>
@@ -62,7 +72,9 @@
 </table>
 </div>
 
-<div style="float:right; width:70%;">
+
+
+<div style="float:right; width:65%;">
  <div class="tab">
   <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab1')" id="defaultOpen">Region Plot</a>
   <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab2')">Timeseries Plot</a>
@@ -95,6 +107,7 @@
 function updateValue(slider_id, newValue) {
  document.getElementById(slider_id+"_slider").value = newValue;
  document.getElementById(slider_id+"_display").innerHTML=newValue;
+ document.getElementById(slider_id+"_area").innerHTML=newValue*10;
  var l = lookup[slider_id];
  scenario.children_dict[l.child].tags[l.tag] = newValue;
  makeTimeseriesPlot();
