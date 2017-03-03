@@ -9,7 +9,7 @@ from oemof.solph import (Sink, Source, LinearTransformer, Storage, Bus, Flow,
                          OperationalModel, EnergySystem, GROUPINGS)
 import oemof.outputlib as output
 
-logger.define_logging()
+logger.define_logging(log_version=False)
 
 ##### Utility Functions #######################################################
 def _float(obj, attr):
