@@ -100,19 +100,16 @@
  </div>
 
  <div id="Tab1" class="tabcontent">
-  <h3>tab1</h3>
   <div id="region_plot" style="height: 300px;"></div>
  </div>
 
  <div id="Tab2" class="tabcontent">
-  <h3>tab2</h3>
-  <button type="button" onclick="reorderTimeseries()">Reorder</button>
   <div id="timeseries_plot" style="height 300px;"></div>
+  <button type="button" onclick="reorderTimeseries()">Reorder</button>
  </div>
 
 
  <div id="Tab3" class="tabcontent">
-  <h3>tab3</h3>
   <div id="heatmap_plot"></div>
  </div>
 </div>
@@ -187,7 +184,7 @@ function makeTimeseriesPlot() {
   buttons: [{step: 'month', stepmode: 'backward', count: 1, label: '1m'},
             {step: 'all'}]};
  var layout = {
-  title: 'Summed up wind and solar production in Kiel',
+  title: 'Electricity production in Kiel',
   xaxis: {rangeselector: selectorOptions, rangeslider: {}},
   yaxis: {fixedrange: true}};
  var data = [{
