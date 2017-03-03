@@ -208,10 +208,12 @@ function makeRegionPlot(){
   wicket.read(wkt_geom);
   var polygon = wicket.toObject(); 
   map.addLayer(polygon);});
- var l = lookup.installed_power_solar;
- barBottom = l.pos;
- barTop = [l.pos[0]+scenario.children_dict[l.child].tags[l.tag]/100.0, l.pos[1]];
- var line = L.polyline([barBottom, barTop], {color: 'black', fillcolor: 'black'}).addTo(map);
+ var bars = ['installed_power_solar', 'installed_power_wind'];
+ bars.forEach(function(b) {
+  var l = lookup[b];
+  barBottom = l.pos;
+  barTop = [l.pos[0]+scenario.children_dict[l.child].tags[l.tag]/100.0, l.pos[1]];
+  var line = L.polyline([barBottom, barTop], {color: l.color, weight: 10, lineCap: 'butt'}).addTo(map);});
  }
 
 function saveNewScenario(scenario) {
@@ -231,8 +233,8 @@ scenario.children_dict = {};
 scenario.children.forEach(function(data) {
 scenario.children_dict[data.name] = data});
 
-lookup = {installed_power_solar: {child: "kiel_solar", tag: "installed_power", pos: [54.3, 10.1]},
-          installed_power_wind: {child: "kiel_wind", tag: "installed_power", pos: [54.3, 10.3]}};
+lookup = {installed_power_solar: {child: "kiel_solar", tag: "installed_power", pos: [54.3, 10.1], color: 'orange'},
+          installed_power_wind: {child: "kiel_wind", tag: "installed_power", pos: [54.3, 10.15], color: 'darkblue'}};
 
 updateValue("installed_power_solar", 12);
 updateValue("installed_power_wind", 34);
