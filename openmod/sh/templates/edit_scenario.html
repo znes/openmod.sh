@@ -4,6 +4,8 @@
 <script src="https://cdn.plot.ly/plotly-1.23.1.min.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/wicket/1.3.2/wicket.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/wicket/1.3.2/wicket-leaflet.js"></script>
 {% endblock %}
 
 {% block header %}
@@ -64,7 +66,7 @@
  <div id="Tab2" class="tabcontent">
   <h3>tab2</h3>
   <button type="button" onclick="reorderTimeseries()">Reorder</button>
-  <div id="timeseries_plot" style="height: 300px;"></div>
+  <div id="timeseries_plot" style="height 300px;"></div>
  </div>
 </div>
 
@@ -120,13 +122,18 @@ var map = new L.Map('region_plot');
 
 function makeRegionPlot(){
  // create the tile layer with correct attribution
- var osmUrl='http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+ var osmUrl='http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png';
  var osmAttrib='Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
  var osm = new L.TileLayer(osmUrl, {minZoom: 8, maxZoom: 12, attribution: osmAttrib});
 
  // start the map in South-East England
  map.setView(new L.LatLng(54.32133, 10.13489),9);
  map.addLayer(osm);
+ var wicket = new Wkt.Wkt();
+ var wkt_geom = scenario.children_dict.kiel_electricity.geom;
+ wicket.read(wkt_geom);
+ var polygon = wicket.toObject(); 
+ map.addLayer(polygon);
  }
 
 function saveNewScenario(scenario) {
