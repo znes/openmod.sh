@@ -57,6 +57,7 @@
 
  <div id="Tab2" class="tabcontent">
   <h3>tab2</h3>
+  <button type="button" onclick="reorderTimeseries()">Reorder</button>
   <div id="timeseries_plot"></div>
  </div>
 </div>
@@ -76,6 +77,12 @@ function updateValue(slider_id, newValue) {
  scenario.children_dict[l.child].tags[l.tag] = newValue;
  makeTimeseriesPlot();}
 
+var timeseriesOrder = false;
+
+function reorderTimeseries(){
+ timeseriesOrder = !timeseriesOrder;
+ makeTimeseriesPlot();}
+
 function makeTimeseriesPlot() {
  var dates = Array.apply(null, Array(8760)).map(function (_, i) {return new Date(i*3600*1000);});
  var solar = scenario.children_dict.kiel_solar.sequences.generator_profile;
@@ -86,6 +93,10 @@ function makeTimeseriesPlot() {
  var ts = []
  for (var i=0; i<solar.length; i++) {
   ts.push(solar[i] + wind[i]);}
+ 
+ if (timeseriesOrder) {
+  ts = ts.sort(function(a, b){return b-a});
+  dates = Array.apply(null, Array(8760)).map(function (_, i) {return i+1;});}
  
  var selectorOptions = {
   buttons: [{step: 'month', stepmode: 'backward', count: 1, label: '1m'},
