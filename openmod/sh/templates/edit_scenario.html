@@ -1,5 +1,11 @@
 {% extends "base_layout.html" %}
 
+{% block head %}
+<script src="https://cdn.plot.ly/plotly-1.23.1.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+{% endblock %}
+
 {% block header %}
 
 <div style="float:left; width:50%;">
@@ -52,13 +58,13 @@
 
  <div id="Tab1" class="tabcontent">
   <h3>tab1</h3>
-  <div id="region_plot"></div>
+  <div id="region_plot" style="height: 300px;"></div>
  </div>
 
  <div id="Tab2" class="tabcontent">
   <h3>tab2</h3>
   <button type="button" onclick="reorderTimeseries()">Reorder</button>
-  <div id="timeseries_plot"></div>
+  <div id="timeseries_plot" style="height: 300px;"></div>
  </div>
 </div>
 
@@ -67,15 +73,14 @@
 
 {% block footer %}
 
-<script src="https://cdn.plot.ly/plotly-1.23.1.min.js"></script>
-
 <script type="text/javascript">
 function updateValue(slider_id, newValue) {
  document.getElementById(slider_id+"_slider").value = newValue;
  document.getElementById(slider_id+"_display").innerHTML=newValue;
  var l = lookup[slider_id];
  scenario.children_dict[l.child].tags[l.tag] = newValue;
- makeTimeseriesPlot();}
+ makeTimeseriesPlot();
+ makeRegionPlot();}
 
 var timeseriesOrder = false;
 
@@ -110,6 +115,19 @@ function makeTimeseriesPlot() {
   x: dates,
   y: ts}];
  Plotly.newPlot('timeseries_plot', data, layout);}
+
+var map = new L.Map('region_plot');
+
+function makeRegionPlot(){
+ // create the tile layer with correct attribution
+ var osmUrl='http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+ var osmAttrib='Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
+ var osm = new L.TileLayer(osmUrl, {minZoom: 8, maxZoom: 12, attribution: osmAttrib});
+
+ // start the map in South-East England
+ map.setView(new L.LatLng(54.32133, 10.13489),9);
+ map.addLayer(osm);
+ }
 
 function saveNewScenario(scenario) {
  console.log(scenario);
