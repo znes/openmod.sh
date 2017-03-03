@@ -38,7 +38,7 @@
     <td>Area Usage</td>
   </tr>
   <tr>
-    <td>Solar</td>
+    <td>Solar Dach</td>
     <td>
         <input id="installed_power_solar_slider" type="range" min="0" max="50" value="0" step="5"
         onchange="updateValue('installed_power_solar', this.value)" /></td>
@@ -47,6 +47,18 @@
     </td>
     <td>
         <span id="installed_power_solar_area">0</span>
+    </td>
+  </tr>
+  <tr>
+    <td>Solar Freifläche</td>
+    <td>
+        <input id="solar_rural_slider" type="range" min="0" max="50" value="0" step="5"
+        onchange="updateValue('solar_rural', this.value)" /></td>
+    <td>
+        <span id="solar_rural_display">0</span>
+    </td>
+    <td>
+        <span id="solar_rural_area">0</span>
     </td>
   </tr>
   <tr>
@@ -60,13 +72,13 @@
     </td>
    </tr>
    <tr>
-    <td>Biomass</td>
+    <td>Biomass CHP</td>
     <td>
-        <input id="installed_power_biomass_slider" type="range" min="0" max="50" value="0" step="5"
-        onchange="updateValue('installed_biomass_wind', this.value)" />
+        <input id="biomass_chp_slider" type="range" min="0" max="50" value="0" step="5"
+        onchange="updateValue('biomass_chp', this.value)" />
     </td>
     <td>
-        <span id="installed_power_biomass_display">0</span>
+        <span id="biomass_chp_display">0</span>
     </td>
   </tr>
 </table>
