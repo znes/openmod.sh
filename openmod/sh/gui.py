@@ -82,7 +82,7 @@ def id_editor():
         flask.session["scenario"] = json.loads(scenario_id)
     except:
         pass
-    return flask.redirect('/static/iD/index.html')
+    return flask.render_template('iD.html')
 
 @app.route('/edit_scenario', methods=['GET'])
 def edit_scenario():
