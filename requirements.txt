@@ -1,4 +1,3 @@
-bokeh
 flask
 flask-cors
 flask-login
@@ -9,8 +8,6 @@ keyrings.alt
 psycopg2
 Flask-WTF
 WTForms
-geojson
-plotly
 pydot
 
 # oemof.db which is not yet a package on PyPI

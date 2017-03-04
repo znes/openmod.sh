@@ -1,6 +1,5 @@
 import json
 
-from plotly.utils import PlotlyJSONEncoder
 import flask
 import flask_login as fl
 
