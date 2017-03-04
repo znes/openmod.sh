@@ -73,7 +73,7 @@ def xml_response(template):
 
 app.config['WTF_CSRF_CHECK_DEFAULT'] = False
 
-csrf = wtfl.csrf.CsrfProtect(app)
+csrf = wtfl.csrf.CSRFProtect(app)
 
 def is_safe_url(target):
     ref_url = urlparse(flask.request.host_url)
