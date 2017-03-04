@@ -119,21 +119,6 @@ def show_scenarios():
                                  scenarios=scenarios,
                                  model=model)
 
-@app.route('/compute_results', methods=['GET'])
-def compute_results(model='oemof'):
-    # model will come l
-    scenario = flask.request.args.get('scenario', '')
-    form = ComputeForm()
-    if form.validate_on_submit():
-        scn_name = form.scn_name.data
-        return flask.redirect(flask.url_for('/show_results'))
-
-    if model == 'oemof':
-        return flask.render_template('compute_results.html',
-                                     model=model,
-                                     form=form,
-                                     scenario_default=scenario)
-
 @app.route('/show_results', methods=['GET', 'POST'])
 def show_results():
     flask.flash('Processing results...')

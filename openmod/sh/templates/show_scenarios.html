@@ -5,7 +5,6 @@
  <tr>
   <th>Scenario Name</th>
   <th>Show JSON - dataset</th>
-  <th>Compute Scenario</th>
   <th>Edit Scenario</th>
   <th>Show Graph</th>
   <th>Open in iD</th>
@@ -22,13 +21,6 @@
     <input type=submit value="Show">
     <input type="hidden" name="id" value={{k}}>
     <input type="hidden" name="expand" value="children">
-   </form>
-  </td>
-  <td>
-   <form action="{{ url_for('compute_results') }}"
-         method=get>
-    <input type=submit value="Compute">
-    <input type="hidden" value="id" name={{k}}>
    </form>
   </td>
   <td>
