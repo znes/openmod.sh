@@ -5,6 +5,7 @@
  <tr>
   <th>Scenario Name</th>
   <th>Show JSON - dataset</th>
+  <th>Download JSON - dataset</th>
   <th>Edit Scenario</th>
   <th>Show Graph</th>
   <th>Open in iD</th>
@@ -21,6 +22,13 @@
     <input type=submit value="Show">
     <input type="hidden" name="id" value={{k}}>
     <input type="hidden" name="expand" value="children">
+   </form>
+  </td>
+  <td>
+   <form action="{{ url_for('download_json') }}"
+         method=get>
+    <input type=submit value="Download">
+    <input type="hidden" name="id" value={{k}}>
    </form>
   </td>
   <td>

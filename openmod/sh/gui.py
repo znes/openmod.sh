@@ -135,6 +135,18 @@ def delete_scenario():
 
     return flask.render_template('delete.html')
 
+@app.route('/download', methods=['GET'])
+def download_json():
+    """
+    """
+    query_args = flask.request.args.to_dict()
+
+    json_string = str(provide_element_api(query_args))
+    return flask.Response(json_string,
+            mimetype='application/json',
+            headers={'Content-Disposition':'attachment;filename=file.json'})
+    return True
+
 @app.route('/main_menu')
 def main_menu():
     return flask.render_template('main_menu.html')
