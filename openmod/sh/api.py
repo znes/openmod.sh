@@ -300,10 +300,13 @@ def update_scenario(scenario_json=None, update_json=None):
         raise NotImplementedError("Only 'input' update type implemented.")
 
 
-def delete_from_db(json_element):
+def delete_element_from_db(element_identifier, by='id'):
     """
     """
-    element = schema.Element.query.filter_by(name=json_element['name']).first()
+    if by == 'id':
+        element = schema.Element.query.filter_by(id=element_identifier).first()
+    if by == 'name':
+        element = schema.Element.query.filter_by(name=element_identifier).first()
 
     # check if element has more than one parent, if so: raise error
     for child in element.children:

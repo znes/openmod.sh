@@ -9,6 +9,7 @@
   <th>Edit Scenario</th>
   <th>Show Graph</th>
   <th>Open in iD</th>
+  <th>Delete</th>
  </tr>
 
  {% for k,v in scenarios.items() %}
@@ -51,6 +52,13 @@
     <input type="hidden" name="id" value={{k}}>
    </form>
    </td>
+   <td>
+   <form action="{{url_for('delete_scenario') }}"
+         method=get onsubmit="return ConfirmDelete();">
+    <input type=submit value="Delete">
+    <input type="hidden" name="id" value={{k}}>
+   </form>
+   </td>
  </tr>
 
 {% endfor %}
@@ -58,3 +66,19 @@
 </table>
 
 {% endblock %}
+
+{% block footer %}
+<script>
+    function ConfirmDelete()
+    {
+      var x = confirm("Are you sure you want to delete?");
+      if (x)
+          return true;
+      else
+        return false;
+    }
+</script>
+
+{% endblock %}
+
+

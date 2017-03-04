@@ -5,7 +5,7 @@ import flask_login as fl
 
 from openmod.sh.api import (provide_element_api, json_to_db,
                            provide_elements_api, provide_sequence_api,
-                           allowed_file, explicate_hubs)
+                           allowed_file, explicate_hubs, delete_element_from_db)
 from openmod.sh.forms import ComputeForm
 from openmod.sh.visualization import make_graph_plot
 from openmod.sh.web import app
@@ -133,11 +133,22 @@ def compute_results(model='oemof'):
                                      model=model,
                                      form=form,
                                      scenario_default=scenario)
+
 @app.route('/show_results', methods=['GET', 'POST'])
 def show_results():
     flask.flash('Processing results...')
     return flask.render_template('show_results.html')
 
+@app.route('/delete', methods=['GET'])
+def delete_scenario():
+    """
+    """
+    query_args = flask.request.args.to_dict()
+
+    delete_element_from_db(element_identifier=query_args['id'],
+                           by='id')
+
+    return flask.render_template('delete.html')
 
 @app.route('/main_menu')
 def main_menu():
