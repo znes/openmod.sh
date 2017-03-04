@@ -1,60 +1,16 @@
-import json
-import shapely
 import pydot
-
-def make_regionplot_dict(scenario):
-    bar_height = 0.3
-    bar_width = 6
-    bar_left_corner = (10.12, 54.3)
-    geoms = [shapely.wkt.loads(e['geom']) for e in scenario['children'] if e.get('geom', False)]
-    data=[]
-    for geom in geoms:
-        if isinstance(geom, shapely.geometry.polygon.Polygon):
-            lon, lat = geom.exterior.coords.xy
-            data.append(
-                dict(type = 'scattergeo',
-                     lon = list(lon),
-                     lat = list(lat),
-                     mode = 'lines',
-                     line = dict(width = 2, color = 'red'),
-                     opacity = 0.5))
-    
-    data.append(dict(
-        type = 'scattergeo',
-        lon = [bar_left_corner[0], bar_left_corner[0]],
-        lat = [bar_left_corner[1], bar_left_corner[1]+bar_height],
-        hoverinfo = 'text',
-        text = ['here it is', 'and here it ends'],
-        mode = 'lines',
-        line = dict( 
-            width=10, 
-            color='rgb(0, 0, 255)')
-#            line = dict(
-#                width=bar_width,
-#                color='rgba(68, 68, 68, 0)'
-            )
-        )
-    layout=dict(
-            title="Kiel and Region",
-            geo={"lataxis": {"range": [53.9, 54.7]},
-                 "lonaxis": {"range": [9.2, 10.8]},
-                 "scope": "germany",
-                 "resolution": 50},
-            showlegend=False)
-    fig = dict(data=data, layout=layout)
-    return fig
 
 def make_graph_plot(scenario):
     graph = pydot.Dot(graph_type='digraph')
-    graph.add_edge(pydot.Edge('parent', 'child', label='child'))
-    graph.add_edge(pydot.Edge('child', 'parent', label='parent', color='gray'))
-    graph.add_edge(pydot.Edge('predecessor', 'successor', label='pre', color='blue'))
-    graph.add_edge(pydot.Edge('successor', 'predecessor', label='suc', color='red'))
+    graph.add_edge(pydot.Edge('parent', 'child', label='child-attr'))
+    graph.add_edge(pydot.Edge('parent', 'child', label='parent-attr', color='gray'))
+    graph.add_edge(pydot.Edge('predecessor', 'successor', label='pre-attr', color='blue'))
+    graph.add_edge(pydot.Edge('predecessor', 'successor', label='suc-attr', color='red'))
     for child in scenario.get('children'):
         edge = pydot.Edge(scenario.get('name'), child.get('name'))
         graph.add_edge(edge)
         for par in child.get('parents'):
-            edge = pydot.Edge(child.get('name'), par, color='gray')
+            edge = pydot.Edge(par, child.get('name'), color='gray')
             graph.add_edge(edge)
         for pre in child.get('predecessors'):
             edge = pydot.Edge(pre, child.get('name'), color='blue')
