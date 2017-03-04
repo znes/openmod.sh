@@ -62,7 +62,8 @@ def upload_file():
                 return flask.render_template('imported_successfully.html')
             else:
                 # TODO: Here goes a 'request prompt to update new scenario name
-                raise ValueError('Scenario already Exist')
+                raise ValueError('Element with name {} already ' \
+                                 'exist in database'.format(json_file['name']))
 
     return flask.render_template('import.html')
 
