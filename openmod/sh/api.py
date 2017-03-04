@@ -95,30 +95,32 @@ def create_element_from_json(json):
     return element
 
 def json_to_db(json):
-    element = create_element_from_json(json)
-
-    children_dct = {e['name']: create_element_from_json(e)
-                    for e in json['children']}
-    element.children = list(children_dct.values())
-
-
-    for child in json['children']:
-        if child.get('predecessors'):
-            children_dct[child['name']].predecessors = [
-                                children_dct[ps] for ps in child['predecessors']]
-        if child.get('successors'):
-            children_dct[child['name']].successors = [
-                                children_dct[ss] for ss in child['successors']]
-
-    schema.DB.session.add(element)
 
     try:
-        schema.DB.session.commit()
-        return True
-    except:
-        IntegrityError
+        exist = schema.Element.query.filter_by(name=json['name']).one()
         return False
 
+    except:
+        element = create_element_from_json(json)
+
+        children_dct = {e['name']: create_element_from_json(e)
+                        for e in json['children']}
+        element.children = list(children_dct.values())
+
+
+        for child in json['children']:
+            if child.get('predecessors'):
+                children_dct[child['name']].predecessors = [
+                                    children_dct[ps] for ps in child['predecessors']]
+            if child.get('successors'):
+                children_dct[child['name']].successors = [
+                                    children_dct[ss] for ss in child['successors']]
+
+        schema.DB.session.add(element)
+
+        schema.DB.session.commit()
+
+        return True
 
 # API for element and elements
 def provide_element_api(query_args):
