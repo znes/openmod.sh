@@ -141,11 +141,19 @@ def download_json():
     """
     query_args = flask.request.args.to_dict()
 
-    json_string = str(provide_element_api(query_args))
-    return flask.Response(json_string,
-            mimetype='application/json',
-            headers={'Content-Disposition':'attachment;filename=file.json'})
-    return True
+    # comfiure the output format of the json download
+    query_args.update({'expand': 'children',
+                       'parents': 'true',
+                       'predecessors': 'true',
+                       'successors': 'true',
+                       'sequences': 'false',
+                       'geom': 'true'})
+
+    data = dict(provide_element_api(query_args))
+
+    return flask.Response(json.dumps(data, indent=2),
+               mimetype='application/json',
+               headers={'Content-Disposition':'attachment;filename=file.json'})
 
 @app.route('/main_menu')
 def main_menu():

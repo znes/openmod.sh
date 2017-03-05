@@ -149,7 +149,8 @@ def provide_element_api(query_args):
                       'children': 'true',
                       'parents': 'true',
                       'predecessors': 'true',
-                      'successors': 'true'}
+                      'successors': 'true',
+                      'hubs_explicitly':'true'}
     element = schema.Element.query.filter_by(id=query_args['id']).first()
     json = serialize_element(element)
     json['api_parameters'] = {'version': '0.0.1',
@@ -187,7 +188,9 @@ def provide_elements_api(query_args):
                       'children': 'true',
                       'parents': 'true',
                       'predecessors': 'true',
-                      'successors': 'true'}
+                      'successors': 'true',
+                      'hubs_explicitly':'true'}
+
     elements = get_elements(query_args)
     outer_json = {}
     outer_json['api_parameters'] = {'version': '0.0.1',
