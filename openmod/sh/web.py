@@ -207,11 +207,10 @@ def osm_map():
         return xml_response(template)
 
     # Get all nodes in the given bounding box.
-    query = osm.DB.session.query
-    children = query(osm.Element.children).filter_by(id=scenario_id).subquery()
-    children = aliased(osm.Element, children)
-    elements = query(children).join(osm.Element.geom
-            ).filter(bounds.ST_Intersects(osm.Geom.geom))
+    parent = osm.Element.query.get(int(scenario_id))
+    elements = parent.query_children\
+            .join(osm.Geom)\
+            .filter(bounds.ST_Intersects(osm.Geom.geom))
 
     ways = [
         { "nodes": [ {"id": idtracker(oid=id(p)), "point": p}
