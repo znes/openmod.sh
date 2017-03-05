@@ -132,6 +132,14 @@ class Element(DB.Model):
             primaryjoin=id==Parent_Children_Associations.c.element_parent_id,
             secondaryjoin=id==Parent_Children_Associations.c.element_child_id,
             backref='parents', cascade='all, delete')
+
+    query_children = DB.relationship(
+            'Element',
+            secondary=Parent_Children_Associations,
+            primaryjoin=id==Parent_Children_Associations.c.element_parent_id,
+            secondaryjoin=id==Parent_Children_Associations.c.element_child_id,
+            lazy='dynamic')
+
     successors = DB.relationship(
             'Element',
             secondary=Predecessor_Successor_Associations,
