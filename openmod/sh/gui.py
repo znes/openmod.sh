@@ -5,11 +5,18 @@ import flask_login as fl
 
 from openmod.sh.api import (provide_element_api, json_to_db,
                            provide_elements_api, provide_sequence_api,
-                           allowed_file, explicate_hubs, delete_element_from_db)
+                           allowed_file, explicate_hubs, delete_element_from_db,
+                           results_to_db)
 from openmod.sh.forms import ComputeForm
 from openmod.sh.visualization import make_graph_plot
 from openmod.sh.web import app
 from openmod.sh import mcbeth
+
+import multiprocessing.pool as mpp
+# Set up a pool of workers to which jobs can be submitted and a dictionary
+# which stores the asynchronous result objects.
+app.workers = mpp.Pool(1)
+app.results = {}
 
 @app.route('/API/element', methods=['GET', 'POST'])
 def provide_element_api_route():
@@ -164,9 +171,44 @@ def download_json():
                mimetype='application/json',
                headers={'Content-Disposition':'attachment;filename=file.json'})
 
+
 @app.route('/main_menu')
 def main_menu():
     return flask.render_template('main_menu.html')
+
+
+@app.route('/simulate', methods=['GET', 'POST'])
+def run_simulation():
+    """
+    """
+    #scenario_json = flask.request.get_json()
+    query_args = flask.request.args.to_dict()
+    query_args['expand'] = 'children'
+    scenario_json = provide_element_api(query_args)
+
+    #try:
+    result = app.workers.apply_async(mcbeth.wrapped_simulation(scenario_json))
+
+    key = str(id(result))
+
+    app.results[key] = result
+
+    return json.dumps({'success':True, 'job':key})
+        #except:
+        #    return json.dumps({'success': False})
+
+
+@app.route('/simulation/<job>')
+def simulation(job):
+    if not job in app.results:
+        return "Unknown job."
+    elif not app.results[job].ready():
+        return ("Simulation is running, but not finished yet.")
+    else:
+        #result = app.results[job].get()
+        del app.results[job]
+        return ("Simulation is finished.")
+
 
 ##### Persistence code ends here ##############################################
 

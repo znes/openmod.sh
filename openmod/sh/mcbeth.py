@@ -371,7 +371,7 @@ def compute_results(es):
 
     return es
 
-def simulate(scenario):
+def wrapped_simulation(scenario):
     """
 
     Parameters
