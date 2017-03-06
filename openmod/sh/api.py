@@ -13,16 +13,10 @@ def objects_to_dict(objects):
     return o_dict
 
 def dict_to_tags(dic):
-    if dic is None:
-        return []
-    else:
-        return [schema.Tag(k, v) for k,v in dic.items()]
+    return [schema.Tag(k, v) for k,v in dic.items()]
 
 def dict_to_sequences(dic):
-    if dic is None:
-        return []
-    else:
-        return [schema.Sequence(k, v) for k,v in dic.items()]
+    return [schema.Sequence(k, v) for k,v in dic.items()]
 
 def wkt_to_geom(wkt):
     if wkt is None or wkt == '':
@@ -91,12 +85,12 @@ def get_elements(query_parameters):
     return elements
 
 def create_element_from_json(json):
-    tags = dict_to_tags(json['tags'])
+    tags = dict_to_tags(json.get('tags', {}))
 
-    sequences = dict_to_sequences(json.get('sequences'))
-    geom = wkt_to_geom(json.get('geom'))
+    sequences = dict_to_sequences(json.get('sequences', {}))
+    geom = wkt_to_geom(json.get('geom', ''))
 
-    element = schema.Element(name=json['name'], type=json['type'],tags=tags,
+    element = schema.Element(name=json['name'], type=json['type'], tags=tags,
                           sequences=sequences, geom=geom)
 
     return element
@@ -110,11 +104,11 @@ def json_to_db(json):
         element = create_element_from_json(json)
 
         children_dct = {e['name']: create_element_from_json(e)
-                        for e in json['children']}
+                        for e in json.get('children', [])}
         element.children = list(children_dct.values())
 
 
-        for child in json['children']:
+        for child in json.get('children', []):
             if child.get('predecessors'):
                 children_dct[child['name']].predecessors = [
                                     children_dct[ps] for ps in child['predecessors']]
@@ -123,7 +117,6 @@ def json_to_db(json):
                                     children_dct[ss] for ss in child['successors']]
 
         schema.DB.session.add(element)
-
         schema.DB.session.commit()
 
         return True

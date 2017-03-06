@@ -21,8 +21,13 @@ def provide_element_api_route():
         return "Please provide correct query parameters. At least 'id'."
     if flask.request.method == 'POST':
         data = flask.request.get_json()
-        json_to_db(data)
-        return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
+        success = json_to_db(data)
+        status=409
+        if success:
+            status=201
+        response = flask.Response(json.dumps({"success": success}),
+                                  status=status, mimetype='application/json')
+        return response
 
 @app.route('/API/elements', methods=['GET'])
 def provide_elements_api_route():
