@@ -38,9 +38,20 @@ def provide_sequence_api_route():
         return flask.jsonify(json)
     return "Provide at least id as query parameter."
 
+
 @app.route('/import', methods=['GET', 'POST'])
 def upload_file():
     if flask.request.method == 'POST':
+        # if a json file is posted, try to write it to db
+        json_dict = flask.request.get_json()
+
+        if json_dict:
+            val = json_to_db(json_dict)
+            if val:
+                return json.dumps({'success':True});
+            else:
+                return json.dumps({'success':False})
+        # if no json file is posted we assum that its a file
         # check if the post request has the file part
         if 'file' not in flask.request.files:
             flask.flash('No file part')
@@ -57,14 +68,9 @@ def upload_file():
             if json_file['api_parameters']['query']['hubs_explicitly'] == 'false':
                 json_file = explicate_hubs(json_file)
             val = json_to_db(json_file)
-            #
-            if val:
-                return flask.render_template('imported_successfully.html')
-            else:
-                # TODO: Here goes a 'request prompt to update new scenario name
-                raise ValueError('Element with name {} already ' \
-                                 'exist in database'.format(json_file['name']))
 
+            return flask.render_template('imported_successfully.html',
+                                         val=val, scenario=json_file)
     return flask.render_template('import.html')
 
 
