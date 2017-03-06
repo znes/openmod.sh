@@ -270,8 +270,9 @@ function updateScenario(scenario) {
     headers: {'Content-Type': 'application/json'},
     dataType: 'json',
     success: function(data) {
-    alert("Updated successfully");}});}
-// TODO: reload page with new id
+    alert("Updated successfully! Redirecting to scenario overview...");}})
+ window.location.replace('scenario_overview');}
+
 
 // Get the element with id="defaultOpen" and click on it
 document.getElementById("defaultOpen").click();
