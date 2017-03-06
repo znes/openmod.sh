@@ -138,7 +138,8 @@ class Element(DB.Model):
             secondary=Parent_Children_Associations,
             primaryjoin=id==Parent_Children_Associations.c.element_parent_id,
             secondaryjoin=id==Parent_Children_Associations.c.element_child_id,
-            lazy='dynamic')
+            lazy='dynamic',
+            viewonly=True)
 
     successors = DB.relationship(
             'Element',

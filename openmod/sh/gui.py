@@ -133,7 +133,7 @@ def delete_scenario():
     delete_element_from_db(element_identifier=query_args['id'],
                            by='id')
 
-    return flask.render_template('delete.html')
+    return flask.render_template('deleted_successfully.html')
 
 @app.route('/download', methods=['GET'])
 def download_json():
