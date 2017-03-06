@@ -46,29 +46,36 @@ def serialize_element(element):
     serialized['successors'] = [e.name for e in element.successors]
     return serialized
 
-def subset_json(json, query_defaults, query_args={}):
+def get_query_args(query_args, query_defaults):
     """
     Args:
-        json (dict): with default element representation
         query_args (dict): e.g {'children': 'true'}
     """
-
+    all_query_args = query_defaults
     # update api default query parameters by args
     for k,v in query_args.items():
         if k in query_defaults:
             if v != query_defaults[k]:
-                json['api_parameters']['query'][k] = v
-    # remove objects if api parameters are false (for args and defaults)
-    for k in query_defaults:
-        if json['api_parameters']['query'][k] == 'false':
-            json.pop(k)
-    return json
+                all_query_args[k] = v
+    return all_query_args
 
-def expand_element(element, expand):
+def subset_json(element_dct, query_args):
+    """
+    Args:
+        element_dct (dict): with default element representation
+    """
+    # remove objects if query arguements are false
+    for k in ['geom', 'tags', 'sequences', 'children', 'parents', 'successors', 'predecessors']:
+        if query_args.get(k, '') == 'false':
+            element_dct.pop(k)
+    return element_dct
+
+def expand_element(element, query_args):
     """expand: children, parents, successors or predecessors"""
+    expand = query_args['expand']
     expand_list = []
     for e in getattr(element, expand):
-        expand_list.append(serialize_element(e))
+        expand_list.append(subset_json(serialize_element(e), query_args))
     return expand_list
 
 def get_elements(query_parameters):
@@ -148,17 +155,18 @@ def provide_element_api(query_args):
                       'children': 'true',
                       'parents': 'true',
                       'predecessors': 'true',
-                      'successors': 'true',
-                      'hubs_explicitly':'true'}
+                      'successors': 'true'}
     element = schema.Element.query.filter_by(id=query_args['id']).first()
-    json = serialize_element(element)
-    json['api_parameters'] = {'version': '0.0.1',
-                              'type': 'element'}
-    json['api_parameters']['query'] = query_defaults
-    json = subset_json(json, query_defaults, query_args)
+    element_dct = serialize_element(element)
+    element_dct['api_parameters'] = {'version': '0.0.1',
+                                     'type': 'element'}
+    all_query_args = get_query_args(query_args, query_defaults)
+    element_dct['api_parameters']['query'] = all_query_args
+    # Use api parameters query for subsetting
+    element_dct = subset_json(element_dct, all_query_args)
     if 'expand' in query_args.keys():
-        json[query_args['expand']] = expand_element(element, query_args['expand'])
-    return json
+        element_dct[query_args['expand']] = expand_element(element, query_args)
+    return element_dct
 
 def provide_elements_api(query_args):
     """
@@ -187,28 +195,19 @@ def provide_elements_api(query_args):
                       'children': 'true',
                       'parents': 'true',
                       'predecessors': 'true',
-                      'successors': 'true',
-                      'hubs_explicitly':'true'}
+                      'successors': 'true'}
 
     elements = get_elements(query_args)
     outer_json = {}
     outer_json['api_parameters'] = {'version': '0.0.1',
                                      'type': 'elements'}
-    outer_json['api_parameters']['query'] = query_defaults
-    for k,v in query_args.items():
-        if k in query_defaults:
-            if v != query_defaults[k]:
-                outer_json['api_parameters']['query'][k] = v
+    all_query_args = get_query_args(query_args, query_defaults)
+    outer_json['api_parameters']['query'] = all_query_args
     for element in elements:
         json = serialize_element(element)
-        json['api_parameters'] = {'version': '0.0.1',
-                                  'type': 'element'}
-        json['api_parameters']['query'] = query_defaults
-        json = subset_json(json, query_defaults, query_args)
+        json = subset_json(json, all_query_args)
         if 'expand' in query_args.keys():
-            json[query_args['expand']] = expand_element(element,
-                                                        query_args['expand'])
-        json.pop('api_parameters')
+            json[query_args['expand']] = expand_element(element, query_args)
         outer_json[str(element.id)] = json
     return outer_json
 
