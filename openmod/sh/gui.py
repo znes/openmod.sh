@@ -16,13 +16,13 @@ def provide_element_api_route():
     if flask.request.method == 'GET':
         query_args = flask.request.args.to_dict()
         if 'id' in query_args.keys():
-            json = provide_element_api(query_args)
-            return flask.jsonify(json)
+            element_dct = provide_element_api(query_args)
+            return flask.jsonify(element_dct)
         return "Please provide correct query parameters. At least 'id'."
     if flask.request.method == 'POST':
         data = flask.request.get_json()
         json_to_db(data)
-        return flask.render_template('imported_successfully.html')
+        return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
 
 @app.route('/API/elements', methods=['GET'])
 def provide_elements_api_route():
@@ -86,9 +86,12 @@ def id_editor():
 def edit_scenario():
     query_args = flask.request.args.to_dict()
     query_args['expand'] = 'children'
+
+    scenario_db_id=query_args['id']
     scenario = provide_element_api(query_args)
 
-    return flask.render_template('edit_scenario.html', scenario=scenario)
+    return flask.render_template('edit_scenario.html', scenario=scenario,
+                                 scenario_db_id=scenario_db_id)
 
 @app.route('/graph_plot', methods=['GET'])
 def plot_graph():

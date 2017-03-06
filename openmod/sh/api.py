@@ -95,7 +95,6 @@ def create_element_from_json(json):
     return element
 
 def json_to_db(json):
-
     try:
         exist = schema.Element.query.filter_by(name=json['name']).one()
         return False

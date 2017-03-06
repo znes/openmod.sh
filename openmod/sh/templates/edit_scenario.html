@@ -1,6 +1,7 @@
 {% extends "base_layout.html" %}
 
 {% block head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 <script src="https://cdn.plot.ly/plotly-1.23.1.min.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
@@ -257,10 +258,22 @@ function saveNewScenario(scenario) {
  console.log(scenario);}
 
 function updateScenario(scenario) {
- alert("Still to be implemented!")}
+ $.get('delete', {id: scenario_db_id});
+// TODO: reload page with new id
+// TODO: make children from children_dict
+ $.ajax({
+    url: 'API/element',
+    type: 'post',
+    data: JSON.stringify(scenario),
+    headers: {'Content-Type': 'application/json'},
+    dataType: 'json',
+    success: function(data) {
+    alert("Updated successfully");}});}
 
 // Get the element with id="defaultOpen" and click on it
 document.getElementById("defaultOpen").click();
+
+var scenario_db_id = {{ scenario_db_id }};
 
 var scenario = {{ scenario | tojson }};
 scenario.children_dict = {};
