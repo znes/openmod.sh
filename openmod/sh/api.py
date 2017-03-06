@@ -98,7 +98,7 @@ def create_element_from_json(json):
 def json_to_db(json):
     try:
         exist = schema.Element.query.filter_by(name=json['name']).one()
-        return False
+        return {"success": False}
 
     except:
         element = create_element_from_json(json)
@@ -119,7 +119,7 @@ def json_to_db(json):
         schema.DB.session.add(element)
         schema.DB.session.commit()
 
-        return True
+        return {"success": True, "scenario_db_id": element.id}
 
 # API for element and elements
 def provide_element_api(query_args):

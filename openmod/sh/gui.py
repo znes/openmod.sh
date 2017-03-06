@@ -21,11 +21,11 @@ def provide_element_api_route():
         return "Please provide correct query parameters. At least 'id'."
     if flask.request.method == 'POST':
         data = flask.request.get_json()
-        success = json_to_db(data)
+        db_response = json_to_db(data)
         status=409
-        if success:
+        if db_response['success']:
             status=201
-        response = flask.Response(json.dumps({"success": success}),
+        response = flask.Response(json.dumps(db_response),
                                   status=status, mimetype='application/json')
         return response
 
@@ -72,10 +72,10 @@ def upload_file():
             json_file = json.loads(str(file.read(), 'utf-8'))
             if json_file['api_parameters']['query']['hubs_explicitly'] == 'false':
                 json_file = explicate_hubs(json_file)
-            val = json_to_db(json_file)
+            db_response = json_to_db(json_file)
 
             return flask.render_template('imported_successfully.html',
-                                         val=val, scenario=json_file)
+                                         val=db_response['success'], scenario=json_file)
     return flask.render_template('import.html')
 
 

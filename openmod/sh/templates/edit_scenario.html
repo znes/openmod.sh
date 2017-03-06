@@ -252,10 +252,20 @@ function makeRegionPlot(){
  }
 
 function saveNewScenario(scenario) {
- console.log(scenario);
  scenario['name'] = prompt("New name", scenario['name']);
  scenario['tags']['description'] = prompt("New description", scenario['tags']['description']);
- console.log(scenario);}
+ $.ajax({
+    url: 'API/element',
+    type: 'post',
+    data: JSON.stringify(scenario),
+    headers: {'Content-Type': 'application/json'},
+    dataType: 'json',
+    success: function(data) {
+     alert("Saved successfully! Opening new scenario.");
+     window.location.replace('edit_scenario?id='+data.scenario_db_id);},
+    error: function() {
+     alert("Scenario name is already taken. Try again.");
+     saveNewScenario(scenario);}});}
 
 function updateScenario(scenario) {
  // Delete existing scenario
@@ -270,8 +280,10 @@ function updateScenario(scenario) {
     headers: {'Content-Type': 'application/json'},
     dataType: 'json',
     success: function(data) {
-    alert("Updated successfully! Redirecting to scenario overview...");}})
- window.location.replace('scenario_overview');}
+     alert("Updated successfully! Opening updated scenario.");
+     window.location.replace('edit_scenario?id='+data.scenario_db_id);},
+    error: function() {
+     alert("Error. This should not have happened. Call somebody.");}});}
 
 
 // Get the element with id="defaultOpen" and click on it
