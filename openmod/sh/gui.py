@@ -12,6 +12,7 @@ from openmod.sh.web import app
 from openmod.sh import mcbeth
 
 @app.route('/API/element', methods=['GET', 'POST'])
+@fl.login_required
 def provide_element_api_route():
     if flask.request.method == 'GET':
         query_args = flask.request.args.to_dict()
@@ -30,12 +31,14 @@ def provide_element_api_route():
         return response
 
 @app.route('/API/elements', methods=['GET'])
+@fl.login_required
 def provide_elements_api_route():
     query_args = flask.request.args.to_dict()
     json = provide_elements_api(query_args)
     return flask.jsonify(json)
 
 @app.route('/API/sequence', methods=['GET'])
+@fl.login_required
 def provide_sequence_api_route():
     query_args = flask.request.args.to_dict()
     if 'id' in query_args.keys():
@@ -45,6 +48,7 @@ def provide_sequence_api_route():
 
 
 @app.route('/import', methods=['GET', 'POST'])
+@fl.login_required
 def upload_file():
     if flask.request.method == 'POST':
         # if a json file is posted, try to write it to db
@@ -80,6 +84,7 @@ def upload_file():
 
 
 @app.route('/export')
+@fl.login_required
 def export_dataset():
     return flask.render_template('export.html')
 
@@ -94,6 +99,7 @@ def id_editor():
     return flask.render_template('iD.html')
 
 @app.route('/edit_scenario', methods=['GET'])
+@fl.login_required
 def edit_scenario():
     query_args = flask.request.args.to_dict()
     query_args['expand'] = 'children'
@@ -105,6 +111,7 @@ def edit_scenario():
                                  scenario_db_id=scenario_db_id)
 
 @app.route('/graph_plot', methods=['GET'])
+@fl.login_required
 def plot_graph():
     query_args = flask.request.args.to_dict()
     query_args['expand'] = 'children'
@@ -112,7 +119,9 @@ def plot_graph():
     graph_svg = make_graph_plot(scenario)
     return flask.render_template('graph_plot.html',
                                  graph_svg=graph_svg)
+
 @app.route('/scenario_overview')
+@fl.login_required
 def show_scenarios():
     model='pypsa'
 
@@ -134,11 +143,13 @@ def show_scenarios():
                                  model=model)
 
 @app.route('/show_results', methods=['GET', 'POST'])
+@fl.login_required
 def show_results():
     flask.flash('Processing results...')
     return flask.render_template('show_results.html')
 
 @app.route('/delete', methods=['GET'])
+@fl.login_required
 def delete_scenario():
     """
     """
@@ -150,6 +161,7 @@ def delete_scenario():
     return flask.render_template('deleted_successfully.html')
 
 @app.route('/download', methods=['GET'])
+@fl.login_required
 def download_json():
     """
     """
@@ -170,6 +182,7 @@ def download_json():
                headers={'Content-Disposition':'attachment;filename=file.json'})
 
 @app.route('/main_menu')
+@fl.login_required
 def main_menu():
     return flask.render_template('main_menu.html')
 

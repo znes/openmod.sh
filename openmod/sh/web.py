@@ -253,6 +253,7 @@ def osm_map():
     return xml_response(template)
 
 @app.route('/simulate', methods=['PUT'])
+@fl.login_required
 def simulate():
     fras = flask.request.args
     result = app.workers.apply_async(openmod.sh.scenario.wrapped_simulation,
@@ -264,6 +265,7 @@ def simulate():
     return key
 
 @app.route('/simulation/<job>')
+@fl.login_required
 def simulation(job):
     if not job in app.results:
         return "Unknown job."
