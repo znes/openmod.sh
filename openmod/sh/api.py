@@ -1,6 +1,10 @@
 from geoalchemy2 import shape
 from sqlalchemy.exc import IntegrityError
+
+import oemof.db as db
+
 from openmod.sh.schemas import oms as schema
+
 
 def objects_to_dict(objects):
     """
@@ -342,7 +346,11 @@ def results_to_db(scenario_name, results_dict):
     """
     # get scenario element by name
 
-    session = schema.DB.session
+    engine = db.engine(schema.configsection)
+
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
     scenario = session.query(schema.Element).filter(
                     schema.Element.name.like(scenario_name)).first()
 
