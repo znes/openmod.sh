@@ -7,6 +7,14 @@ import oemof.db as db
 from openmod.sh.schemas import oms as schema
 
 
+def db_session():
+    """ Create a session to communicate with the database.
+    """
+    engine = db.engine(schema.configsection)
+
+    Session = sessionmaker(bind=engine)
+    return Session()
+
 def objects_to_dict(objects):
     """
     objects: list of schema.* objects
@@ -87,7 +95,7 @@ def get_elements(query_parameters):
     """
     works for name and type
     """
-    query = schema.Element.query
+    query = db_session().query(schema.Element)
     if 'name' in query_parameters.keys():
         query = query.filter(schema.Element.name.like(query_parameters['name']))
     if 'type' in query_parameters.keys():
@@ -107,8 +115,9 @@ def create_element_from_json(json):
     return element
 
 def json_to_db(json):
+    session = db_session()
     try:
-        exist = schema.Element.query.filter_by(name=json['name']).one()
+        exist = session.query(schema.Element).filter_by(name=json['name']).one()
         return False
 
     except:
@@ -127,9 +136,9 @@ def json_to_db(json):
                 children_dct[child['name']].successors = [
                                     children_dct[ss] for ss in child['successors']]
 
-        schema.DB.session.add(element)
+        session.add(element)
 
-        schema.DB.session.commit()
+        session.commit()
 
         return True
 
@@ -161,7 +170,8 @@ def provide_element_api(query_args):
                       'parents': 'true',
                       'predecessors': 'true',
                       'successors': 'true'}
-    element = schema.Element.query.filter_by(id=query_args['id']).first()
+    query = db_session().query
+    element = query(schema.Element).filter_by(id=query_args['id']).first()
     element_dct = serialize_element(element)
     element_dct['api_parameters'] = {'version': '0.0.1',
                                      'type': 'element'}
@@ -309,10 +319,13 @@ def update_scenario(scenario_json=None, update_json=None):
 def delete_element_from_db(element_identifier, by='id'):
     """
     """
+    session = db_session()
     if by == 'id':
-        element = schema.Element.query.filter_by(id=element_identifier).first()
+        element = session.query(schema.Element).filter_by(
+                id=element_identifier).first()
     if by == 'name':
-        element = schema.Element.query.filter_by(name=element_identifier).first()
+        element = session.query(schema.Element).filter_by(
+                name=element_identifier).first()
 
     # check if element has more than one parent, if so: raise error
     for child in element.children:
@@ -323,15 +336,16 @@ def delete_element_from_db(element_identifier, by='id'):
                 "Child {1} does have more than one parent.".format(element.name,
                                                                    child.name))
 
-    schema.DB.session.delete(element)
+    session.delete(element)
 
-    schema.DB.session.commit()
+    session.commit()
 
 def provide_sequence_api(query_args):
     """
     needs at least id as query argument
     """
-    sequence = schema.Sequence.query.filter_by(id=query_args['id']).first()
+    query = db_session().query
+    sequence = query(schema.Sequence).filter_by(id=query_args['id']).first()
     json = {}
     if sequence:
         json[sequence.key] = sequence.value
@@ -347,10 +361,7 @@ def results_to_db(scenario_name, results_dict):
     """
     # get scenario element by name
 
-    engine = db.engine(schema.configsection)
-
-    Session = sessionmaker(bind=engine)
-    session = Session()
+    session = db_session()
 
     scenario = session.query(schema.Element).filter(
                     schema.Element.name.like(scenario_name)).first()
