@@ -131,10 +131,12 @@ def json_to_db(json):
         for child in json['children']:
             if child.get('predecessors'):
                 children_dct[child['name']].predecessors = [
-                                    children_dct[ps] for ps in child['predecessors']]
+                                    children_dct[ps]
+                                    for ps in child['predecessors']]
             if child.get('successors'):
                 children_dct[child['name']].successors = [
-                                    children_dct[ss] for ss in child['successors']]
+                                    children_dct[ss]
+                                    for ss in child['successors']]
 
         session.add(element)
 
