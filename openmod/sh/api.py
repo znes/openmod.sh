@@ -1,5 +1,6 @@
 from geoalchemy2 import shape
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import sessionmaker
 
 import oemof.db as db
 
