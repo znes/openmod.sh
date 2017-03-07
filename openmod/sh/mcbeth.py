@@ -104,6 +104,7 @@ def populate_energy_system(es, node_data):
     for n in node_data:
         if n['type'] == 'hub':
             b = Bus(label=n['name'], geo=n.get('geom'))
+            b.type = n['type']
             # add all tags as attributes to hub/bus
             for k,v in n['tags'].items():
                 setattr(b, k, v)
@@ -196,6 +197,7 @@ def populate_energy_system(es, node_data):
                                       actual_value=av,
                                       variable_costs=_float(n, 'variable_cost'),
                                       fixed=fixed)})
+                obj.type = n['type']
                 es.add(obj)
 
         # create linear transformers for flexible generators
@@ -224,6 +226,7 @@ def populate_energy_system(es, node_data):
                 inputs={ps:
                     Flow()},
                 conversion_factors=conversion_factors)
+            obj.type = n['type']
             es.add(obj)
 
         # create linear transformers for combined flexible generators
@@ -252,6 +255,7 @@ def populate_energy_system(es, node_data):
                 inputs={ps:
                     Flow()},
                 conversion_factors = conversion_factors)
+            obj.type = n['type']
             es.add(obj)
 
         # create solph storage objects for storage elements
@@ -272,30 +276,32 @@ def populate_energy_system(es, node_data):
                         nominal_capacity=_float(n,'installed_energy'),
                         nominal_input_capacity_ratio=nicr,
                         nominal_output_capacity_ration=nocr)
+            obj.type = n['type']
             es.add(obj)
 
         # create linear transformer(s) for transmission elements
         if n['type'] == 'transmission':
             # create 2 LinearTransformers for a transmission element
-            ss = es.groups[n['successors'][0]]
-            ps = es.groups[n['predecessors'][0]]
+            ss = [es.groups[s] for s in n['successors']]
 
             obj1 = LinearTransformer(
                 label=n['name']+'_1',
-                outputs={ss:
+                outputs={ss[0]:
                     Flow(nominal_value=float(n['tags']['installed_power']))},
-                inputs={ps:
+                inputs={ss[1]:
                     Flow()},
-                conversion_factors={ss: _float(n, 'efficiency')})
+                conversion_factors={ss[0]: _float(n, 'efficiency')})
+            obj1.type = n['type']
             es.add(obj1)
 
             obj2 = LinearTransformer(
                 label=n['name']+'_2',
-                outputs={ps:
+                outputs={ss[1]:
                     Flow(nominal_value=float(n['tags']['installed_power']))},
-                inputs={ss:
+                inputs={ss[0]:
                     Flow()},
-                conversion_factors={ps: _float(n, 'efficiency')})
+                conversion_factors={ss[1]: _float(n, 'efficiency')})
+            obj2.type = n['type']
             es.add(obj2)
 
     return es
@@ -428,20 +434,20 @@ if __name__ == "__main__":
 #
     results_to_db(scenario['name'], es.results)
 
-    element = schema.Element.query.filter_by(name="status_quo_2014_explicit").first()
-
-    # check if element has more than one parent, if so: raise error
-    for child in element.children:
-        parents = [parent for parent in child.parents]
-        if len(parents) > 1:
-            raise ValueError(
-                "Deleting element {0} with all its children failed. " \
-                "Child {1} does have more than one parent.".format(element.name,
-                                                                   child.name))
-
-    schema.DB.session.delete(element)
-
-    schema.DB.session.commit()
+#    element = schema.Element.query.filter_by(name="status_quo_2014_explicit").first()
+#
+#    # check if element has more than one parent, if so: raise error
+#    for child in element.children:
+#        parents = [parent for parent in child.parents]
+#        if len(parents) > 1:
+#            raise ValueError(
+#                "Deleting element {0} with all its children failed. " \
+#                "Child {1} does have more than one parent.".format(element.name,
+#                                                                   child.name))
+#
+#    schema.DB.session.delete(element)
+#
+#    schema.DB.session.commit()
 
 #    import graphviz as gv
 #    import oemof.network as ntwk
