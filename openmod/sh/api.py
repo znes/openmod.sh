@@ -348,7 +348,8 @@ def results_to_db(scenario_name, results_dict):
 
     # check if results exist, if so: delete from database
     scenario_results_exist = session.query(schema.ResultSequences).filter_by(
-                                                    scenario_id=scenario.id).all()
+                                                    scenario_id=scenario.id
+                                                    ).all()
     if scenario_results_exist:
         for result in scenario_results_exist:
             schema.DB.session.delete(result)
