@@ -1,13 +1,13 @@
 {% extends "base_layout.html" %}
 {% block body %}
 
-    <h1>What do you want to do?</h1>
+    <h1>{{ gettext("What do you want to do?") }}</h1>
 
-    <a href={{ url_for('show_scenarios', model=model) }}>Scenario overview</a>
+    <a href={{ url_for('show_scenarios', model=model) }}>{{ gettext("Scenario overview") }}</a>
     <br>
-    <a href="still to come"> Compare scenarios</a>
+    <a href="still to come">{{ gettext("Compare scenarios") }}</a>
     <br>
-    <a href={{ url_for('upload_file') }}>Import dataset</a>
+    <a href={{ url_for('upload_file') }}>{{ gettext("Import dataset") }}</a>
     <br>
     <a href={{ url_for('logout') }}>Logout</a>
 

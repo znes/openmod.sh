@@ -3,6 +3,7 @@ flask-cors
 flask-login
 flask-oauthlib
 flask-sqlalchemy
+flask-babel
 geoalchemy2
 keyrings.alt
 psycopg2

@@ -2,6 +2,7 @@ import json
 
 import flask
 import flask_login as fl
+from flask_babel import Babel, gettext, ngettext, lazy_gettext
 
 from openmod.sh.api import (provide_element_api, json_to_db,
                            provide_elements_api, provide_sequence_api,
@@ -11,6 +12,24 @@ from openmod.sh.visualization import make_graph_plot
 from openmod.sh.web import app
 from openmod.sh import mcbeth
 
+babel = Babel(app)
+
+@babel.localeselector
+def get_locale():
+    # if a user is logged in, use the locale from the user settings
+    user = getattr(flask.g, 'user', None)
+    if user is not None:
+        return user.locale
+    # otherwise try to guess the language from the user accept
+    # header the browser transmits. The best match wins.
+    return flask.request.accept_languages.best_match(['de', 'en'])
+
+@babel.timezoneselector
+def get_timezone():
+    user = getattr(flask.g, 'user', None)
+    if user is not None:
+        return user.timezone
+
 @app.route('/API/element', methods=['GET', 'POST'])
 @fl.login_required
 def provide_element_api_route():
@@ -19,7 +38,7 @@ def provide_element_api_route():
         if 'id' in query_args.keys():
             element_dct = provide_element_api(query_args)
             return flask.jsonify(element_dct)
-        return "Please provide correct query parameters. At least 'id'."
+        return gettext("Please provide correct query parameters. At least 'id'.")
     if flask.request.method == 'POST':
         data = flask.request.get_json()
         db_response = json_to_db(data)
