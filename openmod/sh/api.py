@@ -399,3 +399,25 @@ def results_to_db(scenario_name, results_dict):
     session.commit()
 
 
+def get_results(scenario_id):
+    """
+    """
+    session = schema.DB.session
+    scenario = session.query(schema.Element).filter(
+                    schema.Element.id.like(scenario_id)).first()
+
+    # check if results exist, if so: delete from database
+    scenario_results = session.query(schema.ResultSequences).filter_by(
+                                                    scenario_id=scenario.id
+                                                    ).all()
+    if scenario_results:
+        results_dict = {}
+        for r in scenario_results:
+            results_dict[(r.predecessor.name, r.successor.name)] = r.value
+
+        return results_dict
+
+    else:
+        return False
+
+
