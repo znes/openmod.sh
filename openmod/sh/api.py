@@ -361,7 +361,7 @@ def results_to_db(scenario_name, results_dict):
                                                     ).all()
     if scenario_results_exist:
         for result in scenario_results_exist:
-            schema.DB.session.delete(result)
+            session.delete(result)
         session.flush()
 
     for source, v in results_dict.items():
