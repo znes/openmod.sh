@@ -187,7 +187,8 @@ def run_simulation():
     scenario_json = provide_element_api(query_args)
 
     #try:
-    result = app.workers.apply_async(mcbeth.wrapped_simulation(scenario_json))
+    result = app.workers.apply_async(mcbeth.wrapped_simulation,
+                                     args=[scenario_json])
 
     key = str(id(result))
 
