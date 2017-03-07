@@ -7,6 +7,9 @@ from oemof.tools import logger
 from oemof.network import Node
 from oemof.solph import (Sink, Source, LinearTransformer, Storage, Bus, Flow,
                          OperationalModel, EnergySystem, GROUPINGS)
+
+from openmod.sh.api import results_to_db
+
 import oemof.outputlib as output
 
 logger.define_logging(log_version=False)
@@ -392,6 +395,8 @@ def wrapped_simulation(scenario):
 
     # run the model
     es = compute_results(es)
+
+    results_to_db(scenario['name'], es.results)
 
     return es.results
 
