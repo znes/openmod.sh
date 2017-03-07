@@ -1,0 +1,59 @@
+# Translations template for PROJECT.
+# Copyright (C) 2017 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2017-03-07 13:46+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.3.4\n"
+
+#: gui.py:41
+msgid "Please provide correct query parameters. At least 'id'."
+msgstr ""
+
+#: templates/edit_scenario.html:39
+msgid "Area Usage"
+msgstr ""
+
+#: templates/edit_scenario.html:42
+msgid "Solar Roof"
+msgstr ""
+
+#: templates/edit_scenario.html:54
+msgid "Solar Rural"
+msgstr ""
+
+#: templates/edit_scenario.html:66
+msgid "Wind"
+msgstr ""
+
+#: templates/edit_scenario.html:79
+msgid "Biomass CHP"
+msgstr ""
+
+#: templates/main_menu.html:4
+msgid "What do you want to do?"
+msgstr ""
+
+#: templates/main_menu.html:6
+msgid "Scenario overview"
+msgstr ""
+
+#: templates/main_menu.html:8
+msgid "Compare scenarios"
+msgstr ""
+
+#: templates/main_menu.html:10
+msgid "Import dataset"
+msgstr ""
+
