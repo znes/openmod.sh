@@ -342,26 +342,27 @@ def results_to_db(scenario_name, results_dict):
     """
     # get scenario element by name
 
-    scenario = schema.Element.query.filter(
+    session = schema.DB.session
+    scenario = session.query(schema.Element).filter(
                     schema.Element.name.like(scenario_name)).first()
 
     # check if results exist, if so: delete from database
-    scenario_results_exist = schema.ResultSequences.query.filter_by(
+    scenario_results_exist = session.query(schema.ResultSequences).filter_by(
                                                     scenario_id=scenario.id).all()
     if scenario_results_exist:
         for result in scenario_results_exist:
             schema.DB.session.delete(result)
-        schema.DB.session.commit()
+        session.commit()
 
     for source, v in results_dict.items():
-        predecessor = schema.Element.query.filter(
+        predecessor = session.query(schema.Element).filter(
                                 schema.Element.name.like(source.label)).first()
         if not predecessor:
             raise Warning("Missing predeccesor element in db for oemof " \
                           "object {}.".format(source.label))
 
         for target, seq in v.items():
-            successor = schema.Element.query.filter(
+            successor = session.query(schema.Element).filter(
                                 schema.Element.name.like(target.label)).first()
             result = schema.ResultSequences(scenario=scenario,
                                             predecessor=predecessor,
@@ -369,9 +370,9 @@ def results_to_db(scenario_name, results_dict):
                                             type='result',
                                             value=seq)
 
-            schema.DB.session.add(result)
-            schema.DB.session.flush()
+            session.add(result)
+            session.flush()
 
-    schema.DB.session.commit()
+    session.commit()
 
 
