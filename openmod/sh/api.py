@@ -352,7 +352,7 @@ def results_to_db(scenario_name, results_dict):
     if scenario_results_exist:
         for result in scenario_results_exist:
             schema.DB.session.delete(result)
-        session.commit()
+        session.flush()
 
     for source, v in results_dict.items():
         predecessor = session.query(schema.Element).filter(
