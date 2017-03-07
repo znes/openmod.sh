@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from traceback import TracebackException as TE
+
 import pandas as pd
 import json
 import logging
@@ -383,22 +385,28 @@ def wrapped_simulation(scenario):
     scenario : dict
         Complete scenario definition including all elements.
     """
+    try:
+        # create an energy system object
+        es = create_energy_system(scenario)
 
-    # create an energy system object
-    es = create_energy_system(scenario)
+        # add the nodes to the energy system object
+        es = populate_energy_system(es=es, node_data=scenario['children'])
 
-    # add the nodes to the energy system object
-    es = populate_energy_system(es=es, node_data=scenario['children'])
+        # create the optimization model
+        es = create_model(es)
 
-    # create the optimization model
-    es = create_model(es)
+        # run the model
+        es = compute_results(es)
 
-    # run the model
-    es = compute_results(es)
+        results_to_db(scenario['name'], es.results)
 
-    results_to_db(scenario['name'], es.results)
+        return True
 
-    return es.results
+    except Exception as e:
+        result = '<br/>'.join(TE.from_exception(e).format())
+
+    return result
+
 
 if __name__ == "__main__":
 
