@@ -400,8 +400,6 @@ def wrapped_simulation(scenario):
 
         results_to_db(scenario['name'], es.results)
 
-        return True
-
     except Exception as e:
         result = '<br/>'.join(TE.from_exception(e).format())
 

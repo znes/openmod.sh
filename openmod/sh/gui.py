@@ -194,7 +194,7 @@ def run_simulation():
 
     app.results[key] = result
 
-    return json.dumps({'success':True, 'job':key})
+    return result #json.dumps({'success':True, 'job':key})
         #except:
         #    return json.dumps({'success': False})
 
