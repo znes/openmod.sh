@@ -194,10 +194,8 @@ def run_simulation():
 
     app.results[key] = result
 
-    return result #json.dumps({'success':True, 'job':key})
-        #except:
-        #    return json.dumps({'success': False})
-
+    #return result #json.dumps({'success':True, 'job':key})
+    return '<a href="/simulation_old/{0}">{0}</a>'.format(key)
 
 @app.route('/simulation/<job>')
 def simulation(job):
