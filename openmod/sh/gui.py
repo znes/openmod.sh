@@ -164,8 +164,9 @@ def download_json():
                        'parents': 'true',
                        'predecessors': 'true',
                        'successors': 'true',
-                       'sequences': 'false',
-                       'geom': 'true'})
+                       'sequences': 'true',
+                       'geom': 'true',
+                       'hubs_explicitly':'true'})
 
     data = dict(provide_element_api(query_args))
 
