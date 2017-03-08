@@ -6,7 +6,7 @@ import flask_login as fl
 from openmod.sh.api import (provide_element_api, json_to_db,
                            provide_elements_api, provide_sequence_api,
                            allowed_file, explicate_hubs, delete_element_from_db,
-                           results_to_db, create_transmission)
+                           results_to_db, get_results, create_transmission)
 from openmod.sh.forms import ComputeForm
 from openmod.sh.visualization import make_graph_plot
 from openmod.sh.web import app
