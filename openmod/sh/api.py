@@ -422,16 +422,21 @@ def results_to_db(scenario_name, results_dict):
     session.commit()
 
 
-def get_results(scenario_id):
+def get_results(scenario_identifier, by='name'):
     """
     """
-    session = schema.DB.session
-    scenario = session.query(schema.Element).filter(
-                    schema.Element.id.like(scenario_id)).first()
+    session = db_session()
 
+    if by == 'name':
+        scenario = session.query(schema.Element).filter(
+                        schema.Element.name.like(scenario_identifier)).first()
+        scenario_id = scenario.id
+
+    else:
+        scenario_id = scenario_identifier
     # check if results exist, if so: delete from database
     scenario_results = session.query(schema.ResultSequences).filter_by(
-                                                    scenario_id=scenario.id
+                                                    scenario_id=scenario_id
                                                     ).all()
     if scenario_results:
         results_dict = {}
