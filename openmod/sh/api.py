@@ -321,6 +321,7 @@ def update_scenario(scenario_json=None, update_json=None):
                     # check for sequence update
                     if u.get('sequences'):
                         for k,v in u['sequences'].items():
+                            elements[name]['sequences'] = elements[name].get('sequences', {})
                             elements[name]['sequences'][k] = v
                     # check for geom update
                     if u.get('tags'):

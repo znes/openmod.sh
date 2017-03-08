@@ -282,27 +282,17 @@ def populate_energy_system(es, node_data):
         # create linear transformer(s) for transmission elements
         if n['type'] == 'transmission':
             # create 2 LinearTransformers for a transmission element
-            ss = [es.groups[s] for s in n['successors']]
-
-            obj1 = LinearTransformer(
-                label=n['name']+'_1',
-                outputs={ss[0]:
+            ss = [es.groups[s] for s in n['successors']][0]
+            ps = [es.groups[s] for s in n['predecessors']][0]
+            obj = LinearTransformer(
+                label=n['name'],
+                outputs={ss:
                     Flow(nominal_value=float(n['tags']['installed_power']))},
-                inputs={ss[1]:
+                inputs={ps:
                     Flow()},
-                conversion_factors={ss[0]: _float(n, 'efficiency')})
-            obj1.type = n['type']
-            es.add(obj1)
-
-            obj2 = LinearTransformer(
-                label=n['name']+'_2',
-                outputs={ss[1]:
-                    Flow(nominal_value=float(n['tags']['installed_power']))},
-                inputs={ss[0]:
-                    Flow()},
-                conversion_factors={ss[1]: _float(n, 'efficiency')})
-            obj2.type = n['type']
-            es.add(obj2)
+                conversion_factors={ss: _float(n, 'efficiency')})
+            obj.type = n['type']
+            es.add(obj)
 
     return es
 
