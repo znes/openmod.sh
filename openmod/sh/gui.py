@@ -213,6 +213,16 @@ def simulation(job):
         return result
 
 
+@app.route('/API/results')
+def provide_results_api():
+    """
+    """
+    query_args = flask.request.args.to_dict()
+
+    results = get_results(query_args['id'], by='id')
+
+    return flask.jsonify(results)
+
 ##### Persistence code ends here ##############################################
 
 
