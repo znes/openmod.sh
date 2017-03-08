@@ -160,6 +160,7 @@ def provide_element_api(query_args):
       parents: true,
       predecessors: true,
       successors: true
+      hubs_explicitly: true
 
     additional optional query parameters:
       expand
@@ -171,7 +172,8 @@ def provide_element_api(query_args):
                       'children': 'true',
                       'parents': 'true',
                       'predecessors': 'true',
-                      'successors': 'true'}
+                      'successors': 'true',
+                      'hubs_explicitly':'true'}
     query = db_session().query
     element = query(schema.Element).filter_by(id=query_args['id']).first()
     element_dct = serialize_element(element)
