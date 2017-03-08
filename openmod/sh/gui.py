@@ -93,7 +93,7 @@ def upload_file():
         if file and allowed_file(file.filename):
             #filename = secure_filename(file.filename)
             json_file = json.loads(str(file.read(), 'utf-8'))
-            if json_file['api_parameters']['query']['hubs_explicitly'] == 'false':
+            if json_file.get('api_parameters', {}).get('query', {}).get('hubs_explicitly') == 'false':
                 json_file = explicate_hubs(json_file)
             db_response = json_to_db(json_file)
 
