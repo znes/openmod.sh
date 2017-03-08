@@ -228,6 +228,26 @@ def provide_elements_api(query_args):
         outer_json[str(element.id)] = json
     return outer_json
 
+def create_transmission(json):
+    """
+    """
+    transmission_partners = {}
+    for child in json['children']:
+        if child['type'] == 'transmission':
+            ss = child['successors']
+            child['name'] = child['name']
+            child['successors'] = [ss[0]]
+            child['predecessors']= [ss[1]]
+
+            # create 'partner' transmission object with inversed pre/successor
+            obj = child.copy()
+            obj['name'] = obj['name'] + '_add'
+            obj['successors'] = child['predecessors']
+            obj['predecessors'] = child['successors']
+            transmission_partners[obj['name']] = obj
+    json['children'].extend(transmission_partners.values())
+    return json
+
 def explicate_hubs(json):
     """Takes elements names of hubs and add explicit hub elements to the
     dataset

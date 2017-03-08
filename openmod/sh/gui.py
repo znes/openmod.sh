@@ -6,7 +6,7 @@ import flask_login as fl
 from openmod.sh.api import (provide_element_api, json_to_db,
                            provide_elements_api, provide_sequence_api,
                            allowed_file, explicate_hubs, delete_element_from_db,
-                           results_to_db)
+                           results_to_db, create_transmission)
 from openmod.sh.forms import ComputeForm
 from openmod.sh.visualization import make_graph_plot
 from openmod.sh.web import app
@@ -73,7 +73,9 @@ def upload_file():
             #filename = secure_filename(file.filename)
             json_file = json.loads(str(file.read(), 'utf-8'))
             if json_file['api_parameters']['query']['hubs_explicitly'] == 'false':
+                json_file = create_transmission(json_file)
                 json_file = explicate_hubs(json_file)
+
             val = json_to_db(json_file)
 
             return flask.render_template('imported_successfully.html',
