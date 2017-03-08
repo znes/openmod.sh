@@ -11,7 +11,7 @@
       "predecessors": "true",
       "successors": "true",
       "expand": "children",
-      "hubs_explicitly": "true"
+      "hubs_explicitly": "false"
     }
   },
   "type": "scenario",
@@ -53,36 +53,8 @@
         "capacity": "200",
         "efficiency": "0.9"
       },
-      "predecessors": ["hub1"],
-      "successors": ["hub2"]
-    },
-    {
-      "name": "line2",
-      "type": "transmission",
-      "tags": {
-        "capacity": "200",
-        "efficiency": "0.9"
-      },
-      "predecessors": ["hub2"],
-      "successors": ["hub1"]
-    },
-    {
-      "name": "hub1",
-      "type": "hub",
-      "tags": {
-        "sector": "electricity"
-      },
-      "predecessors": ["wind", "line"],
-      "successors": ["line"]
-    },
-    {
-      "name": "hub2",
-      "type": "hub",
-      "tags": {
-        "sector": "electricity"
-      },
-      "predecessors": ["line", "solar"],
-      "successors": ["demand", "line"]
+      "predecessors": ["hub1", "hub2"],
+      "successors": ["hub2", "hub1"]
     }
   ],
   "tags": {

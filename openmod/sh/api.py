@@ -1,6 +1,19 @@
 from geoalchemy2 import shape
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import sessionmaker
+
+import oemof.db as db
+
 from openmod.sh.schemas import oms as schema
+
+
+def db_session():
+    """ Create a session to communicate with the database.
+    """
+    engine = db.engine(schema.configsection)
+
+    Session = sessionmaker(bind=engine)
+    return Session()
 
 def objects_to_dict(objects):
     """
@@ -76,7 +89,7 @@ def get_elements(query_parameters):
     """
     works for name and type
     """
-    query = schema.Element.query
+    query = db_session().query(schema.Element)
     if 'name' in query_parameters.keys():
         query = query.filter(schema.Element.name.like(query_parameters['name']))
     if 'type' in query_parameters.keys():
@@ -96,8 +109,9 @@ def create_element_from_json(json):
     return element
 
 def json_to_db(json):
+    session = db_session()
     try:
-        exist = schema.Element.query.filter_by(name=json['name']).one()
+        exist = session.query(schema.Element).filter_by(name=json['name']).one()
         return {"success": False}
 
     except:
@@ -111,13 +125,15 @@ def json_to_db(json):
         for child in json.get('children', []):
             if child.get('predecessors'):
                 children_dct[child['name']].predecessors = [
-                                    children_dct[ps] for ps in child['predecessors']]
+                                    children_dct[ps]
+                                    for ps in child['predecessors']]
             if child.get('successors'):
                 children_dct[child['name']].successors = [
-                                    children_dct[ss] for ss in child['successors']]
+                                    children_dct[ss]
+                                    for ss in child['successors']]
 
-        schema.DB.session.add(element)
-        schema.DB.session.commit()
+        session.add(element)
+        session.commit()
 
         return {"success": True, "scenario_db_id": element.id}
 
@@ -137,6 +153,7 @@ def provide_element_api(query_args):
       parents: true,
       predecessors: true,
       successors: true
+      hubs_explicitly: true
 
     additional optional query parameters:
       expand
@@ -148,8 +165,10 @@ def provide_element_api(query_args):
                       'children': 'true',
                       'parents': 'true',
                       'predecessors': 'true',
-                      'successors': 'true'}
-    element = schema.Element.query.filter_by(id=query_args['id']).first()
+                      'successors': 'true',
+                      'hubs_explicitly':'true'}
+    query = db_session().query
+    element = query(schema.Element).filter_by(id=query_args['id']).first()
     element_dct = serialize_element(element)
     element_dct['api_parameters'] = {'version': '0.0.1',
                                      'type': 'element'}
@@ -203,6 +222,26 @@ def provide_elements_api(query_args):
             json[query_args['expand']] = expand_element(element, query_args)
         outer_json[str(element.id)] = json
     return outer_json
+
+def create_transmission(json):
+    """
+    """
+    transmission_partners = {}
+    for child in json['children']:
+        if child['type'] == 'transmission':
+            ss = child['successors']
+            child['name'] = child['name']
+            child['successors'] = [ss[0]]
+            child['predecessors']= [ss[1]]
+
+            # create 'partner' transmission object with inversed pre/successor
+            obj = child.copy()
+            obj['name'] = obj['name'] + '_add'
+            obj['successors'] = child['predecessors']
+            obj['predecessors'] = child['successors']
+            transmission_partners[obj['name']] = obj
+    json['children'].extend(transmission_partners.values())
+    return json
 
 def explicate_hubs(json):
     """Takes elements names of hubs and add explicit hub elements to the
@@ -277,6 +316,7 @@ def update_scenario(scenario_json=None, update_json=None):
                     # check for sequence update
                     if u.get('sequences'):
                         for k,v in u['sequences'].items():
+                            elements[name]['sequences'] = elements[name].get('sequences', {})
                             elements[name]['sequences'][k] = v
                     # check for geom update
                     if u.get('tags'):
@@ -297,10 +337,13 @@ def update_scenario(scenario_json=None, update_json=None):
 def delete_element_from_db(element_identifier, by='id'):
     """
     """
+    session = db_session()
     if by == 'id':
-        element = schema.Element.query.filter_by(id=element_identifier).first()
+        element = session.query(schema.Element).filter_by(
+                id=element_identifier).first()
     if by == 'name':
-        element = schema.Element.query.filter_by(name=element_identifier).first()
+        element = session.query(schema.Element).filter_by(
+                name=element_identifier).first()
 
     # check if element has more than one parent, if so: raise error
     for child in element.children:
@@ -311,15 +354,16 @@ def delete_element_from_db(element_identifier, by='id'):
                 "Child {1} does have more than one parent.".format(element.name,
                                                                    child.name))
 
-    schema.DB.session.delete(element)
+    session.delete(element)
 
-    schema.DB.session.commit()
+    session.commit()
 
 def provide_sequence_api(query_args):
     """
     needs at least id as query argument
     """
-    sequence = schema.Sequence.query.filter_by(id=query_args['id']).first()
+    query = db_session().query
+    sequence = query(schema.Sequence).filter_by(id=query_args['id']).first()
     json = {}
     if sequence:
         json[sequence.key] = sequence.value
@@ -335,26 +379,29 @@ def results_to_db(scenario_name, results_dict):
     """
     # get scenario element by name
 
-    scenario = schema.Element.query.filter(
+    session = db_session()
+
+    scenario = session.query(schema.Element).filter(
                     schema.Element.name.like(scenario_name)).first()
 
     # check if results exist, if so: delete from database
-    scenario_results_exist = schema.ResultSequences.query.filter_by(
-                                                    scenario_id=scenario.id).all()
+    scenario_results_exist = session.query(schema.ResultSequences).filter_by(
+                                                    scenario_id=scenario.id
+                                                    ).all()
     if scenario_results_exist:
         for result in scenario_results_exist:
-            schema.DB.session.delete(result)
-        schema.DB.session.commit()
+            session.delete(result)
+        session.flush()
 
     for source, v in results_dict.items():
-        predecessor = schema.Element.query.filter(
+        predecessor = session.query(schema.Element).filter(
                                 schema.Element.name.like(source.label)).first()
         if not predecessor:
             raise Warning("Missing predeccesor element in db for oemof " \
                           "object {}.".format(source.label))
 
         for target, seq in v.items():
-            successor = schema.Element.query.filter(
+            successor = session.query(schema.Element).filter(
                                 schema.Element.name.like(target.label)).first()
             result = schema.ResultSequences(scenario=scenario,
                                             predecessor=predecessor,
@@ -362,9 +409,36 @@ def results_to_db(scenario_name, results_dict):
                                             type='result',
                                             value=seq)
 
-            schema.DB.session.add(result)
-            schema.DB.session.flush()
+            session.add(result)
+            session.flush()
 
-    schema.DB.session.commit()
+    session.commit()
+
+
+def get_results(scenario_identifier, by='name'):
+    """
+    """
+    session = db_session()
+
+    if by == 'name':
+        scenario = session.query(schema.Element).filter(
+                        schema.Element.name.like(scenario_identifier)).first()
+        scenario_id = scenario.id
+
+    else:
+        scenario_id = scenario_identifier
+    # check if results exist, if so: delete from database
+    scenario_results = session.query(schema.ResultSequences).filter_by(
+                                                    scenario_id=scenario_id
+                                                    ).all()
+    if scenario_results:
+        results_dict = {}
+        for r in scenario_results:
+            results_dict[(r.predecessor.name, r.successor.name)] = r.value
+
+        return results_dict
+
+    else:
+        return False
 
 

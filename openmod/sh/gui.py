@@ -1,4 +1,5 @@
 import json
+import multiprocessing.pool as mpp
 
 import flask
 import flask_login as fl
@@ -6,11 +7,18 @@ from flask_babel import Babel, gettext, ngettext, lazy_gettext
 
 from openmod.sh.api import (provide_element_api, json_to_db,
                            provide_elements_api, provide_sequence_api,
-                           allowed_file, explicate_hubs, delete_element_from_db)
+                           allowed_file, explicate_hubs, delete_element_from_db,
+                           results_to_db, create_transmission)
 from openmod.sh.forms import ComputeForm
 from openmod.sh.visualization import make_graph_plot
 from openmod.sh.web import app
 from openmod.sh import mcbeth
+
+
+# Set up a pool of workers to which jobs can be submitted and a dictionary
+# which stores the asynchronous result objects.
+app.workers = mpp.Pool(1)
+app.results = {}
 
 babel = Babel(app)
 
@@ -93,12 +101,16 @@ def upload_file():
         if file and allowed_file(file.filename):
             #filename = secure_filename(file.filename)
             json_file = json.loads(str(file.read(), 'utf-8'))
-            if json_file.get('api_parameters', {}).get('query', {}).get('hubs_explicitly') == 'false':
+            if (json_file.get('api_parameters', {})
+                         .get('query', {})
+                         .get('hubs_explicitly') == 'false'):
+                json_file = create_transmission(json_file)
                 json_file = explicate_hubs(json_file)
-            db_response = json_to_db(json_file)
 
+            db_response = json_to_db(json_file)
             return flask.render_template('imported_successfully.html',
-                                         val=db_response['success'], scenario=json_file)
+                                         val=db_response['success'],
+                                         scenario=json_file)
     return flask.render_template('import.html')
 
 
@@ -191,8 +203,9 @@ def download_json():
                        'parents': 'true',
                        'predecessors': 'true',
                        'successors': 'true',
-                       'sequences': 'false',
-                       'geom': 'true'})
+                       'sequences': 'true',
+                       'geom': 'true',
+                       'hubs_explicitly':'true'})
 
     data = dict(provide_element_api(query_args))
 
@@ -200,10 +213,45 @@ def download_json():
                mimetype='application/json',
                headers={'Content-Disposition':'attachment;filename=file.json'})
 
+
 @app.route('/main_menu')
 @fl.login_required
 def main_menu():
     return flask.render_template('main_menu.html')
+
+
+@app.route('/simulate', methods=['GET', 'POST'])
+def run_simulation():
+    """
+    """
+    #scenario_json = flask.request.get_json()
+    query_args = flask.request.args.to_dict()
+    query_args['expand'] = 'children'
+    scenario_json = provide_element_api(query_args)
+
+    #try:
+    result = app.workers.apply_async(mcbeth.wrapped_simulation,
+                                     args=[scenario_json])
+
+    key = str(id(result))
+
+    app.results[key] = result
+
+    #return result #json.dumps({'success':True, 'job':key})
+    return '<a href="/simulation/{0}">{0}</a>'.format(key)
+
+@app.route('/simulation/<job>')
+def simulation(job):
+    if not job in app.results:
+        return "Unknown job."
+    elif not app.results[job].ready():
+        return ("Job running, but not finished yet. <br />" +
+                "Please come back later.")
+    else:
+        result = app.results[job].get()
+        del app.results[job]
+        return result
+
 
 ##### Persistence code ends here ##############################################
 

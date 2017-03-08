@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from traceback import TracebackException as TE
+
 import pandas as pd
 import json
 import logging
@@ -7,6 +9,9 @@ from oemof.tools import logger
 from oemof.network import Node
 from oemof.solph import (Sink, Source, LinearTransformer, Storage, Bus, Flow,
                          OperationalModel, EnergySystem, GROUPINGS)
+
+from openmod.sh.api import results_to_db
+
 import oemof.outputlib as output
 
 logger.define_logging(log_version=False)
@@ -70,7 +75,7 @@ def create_energy_system(scenario):
     start = first + pd.DateOffset(
                 hours=int(scenario['tags'].get('start_timestep', 1))-1)
     end = first + pd.DateOffset(
-                hours=int(scenario['tags'].get('end_timestep', 24))-1)
+                hours=int(scenario['tags'].get('end_timestep', 168))-1)
     timeindex = pd.date_range(start=start, end=end, freq='H')
 
     # create energy sytem and disable automatic registry of node objects
@@ -99,6 +104,7 @@ def populate_energy_system(es, node_data):
     for n in node_data:
         if n['type'] == 'hub':
             b = Bus(label=n['name'], geo=n.get('geom'))
+            b.type = n['type']
             # add all tags as attributes to hub/bus
             for k,v in n['tags'].items():
                 setattr(b, k, v)
@@ -191,6 +197,7 @@ def populate_energy_system(es, node_data):
                                       actual_value=av,
                                       variable_costs=_float(n, 'variable_cost'),
                                       fixed=fixed)})
+                obj.type = n['type']
                 es.add(obj)
 
         # create linear transformers for flexible generators
@@ -219,6 +226,7 @@ def populate_energy_system(es, node_data):
                 inputs={ps:
                     Flow()},
                 conversion_factors=conversion_factors)
+            obj.type = n['type']
             es.add(obj)
 
         # create linear transformers for combined flexible generators
@@ -247,6 +255,7 @@ def populate_energy_system(es, node_data):
                 inputs={ps:
                     Flow()},
                 conversion_factors = conversion_factors)
+            obj.type = n['type']
             es.add(obj)
 
         # create solph storage objects for storage elements
@@ -267,31 +276,23 @@ def populate_energy_system(es, node_data):
                         nominal_capacity=_float(n,'installed_energy'),
                         nominal_input_capacity_ratio=nicr,
                         nominal_output_capacity_ration=nocr)
+            obj.type = n['type']
             es.add(obj)
 
         # create linear transformer(s) for transmission elements
         if n['type'] == 'transmission':
             # create 2 LinearTransformers for a transmission element
-            ss = es.groups[n['successors'][0]]
-            ps = es.groups[n['predecessors'][0]]
-
-            obj1 = LinearTransformer(
-                label=n['name']+'_1',
+            ss = [es.groups[s] for s in n['successors']][0]
+            ps = [es.groups[s] for s in n['predecessors']][0]
+            obj = LinearTransformer(
+                label=n['name'],
                 outputs={ss:
                     Flow(nominal_value=float(n['tags']['installed_power']))},
                 inputs={ps:
                     Flow()},
                 conversion_factors={ss: _float(n, 'efficiency')})
-            es.add(obj1)
-
-            obj2 = LinearTransformer(
-                label=n['name']+'_2',
-                outputs={ps:
-                    Flow(nominal_value=float(n['tags']['installed_power']))},
-                inputs={ss:
-                    Flow()},
-                conversion_factors={ps: _float(n, 'efficiency')})
-            es.add(obj2)
+            obj.type = n['type']
+            es.add(obj)
 
     return es
 
@@ -371,7 +372,7 @@ def compute_results(es):
 
     return es
 
-def simulate(scenario):
+def wrapped_simulation(scenario):
     """
 
     Parameters
@@ -380,29 +381,37 @@ def simulate(scenario):
     scenario : dict
         Complete scenario definition including all elements.
     """
+    try:
+        # create an energy system object
+        es = create_energy_system(scenario)
 
-    # create an energy system object
-    es = create_energy_system(scenario)
+        # add the nodes to the energy system object
+        es = populate_energy_system(es=es, node_data=scenario['children'])
 
-    # add the nodes to the energy system object
-    es = populate_energy_system(es=es, node_data=scenario['children'])
+        # create the optimization model
+        es = create_model(es)
 
-    # create the optimization model
-    es = create_model(es)
+        # run the model
+        es = compute_results(es)
 
-    # run the model
-    es = compute_results(es)
+        results_to_db(scenario['name'], es.results)
 
-    return es.results
+        result = json.dumps(es.results)
+
+    except Exception as e:
+        result = '<br/>'.join(TE.from_exception(e).format())
+
+    return result
+
 
 if __name__ == "__main__":
 
-    from openmod.sh.api import results_to_db
+    from openmod.sh.api import get_results
     import openmod.sh.schemas.oms as schema
     from openmod.sh import web
 #
 #    # just for testing purposes
-    scenario = json.load(open('../../data/scenarios/kiel-statusquo-explicit-geoms-sequences.json'))
+    scenario = json.load(open('../../data/scenarios/kiel-statusquo-explicit-geoms-sequences_new.json'))
 #    #updates = json.load(open('../../data/scenarios/update-elements.json'))
     es = create_energy_system(scenario)
     es = populate_energy_system(es=es, node_data=scenario['children'])
@@ -417,20 +426,24 @@ if __name__ == "__main__":
 #
     results_to_db(scenario['name'], es.results)
 
-    element = schema.Element.query.filter_by(name="status_quo_2014_explicit").first()
+    results = get_results(scenario['name'], by='name')
 
-    # check if element has more than one parent, if so: raise error
-    for child in element.children:
-        parents = [parent for parent in child.parents]
-        if len(parents) > 1:
-            raise ValueError(
-                "Deleting element {0} with all its children failed. " \
-                "Child {1} does have more than one parent.".format(element.name,
-                                                                   child.name))
 
-    schema.DB.session.delete(element)
 
-    schema.DB.session.commit()
+    #element = schema.Element.query.filter_by(name="status_quo_2014_explicit").first()
+#
+#    # check if element has more than one parent, if so: raise error
+#    for child in element.children:
+#        parents = [parent for parent in child.parents]
+#        if len(parents) > 1:
+#            raise ValueError(
+#                "Deleting element {0} with all its children failed. " \
+#                "Child {1} does have more than one parent.".format(element.name,
+#                                                                   child.name))
+#
+#    schema.DB.session.delete(element)
+#
+#    schema.DB.session.commit()
 
 #    import graphviz as gv
 #    import oemof.network as ntwk
