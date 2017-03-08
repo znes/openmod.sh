@@ -198,18 +198,19 @@ def run_simulation():
     app.results[key] = result
 
     #return result #json.dumps({'success':True, 'job':key})
-    return '<a href="/simulation_old/{0}">{0}</a>'.format(key)
+    return '<a href="/simulation/{0}">{0}</a>'.format(key)
 
 @app.route('/simulation/<job>')
 def simulation(job):
     if not job in app.results:
         return "Unknown job."
     elif not app.results[job].ready():
-        return ("Simulation is running, but not finished yet.")
+        return ("Job running, but not finished yet. <br />" +
+                "Please come back later.")
     else:
-        #result = app.results[job].get()
+        result = app.results[job].get()
         del app.results[job]
-        return ("Simulation is finished.")
+        return result
 
 
 ##### Persistence code ends here ##############################################
