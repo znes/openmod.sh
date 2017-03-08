@@ -53,8 +53,18 @@
         "capacity": "200",
         "efficiency": "0.9"
       },
-      "predecessors": ["hub1", "hub2"],
-      "successors": ["hub2", "hub1"]
+      "predecessors": ["hub1"],
+      "successors": ["hub2"]
+    },
+    {
+      "name": "line2",
+      "type": "transmission",
+      "tags": {
+        "capacity": "200",
+        "efficiency": "0.9"
+      },
+      "predecessors": ["hub2"],
+      "successors": ["hub1"]
     },
     {
       "name": "hub1",
