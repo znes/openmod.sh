@@ -8,7 +8,7 @@ from flask_babel import Babel, gettext, ngettext, lazy_gettext
 from openmod.sh.api import (provide_element_api, json_to_db,
                            provide_elements_api, provide_sequence_api,
                            allowed_file, explicate_hubs, delete_element_from_db,
-                           results_to_db, get_results, create_transmission)
+                           results_to_db, get_hub_results, create_transmission)
 from openmod.sh.forms import ComputeForm
 from openmod.sh.visualization import make_graph_plot
 from openmod.sh.web import app
@@ -253,15 +253,24 @@ def simulation(job):
         return result
 
 
-@app.route('/API/results')
+@app.route('/API/results/aggregated')
 def provide_results_api():
     """
     """
     query_args = flask.request.args.to_dict()
 
-    results = get_results(query_args['id'], by='id')
+    if 'hub_name' in query_args:
+        hub_results = get_hub_results(query_args['scenario_id'],
+                                      hub_name=query_args['hub_name'],
+                                      by='id',
+                                      aggregated=True)
+        return(hub_results)
 
-    return flask.jsonify(results)
+    if 'sector' in query_args:
+        # TODO : implement sector results
+        return False
+
+
 
 ##### Persistence code ends here ##############################################
 
