@@ -393,6 +393,8 @@ def results_to_db(scenario_name, results_dict):
             session.delete(result)
         session.flush()
 
+    transmission_dct = {}
+    transmission_lookup = {}
     for source, v in results_dict.items():
         predecessor = session.query(schema.Element).filter(
                                 schema.Element.name.like(source.label)).first()
@@ -411,7 +413,19 @@ def results_to_db(scenario_name, results_dict):
 
             session.add(result)
             session.flush()
-
+            if source.type == 'transmission':
+                transmission_dct[predecessor] = (successor, seq)
+            if target.type == 'transmission':
+                transmission_lookup[successor] = predecessor
+    for k, v in transmission_dct.items():
+        result = schema.ResultSequences(scenario=scenario,
+                                        predecessor=k,
+                                        successor=v[0],
+                                        type='result',
+                                        value=seq)
+        session.add(result)
+        session.flush()
+    import pdb; pdb.set_trace()
     session.commit()
 
 

@@ -75,7 +75,7 @@ def create_energy_system(scenario):
     start = first + pd.DateOffset(
                 hours=int(scenario['tags'].get('start_timestep', 1))-1)
     end = first + pd.DateOffset(
-                hours=int(scenario['tags'].get('end_timestep', 24))-1)
+                hours=int(scenario['tags'].get('end_timestep', 2))-1)
     timeindex = pd.date_range(start=start, end=end, freq='H')
 
     # create energy sytem and disable automatic registry of node objects
@@ -411,7 +411,7 @@ if __name__ == "__main__":
     from openmod.sh import web
 #
 #    # just for testing purposes
-    scenario = json.load(open('../../data/scenarios/kiel-statusquo-explicit-geoms-sequences_new.json'))
+    scenario = json.load(open('data/scenarios/kiel-statusquo-explicit-geoms-sequences_new.json'))
 #    #updates = json.load(open('../../data/scenarios/update-elements.json'))
     es = create_energy_system(scenario)
     es = populate_energy_system(es=es, node_data=scenario['children'])
