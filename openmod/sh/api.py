@@ -414,17 +414,20 @@ def results_to_db(scenario_name, results_dict):
             session.add(result)
             session.flush()
             if source.type == 'transmission':
-                transmission_dct[predecessor] = (successor, seq)
+                transmission_dct[(predecessor, successor)] = seq
             if target.type == 'transmission':
                 transmission_lookup[successor] = predecessor
-    for k, v in transmission_dct.items():
-        result = schema.ResultSequences(scenario=scenario,
-                                        predecessor=k,
-                                        successor=v[0],
-                                        type='result',
-                                        value=seq)
-        session.add(result)
-        session.flush()
+    # replace source keys (transmission objects) with hub objects
+    for k in transmission_dct.copy().keys():
+        transmission_dct[(transmission_lookup[k[0]], k[1])] = transmission_dct.pop(k)
+    # right now only works for bidirectional transmissions
+    # calculate net export for each hub
+    hubs = [e[0] for e in list(transmission_dct.keys())]
+    hub_exports = {}
+    for hub in hubs:
+        exports = [v for k,v in transmission_dct.items() if k[0] == hub]
+        imports = [v for k,v in transmission_dct.items() if k[1] == hub]
+        hub_exports[hub] = exports
     import pdb; pdb.set_trace()
     session.commit()
 

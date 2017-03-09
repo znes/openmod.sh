@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from traceback import TracebackException as TE
+#from traceback import TracebackException as TE
 
 import pandas as pd
 import json
@@ -399,14 +399,14 @@ def wrapped_simulation(scenario):
         result = json.dumps(es.results)
 
     except Exception as e:
-        result = '<br/>'.join(TE.from_exception(e).format())
+        result = ''#'<br/>'.join(TE.from_exception(e).format())
 
     return result
 
 
 if __name__ == "__main__":
 
-    from openmod.sh.api import get_results
+#    from openmod.sh.api import get_results
     import openmod.sh.schemas.oms as schema
     from openmod.sh import web
 #
@@ -426,7 +426,7 @@ if __name__ == "__main__":
 #
     results_to_db(scenario['name'], es.results)
 
-    results = get_results(scenario['name'], by='name')
+#    results = get_results(scenario['name'], by='name')
 
 
 
