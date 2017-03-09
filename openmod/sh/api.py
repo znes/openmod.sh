@@ -415,7 +415,7 @@ def results_to_db(scenario_name, results_dict):
     session.commit()
 
 
-def get_results(scenario_identifier, by='name'):
+def get_results(scenario_identifier, by='id'):
     """
     """
     session = db_session()
@@ -434,7 +434,8 @@ def get_results(scenario_identifier, by='name'):
     if scenario_results:
         results_dict = {}
         for r in scenario_results:
-            results_dict[(r.predecessor.name, r.successor.name)] = r.value
+            results_dict[r.predecessor.name] = results_dict.get(r.predecessor.name,{})
+            results_dict[r.predecessor.name][r.successor.name] = r.value
 
         return results_dict
 

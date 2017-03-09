@@ -109,6 +109,7 @@
   <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab1')" id="defaultOpen">Region Plot</a>
   <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab2')">Timeseries Plot</a>
   <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab3')">Heatmap Plot</a>
+  <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab4')">Bar Plot</a>
  </div>
 
  <div id="Tab1" class="tabcontent">
@@ -124,6 +125,11 @@
  <div id="Tab3" class="tabcontent">
   <div id="heatmap_plot"></div>
  </div>
+
+ <div id="Tab4" class="tabcontent">
+  <div id="bar_plot"></div>
+ </div>
+
 </div>
 
 {% endblock %}
@@ -139,10 +145,25 @@ function updateValue(slider_id, newValue) {
  scenario.children_dict[l.child].tags[l.tag] = newValue;
  makeTimeseriesPlot();
  makeRegionPlot();
- makeHeatmapPlot();}
+ makeHeatmapPlot();
+ makeBarPlot();}
 
 
 var timeseriesOrder = false;
+
+function getResults(scenario) {
+    x = $.get('API/results',  {id: scenario_db_id});
+    console.log(x);
+    return x;
+}
+
+function makeBarPlot() {
+
+    result = getResults(scenario);
+
+    return result;
+
+ }
 
 function makeHeatmapPlot() {
  var dates = Array.apply(null, Array(8760)).map(function (_, i) {return new Date(i*3600*1000);});
