@@ -415,8 +415,34 @@ def results_to_db(scenario_name, results_dict):
     session.commit()
 
 
-def get_results(scenario_identifier, by='id'):
-    """
+def get_hub_results(scenario_identifier, hub_name, by='id', aggregated=True):
+    """ Get the results from the dabase for a given scenario and a given hub.
+
+    Parameters
+    ----------
+    scenario_identifier : str
+        Used to get the scenario from the database
+    hub_name : string
+        Name of the hub (Element) for which results have to be returned
+    by : str
+        Used to configure how the scenario is queried. If 'id', the
+        scneario_identifier  should be the scenario id, if by='name, it
+        should be the scenario name.
+    aggregated : boolean
+        If True results are summed for the complete timehorizon
+
+    Returns
+    -------
+
+    If results exist:
+
+    hub_results : dict
+
+    If results do not exist:
+
+    False
+
+
     """
     session = db_session()
 
@@ -432,12 +458,48 @@ def get_results(scenario_identifier, by='id'):
                                                     scenario_id=scenario_id
                                                     ).all()
     if scenario_results:
-        results_dict = {}
-        for r in scenario_results:
-            results_dict[r.predecessor.name] = results_dict.get(r.predecessor.name,{})
-            results_dict[r.predecessor.name][r.successor.name] = r.value
+        hub_results = {hub_name: {'demand': {},
+                                  'production': {},
+                                  'import':{},
+                                  'export': {}}}
 
-        return results_dict
+        # add production and demand to dictionary
+        for r in scenario_results:
+            if r.successor.name == hub_name:
+                if (r.predecessor.type != 'transmission'
+                        and 'BRD' not in r.predecessor.name):
+                    hub_results[hub_name]['production'][r.predecessor.name] = r.value
+            if r.predecessor.name == hub_name:
+                if (r.successor.type != 'transmission'
+                        and 'BRD' not in r.successor.name):
+                    hub_results[hub_name]['demand'][r.successor.name] = r.value
+
+        # fix storage: collect all storage keys from production and demand and
+        # make them a set, substract demand from production and update production
+        # and demand with net values
+        storage_net = {}
+        keys = ([k for k in hub_results[hub_name]['production'].keys()] + \
+                [k for k in hub_results[hub_name]['demand'].keys()])
+
+        storages = set([k for k in keys if keys.count(k) > 1])
+        for storage in storages:
+            storage_net = [p-d for p,d in
+                            zip(hub_results[hub_name]['production'][storage],
+                                hub_results[hub_name]['demand'][storage])]
+            hub_results[hub_name]['production'][storage] = \
+                [p if p > 0 else p-p for p in storage_net]
+            hub_results[hub_name]['demand'][storage] = \
+                [p if p < 0 else p+p for p in storage_net]
+
+    # TODO : Add import/export flows from database
+
+    if aggregated:
+        for k in hub_results[hub_name]:
+            for kk in hub_results[hub_name][k]:
+                hub_results[hub_name][k][kk] = \
+                    sum(hub_results[hub_name][k][kk])
+
+        return hub_results
 
     else:
         return False
