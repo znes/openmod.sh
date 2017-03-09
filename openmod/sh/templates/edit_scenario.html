@@ -152,7 +152,8 @@ function updateValue(slider_id, newValue) {
 var timeseriesOrder = false;
 
 function getResults(scenario) {
-    x = $.get('API/results',  {id: scenario_db_id});
+    x = $.get('API/results/aggregated',  {scenario_id: scenario_db_id,
+                                          hub_name: 'kiel_electricity'});
     console.log(x);
     return x;
 }
@@ -215,7 +216,7 @@ function makeTimeseriesPlot() {
  var layout = {
   xaxis: {rangeselector: selectorOptions, rangeslider: {}},
   yaxis: {fixedrange: true}};
- 
+
  if (timeseriesOrder) {
   ts = ts.sort(function(a, b){return b-a});
   dates = Array.apply(null, Array(8760)).map(function (_, i) {return i+1;});
@@ -268,7 +269,7 @@ function makeRegionPlot(){
   var wicket = new Wkt.Wkt();
   var wkt_geom = scenario.children_dict[p].geom;
   wicket.read(wkt_geom);
-  var polygon = wicket.toObject(); 
+  var polygon = wicket.toObject();
   map.addLayer(polygon);});
  var bars = ['installed_power_solar', 'installed_power_wind'];
  bars.forEach(function(b) {
