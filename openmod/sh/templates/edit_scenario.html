@@ -177,6 +177,8 @@ function makeBarPlot(hub_name) {
                 var x_vals = [];
                 var y_vals = [];
 
+		var import_sum = 0;
+		var export_sum = 0;
 
                 $.each(data, function(key, value) {
                     //console.log(key, value);
@@ -185,6 +187,19 @@ function makeBarPlot(hub_name) {
                         y_vals.push(production);
                         //console.log(comp_name, production);
                     });
+                    $.each(value['import'], function(comp_name, impor) {
+                        import_sum = import_sum + impor
+                    });
+		    x_vals.push('Import');
+	            y_vals.push(import_sum);
+		    $.each(value['export'], function(comp_name, expor) {
+                        export_sum = export_sum + expor
+                    });
+		    x_vals.push('Export');
+	            y_vals.push(export_sum);
+
+
+
                 });
 
                 var layout =  {title: 'Summed electricity production',
