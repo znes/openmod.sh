@@ -429,17 +429,10 @@ function updateScenario(scenario) {
 // Get the element with id="defaultOpen" and click on it
 document.getElementById("defaultOpen").click();
 
-var scenario_db_id = {
-    {
-        scenario_db_id
-    }
-};
+var scenario_db_id = {{ scenario_db_id }};
 
-var scenario = {
-    {
-        scenario | tojson
-    }
-};
+var scenario = {{ scenario | tojson }};
+
 scenario.children_dict = {};
 scenario.children.forEach(function(data) {
     scenario.children_dict[data.name] = data
@@ -461,6 +454,6 @@ lookup = {
 };
 
 updateValue("installed_power_solar", 12);
-updateValue("installed_power_wind", 2); <
-/script>
+updateValue("installed_power_wind", 2);
+</script>
 {% endblock %}
