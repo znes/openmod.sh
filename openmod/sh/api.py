@@ -25,6 +25,13 @@ def objects_to_dict(objects):
         o_dict[o.key] = o.value
     return o_dict
 
+def get_label(element):
+    value = [t.value  for t in element.tags if t.key == 'label']
+    if value :
+        return value[0]
+    else:
+        return element.name
+
 def dict_to_tags(dic):
     return [schema.Tag(k, v) for k,v in dic.items()]
 
@@ -481,11 +488,13 @@ def get_hub_results(scenario_identifier, hub_name, by='id', aggregated=True):
             if r.successor.name == hub_name:
                 if (r.predecessor.type != 'transmission'
                         and 'BRD' not in r.predecessor.name):
-                    hub_results[hub_name]['production'][r.predecessor.name] = r.value
+                    label = get_label(r.predecessor)
+                    hub_results[hub_name]['production'][label] = r.value
             if r.predecessor.name == hub_name:
                 if (r.successor.type != 'transmission'
                         and 'BRD' not in r.successor.name):
-                    hub_results[hub_name]['demand'][r.successor.name] = r.value
+                    label = get_label(r.successor)
+                    hub_results[hub_name]['demand'][label] = r.value
 
         # fix storage: collect all storage keys from production and demand and
         # make them a set, substract demand from production and update production

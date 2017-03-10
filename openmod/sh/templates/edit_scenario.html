@@ -128,11 +128,11 @@
 
  <div id="Tab4" class="tabcontent">
   <div id="bar_plot", style="height 300px;"> </div>
-  <button type="button" onclick="updateResults('kiel_electricity')">KI</button>
-  <button type="button" onclick="updateResults('nms_electricity')">NMS</button>
-  <button type="button" onclick="updateResults('ploe_electricity')">PLÖ</button>
-  <button type="button" onclick="updateResults('rdeck_electricity')">RD</button>
-  <button type="button" onclick="updateResults('kiel_heat')">KI Heat</button>
+  <button type="button" onclick="updateResults('kiel_electricity')">Kiel</button>
+  <button type="button" onclick="updateResults('nms_electricity')">Neumünster</button>
+  <button type="button" onclick="updateResults('ploe_electricity')">Plön</button>
+  <button type="button" onclick="updateResults('rdeck_electricity')">Rendsburg Eck</button>
+  <button type="button" onclick="updateResults('kiel_heat')">Kiel Wärme</button>
  </div>
 
 
@@ -214,6 +214,9 @@ function makeBarPlot(hub_name) {
                         },
                         yaxis: {
                             title: 'Production in MWh'
+                        },
+                        margin: {
+                            b : 160
                         }
                 };
                 var data = [{
