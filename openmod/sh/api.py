@@ -419,9 +419,15 @@ def results_to_db(scenario_name, results_dict):
                 transmission_dct[(predecessor, successor)] = seq
             if target.type == 'transmission':
                 transmission_lookup[successor] = predecessor
+            if source.type == 'source':
+                transmission_dct[(predecessor, successor)] = seq
+            if target.type == 'sink':
+                transmission_dct[(predecessor, successor)] = seq
+    print(transmission_dct)
+    timesteps = len(seq)
     # replace source keys (transmission objects) with hub objects
-    for k in transmission_dct.copy().keys():
-        transmission_dct[(transmission_lookup[k[0]], k[1])] = transmission_dct.pop(k)
+    for k in transmission_lookup.keys():
+        transmission_dct[(transmission_lookup[k[0]], k[1])] = transmission_dct.pop((k[0], k[1]))
     # right now only works for bidirectional transmissions
     # calculate net export for each hub
     hubs = [e[0] for e in list(transmission_dct.keys())]
@@ -429,21 +435,25 @@ def results_to_db(scenario_name, results_dict):
     for hub in hubs:
         exports = [seq for key,seq in transmission_dct.items() if key[0] == hub]
         imports = [seq for key,seq in transmission_dct.items() if key[1] == hub]
-        ex= [sum(x) for x in zip(*exports)]
+        ex = [sum(x) for x in zip(*exports)]
         im = [sum(x) for x in zip(*imports)]
+        if ex == []:
+            ex = [0 for i in range(timesteps)]
+        if im == []:
+            im = [0 for i in range(timesteps)]
         net_ex = [e - i for e,i in zip(ex, im)]
         hub_net_exports[hub] = [e - i for e,i in zip(ex, im)]
-    
+
+    # create directed graph
+    graph = nx.complete_graph(len(hubs), create_using=nx.DiGraph())
+    print(graph)
+    for edge in graph.edges():
+        graph.edge[edge[0]][edge[1]]['weight'] = 1
+
     for i in range(1):#list(hub_net_exports.values())[0:1]):
         demand = []
         for hub in hubs:
             demand.append(-hub_net_exports[hub][i])
-
-        # create directed graph
-        graph = nx.complete_graph(len(hubs), create_using=nx.DiGraph())
-
-        for edge in graph.edges():
-            graph.edge[edge[0]][edge[1]]['weight'] = 1
 
         # add node to graph with negative (!) supply for each supply node 
         for j in range(len(hubs)):
@@ -460,7 +470,6 @@ def results_to_db(scenario_name, results_dict):
                     flow_dct[kk][k] = - vv
 
         print(flow_dct)
-    import pdb; pdb.set_trace()
     session.commit()
 
 
