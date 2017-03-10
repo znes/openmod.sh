@@ -109,7 +109,7 @@
   <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab1')" id="defaultOpen">Region Plot</a>
   <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab2')">Timeseries Plot</a>
   <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab3')">Heatmap Plot</a>
-  <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab4');updateResults()">Bar Plot</a>
+  <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab4');updateResults('kiel_electricity')">Production</a>
  </div>
 
  <div id="Tab1" class="tabcontent">
@@ -127,8 +127,14 @@
  </div>
 
  <div id="Tab4" class="tabcontent">
-  <div id="bar_plot"></div>
+  <div id="bar_plot", style="height 300px;"> </div>
+  <button type="button" onclick="updateResults('kiel_electricity')">KI</button>
+  <button type="button" onclick="updateResults('nms_electricity')">NMS</button>
+  <button type="button" onclick="updateResults('ploe_electricity')">PLÖ</button>
+  <button type="button" onclick="updateResults('rdeck_electricity')">RD</button>
+  <button type="button" onclick="updateResults('kiel_heat')">KI Heat</button>
  </div>
+
 
 </div>
 
@@ -148,8 +154,8 @@ function updateValue(slider_id, newValue) {
     makeHeatmapPlot();
 }
 
-function updateResults() {
-    makeBarPlot(hub_name='kiel_electricity');
+function updateResults(hub_name) {
+    makeBarPlot(hub_name=hub_name);
 }
 
 var timeseriesOrder = false;
