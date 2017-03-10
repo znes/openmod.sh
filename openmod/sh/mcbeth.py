@@ -25,7 +25,9 @@ def _float(obj, attr):
     defaults = {'installed_power': None,
                 'amount': None,
                 'variable_cost': 0,
-                'efficiency' : 1}
+                'efficiency' : 1,
+                'min_amount':0,
+                'max_amount': float('+inf')}
 
 
     try:
@@ -119,13 +121,20 @@ def populate_energy_system(es, node_data):
             if not ss:
                 missing_hub_warning(n, 'Successor')
             else:
+                max_amount = _float(n, 'max_amount')
+                min_amount = _float(n, 'min_amount')
+
+                # assign the lager value of min/max amount to nominal value
+                nv = max_amount
+
                 # summe_max is set to 1, to make summed max working!!!!!!!!
                 # contraints is: flow <= nominal_value * summed_max
                 obj = Source(label=n['name'],
                              outputs={ss:
-                                 Flow(nominal_value=_float(n, 'amount'),
+                                 Flow(nominal_value=nv,
                                       variable_costs=_float(n, 'variable_cost'),
-                                      summed_max=1)})
+                                      summed_max=max_amount/nv,
+                                      summed_min=min_amount/nv)})
                 obj.type = n['type']
                 obj.emission_factor = _float(n, 'emission_factor')
 
@@ -188,7 +197,12 @@ def populate_energy_system(es, node_data):
                 amount =_float(n, 'amount')
                 abs_profile = [i* amount for i in  n['sequences']['load_profile']]
                 nv = max(abs_profile)
-                av = [i/nv for i in abs_profile]
+                if nv != 0:
+                    av = [i/nv for i in abs_profile]
+                else:
+                    av = [i*0 for i in abs_profile]
+                    logging.warning('Nominal value of {} is 0.'.format(n['name']))
+
                 fixed = True
 
                 obj = Sink(label=n['name'],
@@ -262,8 +276,15 @@ def populate_energy_system(es, node_data):
         if n['type'] == 'storage':
             # Oemof solph does not provide direct way to set power in/out of
             # storage hence, we need to caculate the needed ratios upfront
-            nicr = (_float(n,'installed_power') / _float(n,'installed_energy'))
-            nocr = (_float(n,'installed_power') / _float(n,'installed_energy'))
+            try:
+                nicr = (_float(n,'installed_power') / _float(n,'installed_energy'))
+                nocr = (_float(n,'installed_power') / _float(n,'installed_energy'))
+            except:
+                ZeroDivisionError
+                logging.warning('Installed energy of strorage {} is zero.' \
+                      'Setting default values for nicr/norc'.format(n['name']))
+                nicr = 1/6
+                nocr = 1/6
 
             ps = es.groups[n['predecessors'][0]]
             ss = es.groups[n['successors'][0]]
