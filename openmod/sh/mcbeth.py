@@ -406,7 +406,7 @@ def wrapped_simulation(scenario):
 
 if __name__ == "__main__":
 
-    from openmod.sh.api import get_results
+    from openmod.sh.api import get_hub_results
     import openmod.sh.schemas.oms as schema
     from openmod.sh import web
 #
@@ -426,7 +426,7 @@ if __name__ == "__main__":
 #
     results_to_db(scenario['name'], es.results)
 
-    results = get_results(scenario['name'], by='name')
+    results = get_hub_results(scenario['name'], 'kiel_electicity', by='name')
 
 
 

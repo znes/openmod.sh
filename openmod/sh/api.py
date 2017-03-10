@@ -415,22 +415,30 @@ def results_to_db(scenario_name, results_dict):
 
             session.add(result)
             session.flush()
-            if source.type == 'transmission':
+            if getattr(source, 'type', '') == 'transmission' and getattr(target, 'sector', '') == 'electricity':
                 transmission_dct[(predecessor, successor)] = seq
-            if target.type == 'transmission':
+            if getattr(source, 'sector', '') == 'electricity' and getattr(target, 'type', '') == 'transmission':
                 transmission_lookup[successor] = predecessor
-            if source.type == 'source':
+            if getattr(source, 'type', '') == 'source' and getattr(target, 'type', '') == 'electricity':
                 transmission_dct[(predecessor, successor)] = seq
-            if target.type == 'sink':
+            if getattr(source, 'sector', '') == 'electricity' and getattr(target, 'type', '') == 'sink':
                 transmission_dct[(predecessor, successor)] = seq
     print(transmission_dct)
     timesteps = len(seq)
     # replace source keys (transmission objects) with hub objects
-    for k in transmission_lookup.keys():
-        transmission_dct[(transmission_lookup[k[0]], k[1])] = transmission_dct.pop((k[0], k[1]))
+    for old_key, new_key in transmission_lookup.items():
+        for k in transmission_dct.keys():
+            if k[0] == old_key:
+                transmission_dct[(new_key, k[1])] = transmission_dct.pop(k)
+            if k[1] == old_key:
+                transmission_dct[(k[0], new_key)] = transmission_dct.pop(k)
     # right now only works for bidirectional transmissions
     # calculate net export for each hub
     hubs = [e[0] for e in list(transmission_dct.keys())]
+
+    # TODO: make slack hub generic. MAKE TODOS GREAT AGAIN
+    slack_hub = [hub for hub in hubs if hub.name == 'kiel_electricity'][0]
+
     hub_net_exports = {}
     for hub in hubs:
         exports = [seq for key,seq in transmission_dct.items() if key[0] == hub]
@@ -450,14 +458,21 @@ def results_to_db(scenario_name, results_dict):
     for edge in graph.edges():
         graph.edge[edge[0]][edge[1]]['weight'] = 1
 
-    for i in range(1):#list(hub_net_exports.values())[0:1]):
-        demand = []
-        for hub in hubs:
-            demand.append(-hub_net_exports[hub][i])
+    # TODO: Save all seq values in dct and save to db
+    import_export_dct = {}
 
-        # add node to graph with negative (!) supply for each supply node 
+    for i in range(1):#list(hub_net_exports.values())[0:1]):
+        supply = []
+        for hub in hubs:
+            supply.append(hub_net_exports[hub][i])
+        supply = [round(s) for s in supply]
+        slack_supply = supply.pop(hubs.index(slack_hub))
+        slack_supply = -sum(supply)
+        supply.insert(hubs.index(slack_hub), slack_supply)
+        
+        # add node to graph with negative (!) supply for each supply node
         for j in range(len(hubs)):
-            graph.node[j]['demand'] = -hub_net_exports[hubs[j]][i]
+            graph.node[j]['demand'] = -supply[j]
             graph.node[j]['hub'] = hubs[j]
 
         flow_cost, flow_dct = nx.network_simplex(graph)
@@ -468,8 +483,7 @@ def results_to_db(scenario_name, results_dict):
             for kk, vv in v.items():
                 if vv > 0:
                     flow_dct[kk][k] = - vv
-
-        print(flow_dct)
+        
     session.commit()
 
 
