@@ -425,7 +425,6 @@ def results_to_db(scenario_name, results_dict):
                                         value=seq)
         session.add(result)
         session.flush()
-    import pdb; pdb.set_trace()
     session.commit()
 
 
@@ -507,11 +506,11 @@ def get_hub_results(scenario_identifier, hub_name, by='id', aggregated=True):
 
     # TODO : Add import/export flows from database
 
-    if aggregated:
-        for k in hub_results[hub_name]:
-            for kk in hub_results[hub_name][k]:
-                hub_results[hub_name][k][kk] = \
-                    sum(hub_results[hub_name][k][kk])
+        if aggregated:
+            for k in hub_results[hub_name]:
+                for kk in hub_results[hub_name][k]:
+                    hub_results[hub_name][k][kk] = \
+                        sum(hub_results[hub_name][k][kk])
 
         return hub_results
 
