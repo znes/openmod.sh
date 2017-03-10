@@ -138,66 +138,110 @@
 
 <script type="text/javascript">
 function updateValue(slider_id, newValue) {
- document.getElementById(slider_id+"_slider").value = newValue;
- document.getElementById(slider_id+"_display").innerHTML=newValue;
- document.getElementById(slider_id+"_area").innerHTML=newValue*10;
- var l = lookup[slider_id];
- scenario.children_dict[l.child].tags[l.tag] = newValue;
- makeTimeseriesPlot();
- makeRegionPlot();
- makeHeatmapPlot();
- makeBarPlot();}
+    document.getElementById(slider_id + "_slider").value = newValue;
+    document.getElementById(slider_id + "_display").innerHTML = newValue;
+    document.getElementById(slider_id + "_area").innerHTML = newValue * 10;
+    var l = lookup[slider_id];
+    scenario.children_dict[l.child].tags[l.tag] = newValue;
+    makeTimeseriesPlot();
+    makeRegionPlot();
+    makeHeatmapPlot();
+    makeBarPlot();
+}
 
 
 var timeseriesOrder = false;
 
-function getResults(scenario) {
-    x = $.get('API/results/aggregated',  {scenario_id: scenario_db_id,
-                                          hub_name: 'kiel_electricity'});
-    console.log(x);
-    return x;
-}
+// GET RESULTS FUNCTION FOR AGGREGATE RESULTS
+function getResults(scenario_db_id, callback) {
+    return $.ajax({
+        url: 'API/results/aggregated',
+        type: 'get',
+        data : {scenario_id: scenario_db_id,
+                hub_name: 'kiel_electricity'}
+        })
+    .done(callback)
+    }
+
 
 function makeBarPlot() {
 
-    result = getResults(scenario);
+    result = getResults(scenario_db_id, function(data) {
+            var x_vals = [];
+            var y_vals = [];
 
-    return result;
+            //console.log(data);
+            $.each(data, function(key, value) {
+                //console.log(key, value);
+                $.each(value['production'], function(comp_name, production) {
+                    x_vals.push(comp_name);
+                    y_vals.push(production);
+                    //console.log(comp_name, production);
+                });
+            });
 
- }
+            var layout =  {title: 'Summed electricity production',
+                    axis: {
+                        title: 'Technologies'
+                    },
+                    yaxis: {
+                        title: 'Production in MWh'
+                    }
+            };
+            var data = [{
+                x: x_vals,
+                y: y_vals,
+                type: 'bar'
+            }
+        ];
+
+        Plotly.newPlot('bar_plot', data, layout);
+
+    });
+}
 
 function makeHeatmapPlot() {
- var dates = Array.apply(null, Array(8760)).map(function (_, i) {return new Date(i*3600*1000);});
- var heat = scenario.children_dict.kiel_demand_heat.sequences.load_profile;
- heat = heat.map(function(i) {return i*scenario.children_dict.kiel_demand_heat.tags.amount});
+    var dates = Array.apply(null, Array(8760)).map(function(_, i) {
+        return new Date(i * 3600 * 1000);
+    });
+    var heat = scenario.children_dict.kiel_demand_heat.sequences.load_profile;
+    heat = heat.map(function(i) {
+        return i * scenario.children_dict.kiel_demand_heat.tags.amount
+    });
 
 
- var data = []
+    var data = []
 
- for (var i=0; i<24; i++) {
-    data[i] = []
-    for ( var j = 0; j < 365; j++ ) {
-        data[i].push(heat[j*24+i])
-  }
- }
-
- var layout = {
-  title: 'Heat demand MW in Kiel',
-  axis: {title: 'Day of the year'},
-  yaxis: {title: 'Hour of the day'}};
-
-  var data = [
-   {
-    z: data,
-    type: 'heatmap'
+    for (var i = 0; i < 24; i++) {
+        data[i] = []
+        for (var j = 0; j < 365; j++) {
+            data[i].push(heat[j * 24 + i])
+        }
     }
-  ];
 
-  Plotly.newPlot('heatmap_plot', data, layout);}
+    var layout = {
+        title: 'Heat demand MW in Kiel',
+        axis: {
+            title: 'Day of the year'
+        },
+        yaxis: {
+            title: 'Hour of the day'
+        }
+    };
 
-function reorderTimeseries(){
- timeseriesOrder = !timeseriesOrder;
- makeTimeseriesPlot();}
+    var data = [{
+        z: data,
+        type: 'heatmap'
+    }];
+
+    Plotly.newPlot('heatmap_plot', data, layout);
+}
+
+
+function reorderTimeseries() {
+    timeseriesOrder = !timeseriesOrder;
+    makeTimeseriesPlot();
+}
 
 function makeTimeseriesPlot() {
  var dates = Array.apply(null, Array(8760)).map(function (_, i) {return new Date(i*3600*1000);});
