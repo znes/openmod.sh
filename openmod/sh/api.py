@@ -2,6 +2,8 @@ from geoalchemy2 import shape
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
+import networkx as nx
+
 import oemof.db as db
 
 from openmod.sh.schemas import oms as schema
@@ -423,11 +425,41 @@ def results_to_db(scenario_name, results_dict):
     # right now only works for bidirectional transmissions
     # calculate net export for each hub
     hubs = [e[0] for e in list(transmission_dct.keys())]
-    hub_exports = {}
+    hub_net_exports = {}
     for hub in hubs:
-        exports = [v for k,v in transmission_dct.items() if k[0] == hub]
-        imports = [v for k,v in transmission_dct.items() if k[1] == hub]
-        hub_exports[hub] = exports
+        exports = [seq for key,seq in transmission_dct.items() if key[0] == hub]
+        imports = [seq for key,seq in transmission_dct.items() if key[1] == hub]
+        ex= [sum(x) for x in zip(*exports)]
+        im = [sum(x) for x in zip(*imports)]
+        net_ex = [e - i for e,i in zip(ex, im)]
+        hub_net_exports[hub] = [e - i for e,i in zip(ex, im)]
+    
+    for i in range(1):#list(hub_net_exports.values())[0:1]):
+        demand = []
+        for hub in hubs:
+            demand.append(-hub_net_exports[hub][i])
+
+        # create directed graph
+        graph = nx.complete_graph(len(hubs), create_using=nx.DiGraph())
+
+        for edge in graph.edges():
+            graph.edge[edge[0]][edge[1]]['weight'] = 1
+
+        # add node to graph with negative (!) supply for each supply node 
+        for j in range(len(hubs)):
+            graph.node[j]['demand'] = -hub_net_exports[hubs[j]][i]
+            graph.node[j]['hub'] = hubs[j]
+
+        flow_cost, flow_dct = nx.network_simplex(graph)
+
+        # set negative values for cooresponding negative flows
+        flow_lookup = flow_dct.copy()
+        for k,v in flow_lookup.items():
+            for kk, vv in v.items():
+                if vv > 0:
+                    flow_dct[kk][k] = - vv
+
+        print(flow_dct)
     import pdb; pdb.set_trace()
     session.commit()
 
