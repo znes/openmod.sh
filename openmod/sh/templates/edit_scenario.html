@@ -109,7 +109,7 @@
   <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab1')" id="defaultOpen">Region Plot</a>
   <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab2')">Timeseries Plot</a>
   <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab3')">Heatmap Plot</a>
-  <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab4')">Bar Plot</a>
+  <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab4');updateResults()">Bar Plot</a>
  </div>
 
  <div id="Tab1" class="tabcontent">
@@ -146,56 +146,64 @@ function updateValue(slider_id, newValue) {
     makeTimeseriesPlot();
     makeRegionPlot();
     makeHeatmapPlot();
-    makeBarPlot();
 }
 
+function updateResults() {
+    makeBarPlot(hub_name='kiel_electricity');
+}
 
 var timeseriesOrder = false;
 
 // GET RESULTS FUNCTION FOR AGGREGATE RESULTS
-function getResults(scenario_db_id, callback) {
+function getResults(scenario_db_id, hub_name, callback) {
     return $.ajax({
         url: 'API/results/aggregated',
         type: 'get',
         data : {scenario_id: scenario_db_id,
-                hub_name: 'kiel_electricity'}
+                hub_name: hub_name}
         })
     .done(callback)
     }
 
 
-function makeBarPlot() {
+function makeBarPlot(hub_name) {
 
-    result = getResults(scenario_db_id, function(data) {
-            var x_vals = [];
-            var y_vals = [];
+    result = getResults(scenario_db_id, hub_name, function(data) {
 
-            //console.log(data);
-            $.each(data, function(key, value) {
-                //console.log(key, value);
-                $.each(value['production'], function(comp_name, production) {
-                    x_vals.push(comp_name);
-                    y_vals.push(production);
-                    //console.log(comp_name, production);
-                });
-            });
-
-            var layout =  {title: 'Summed electricity production',
-                    axis: {
-                        title: 'Technologies'
-                    },
-                    yaxis: {
-                        title: 'Production in MWh'
-                    }
-            };
-            var data = [{
-                x: x_vals,
-                y: y_vals,
-                type: 'bar'
+            if (data == false) {
+                document.getElementById("Tab4").innerHTML = 'No results in db';
             }
-        ];
+            else {
+                var x_vals = [];
+                var y_vals = [];
 
-        Plotly.newPlot('bar_plot', data, layout);
+
+                $.each(data, function(key, value) {
+                    //console.log(key, value);
+                    $.each(value['production'], function(comp_name, production) {
+                        x_vals.push(comp_name);
+                        y_vals.push(production);
+                        //console.log(comp_name, production);
+                    });
+                });
+
+                var layout =  {title: 'Summed electricity production',
+                        axis: {
+                            title: 'Technologies'
+                        },
+                        yaxis: {
+                            title: 'Production in MWh'
+                        }
+                };
+                var data = [{
+                    x: x_vals,
+                    y: y_vals,
+                    type: 'bar'
+                }
+            ];
+
+            Plotly.newPlot('bar_plot', data, layout);
+          }
 
     });
 }
@@ -244,134 +252,215 @@ function reorderTimeseries() {
 }
 
 function makeTimeseriesPlot() {
- var dates = Array.apply(null, Array(8760)).map(function (_, i) {return new Date(i*3600*1000);});
- var solar = scenario.children_dict.kiel_solar.sequences.generator_profile;
- solar = solar.map(function(i) {return i*scenario.children_dict.kiel_solar.tags.installed_power});
- var wind = scenario.children_dict.kiel_wind.sequences.generator_profile;
- wind = wind.map(function(i) {return i*scenario.children_dict.kiel_wind.tags.installed_power});
+    var dates = Array.apply(null, Array(8760)).map(function(_, i) {
+        return new Date(i * 3600 * 1000);
+    });
+    var solar = scenario.children_dict.kiel_solar.sequences.generator_profile;
+    solar = solar.map(function(i) {
+        return i * scenario.children_dict.kiel_solar.tags.installed_power
+    });
+    var wind = scenario.children_dict.kiel_wind.sequences.generator_profile;
+    wind = wind.map(function(i) {
+        return i * scenario.children_dict.kiel_wind.tags.installed_power
+    });
 
- var ts = []
- for (var i=0; i<solar.length; i++) {
-  ts.push(solar[i] + wind[i]);}
+    var ts = []
+    for (var i = 0; i < solar.length; i++) {
+        ts.push(solar[i] + wind[i]);
+    }
 
- var selectorOptions = {
-  buttons: [{step: 'month', stepmode: 'backward', count: 1, label: '1m'},
-            {step: 'all'}]};
- var layout = {
-  xaxis: {rangeselector: selectorOptions, rangeslider: {}},
-  yaxis: {fixedrange: true}};
+    var selectorOptions = {
+        buttons: [{
+                step: 'month',
+                stepmode: 'backward',
+                count: 1,
+                label: '1m'
+            },
+            {
+                step: 'all'
+            }
+        ]
+    };
+    var layout = {
+        xaxis: {
+            rangeselector: selectorOptions,
+            rangeslider: {}
+        },
+        yaxis: {
+            fixedrange: true
+        }
+    };
 
- if (timeseriesOrder) {
-  ts = ts.sort(function(a, b){return b-a});
-  dates = Array.apply(null, Array(8760)).map(function (_, i) {return i+1;});
-  var data = [{
-   type: 'scatter',
-   mode: 'lines',
-   line: {color: 'black'},
-   fill: 'tozeroy',
-   x: dates,
-   y: ts}];
-  layout.title = "Duration curve of electricity production in Kiel";
-  Plotly.newPlot('timeseries_plot', data, layout);
- } else {
-  var data = [
-   {
-   name: 'solar',
-   type: 'scatter',
-   mode: 'lines',
-   line: {color: 'orange', width: 0},
-   fill: 'tozeroy',
-   fillcolor: 'orange',
-   x: dates,
-   y: solar
-   },{
-   name: 'wind',
-   type: 'scatter',
-   mode: 'lines',
-   line: {color: 'darkblue', width: 0},
-   fill: 'tonexty',
-   fillcolor: 'darkblue',
-   x: dates,
-   y: ts
-   }];
-  layout.title = "Stacked electricity production in Kiel";
-  Plotly.newPlot('timeseries_plot', data, layout);}}
+    if (timeseriesOrder) {
+        ts = ts.sort(function(a, b) {
+            return b - a
+        });
+        dates = Array.apply(null, Array(8760)).map(function(_, i) {
+            return i + 1;
+        });
+        var data = [{
+            type: 'scatter',
+            mode: 'lines',
+            line: {
+                color: 'black'
+            },
+            fill: 'tozeroy',
+            x: dates,
+            y: ts
+        }];
+        layout.title = "Duration curve of electricity production in Kiel";
+        Plotly.newPlot('timeseries_plot', data, layout);
+    } else {
+        var data = [{
+            name: 'solar',
+            type: 'scatter',
+            mode: 'lines',
+            line: {
+                color: 'orange',
+                width: 0
+            },
+            fill: 'tozeroy',
+            fillcolor: 'orange',
+            x: dates,
+            y: solar
+        }, {
+            name: 'wind',
+            type: 'scatter',
+            mode: 'lines',
+            line: {
+                color: 'darkblue',
+                width: 0
+            },
+            fill: 'tonexty',
+            fillcolor: 'darkblue',
+            x: dates,
+            y: ts
+        }];
+        layout.title = "Stacked electricity production in Kiel";
+        Plotly.newPlot('timeseries_plot', data, layout);
+    }
+}
 
-function makeRegionPlot(){
- region_plot.outerHTML = '<div id="region_plot" style="width: 700px; height: 450px; position: relative;"></div>';
- var map = new L.Map('region_plot');
- // create the tile layer with correct attribution
- var osmUrl='http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png';
- var osmAttrib='Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
- var osm = new L.TileLayer(osmUrl, {minZoom: 8, maxZoom: 12, attribution: osmAttrib});
+function makeRegionPlot() {
+    region_plot.outerHTML = '<div id="region_plot" style="width: 700px; height: 450px; position: relative;"></div>';
+    var map = new L.Map('region_plot');
+    // create the tile layer with correct attribution
+    var osmUrl = 'http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png';
+    var osmAttrib = 'Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
+    var osm = new L.TileLayer(osmUrl, {
+        minZoom: 8,
+        maxZoom: 12,
+        attribution: osmAttrib
+    });
 
- // start the map in South-East England
- map.setView(new L.LatLng(54.32133, 10.13489),9);
- map.addLayer(osm);
- var polygons = ['kiel_electricity', 'ploe_electricity', 'nms_electricity', 'rdeck_electricity'];
- polygons.forEach(function(p) {
-  var wicket = new Wkt.Wkt();
-  var wkt_geom = scenario.children_dict[p].geom;
-  wicket.read(wkt_geom);
-  var polygon = wicket.toObject();
-  map.addLayer(polygon);});
- var bars = ['installed_power_solar', 'installed_power_wind'];
- bars.forEach(function(b) {
-  var l = lookup[b];
-  barBottom = l.pos;
-  barTop = [l.pos[0]+scenario.children_dict[l.child].tags[l.tag]/100.0, l.pos[1]];
-  var line = L.polyline([barBottom, barTop], {color: l.color, weight: 10, lineCap: 'butt'}).addTo(map);});
- }
+    // start the map in South-East England
+    map.setView(new L.LatLng(54.32133, 10.13489), 9);
+    map.addLayer(osm);
+    var polygons = ['kiel_electricity', 'ploe_electricity', 'nms_electricity', 'rdeck_electricity'];
+    polygons.forEach(function(p) {
+        var wicket = new Wkt.Wkt();
+        var wkt_geom = scenario.children_dict[p].geom;
+        wicket.read(wkt_geom);
+        var polygon = wicket.toObject();
+        map.addLayer(polygon);
+    });
+    var bars = ['installed_power_solar', 'installed_power_wind'];
+    bars.forEach(function(b) {
+        var l = lookup[b];
+        barBottom = l.pos;
+        barTop = [l.pos[0] + scenario.children_dict[l.child].tags[l.tag] / 100.0, l.pos[1]];
+        var line = L.polyline([barBottom, barTop], {
+            color: l.color,
+            weight: 10,
+            lineCap: 'butt'
+        }).addTo(map);
+    });
+}
 
 function saveNewScenario(scenario) {
- scenario['name'] = prompt("New name", scenario['name']);
- scenario['tags']['description'] = prompt("New description", scenario['tags']['description']);
- $.ajax({
-    url: 'API/element',
-    type: 'post',
-    data: JSON.stringify(scenario),
-    headers: {'Content-Type': 'application/json'},
-    dataType: 'json',
-    success: function(data) {
-     alert("Saved successfully! Opening new scenario.");
-     window.location.replace('edit_scenario?id='+data.scenario_db_id);},
-    error: function() {
-     alert("Scenario name is already taken. Try again.");
-     saveNewScenario(scenario);}});}
+    scenario['name'] = prompt("New name", scenario['name']);
+    scenario['tags']['description'] = prompt("New description", scenario['tags']['description']);
+    $.ajax({
+        url: 'API/element',
+        type: 'post',
+        data: JSON.stringify(scenario),
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        dataType: 'json',
+        success: function(data) {
+            alert("Saved successfully! Opening new scenario.");
+            window.location.replace('edit_scenario?id=' + data.scenario_db_id);
+        },
+        error: function() {
+            alert("Scenario name is already taken. Try again.");
+            saveNewScenario(scenario);
+        }
+    });
+}
 
 function updateScenario(scenario) {
- // Delete existing scenario
- $.get('delete', {id: scenario_db_id});
- // Update scenario children from dict which is manipulated by slider
- scenario.children = Object.values(scenario.children_dict);
- // Use element API to write to DB
- $.ajax({
-    url: 'API/element',
-    type: 'post',
-    data: JSON.stringify(scenario),
-    headers: {'Content-Type': 'application/json'},
-    dataType: 'json',
-    success: function(data) {
-     alert("Updated successfully! Opening updated scenario.");
-     window.location.replace('edit_scenario?id='+data.scenario_db_id);},
-    error: function() {
-     alert("Error. This should not have happened. Call somebody.");}});}
+    // Delete existing scenario
+    $.get('delete', {
+        id: scenario_db_id
+    });
+    // Update scenario children from dict which is manipulated by slider
+    scenario.children = Object.values(scenario.children_dict);
+    // Use element API to write to DB
+    $.ajax({
+        url: 'API/element',
+        type: 'post',
+        data: JSON.stringify(scenario),
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        dataType: 'json',
+        success: function(data) {
+            alert("Updated successfully! Opening updated scenario.");
+            window.location.replace('edit_scenario?id=' + data.scenario_db_id);
+        },
+        error: function() {
+            alert("Error. This should not have happened. Call somebody.");
+        }
+    });
+}
 
 
 // Get the element with id="defaultOpen" and click on it
 document.getElementById("defaultOpen").click();
 
-var scenario_db_id = {{ scenario_db_id }};
+var scenario_db_id = {
+    {
+        scenario_db_id
+    }
+};
 
-var scenario = {{ scenario | tojson }};
+var scenario = {
+    {
+        scenario | tojson
+    }
+};
 scenario.children_dict = {};
 scenario.children.forEach(function(data) {
-scenario.children_dict[data.name] = data});
+    scenario.children_dict[data.name] = data
+});
 
-lookup = {installed_power_solar: {child: "kiel_solar", tag: "installed_power", pos: [54.3, 10.1], color: 'orange'},
-          installed_power_wind: {child: "kiel_wind", tag: "installed_power", pos: [54.3, 10.15], color: 'darkblue'}};
+lookup = {
+    installed_power_solar: {
+        child: "kiel_solar",
+        tag: "installed_power",
+        pos: [54.3, 10.1],
+        color: 'orange'
+    },
+    installed_power_wind: {
+        child: "kiel_wind",
+        tag: "installed_power",
+        pos: [54.3, 10.15],
+        color: 'darkblue'
+    }
+};
 
 updateValue("installed_power_solar", 12);
-updateValue("installed_power_wind", 2);
-</script>
+updateValue("installed_power_wind", 2); <
+/script>
 {% endblock %}
