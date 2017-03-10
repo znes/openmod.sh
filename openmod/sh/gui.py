@@ -264,7 +264,7 @@ def provide_results_api():
                                       hub_name=query_args['hub_name'],
                                       by='id',
                                       aggregated=True)
-        return(hub_results)
+        return flask.jsonify(hub_results)
 
     if 'sector' in query_args:
         # TODO : implement sector results

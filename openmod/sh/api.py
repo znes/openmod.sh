@@ -551,11 +551,11 @@ def get_hub_results(scenario_identifier, hub_name, by='id', aggregated=True):
 
     # TODO : Add import/export flows from database
 
-    if aggregated:
-        for k in hub_results[hub_name]:
-            for kk in hub_results[hub_name][k]:
-                hub_results[hub_name][k][kk] = \
-                    sum(hub_results[hub_name][k][kk])
+        if aggregated:
+            for k in hub_results[hub_name]:
+                for kk in hub_results[hub_name][k]:
+                    hub_results[hub_name][k][kk] = \
+                        sum(hub_results[hub_name][k][kk])
 
         return hub_results
 
