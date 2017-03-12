@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from traceback import TracebackException as TE
+import traceback
 
 import pandas as pd
 import json
@@ -399,7 +399,10 @@ def wrapped_simulation(scenario):
         result = json.dumps(es.results)
 
     except Exception as e:
-        result = '<br/>'.join(TE.from_exception(e).format())
+        if version_info >= (3, 5):
+            result = '<br/>'.join(traceback.TracebackException.from_exception(e).format())
+        else:
+            result = '<br/>'.joint(traceback.format_exc())
 
     return result
 
