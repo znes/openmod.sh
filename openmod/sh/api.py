@@ -380,7 +380,6 @@ def results_to_db(scenario_name, results_dict):
     """
     """
     # get scenario element by name
-
     session = db_session()
 
     scenario = session.query(schema.Element).filter(
@@ -419,11 +418,11 @@ def results_to_db(scenario_name, results_dict):
                 transmission_dct[(predecessor, successor)] = seq
             if getattr(source, 'sector', '') == 'electricity' and getattr(target, 'type', '') == 'transmission':
                 transmission_lookup[successor] = predecessor
-            if getattr(source, 'type', '') == 'source' and getattr(target, 'type', '') == 'electricity':
+            if getattr(source, 'type', '') == 'source' and getattr(target, 'sector', '') == 'electricity':
                 transmission_dct[(predecessor, successor)] = seq
             if getattr(source, 'sector', '') == 'electricity' and getattr(target, 'type', '') == 'sink':
                 transmission_dct[(predecessor, successor)] = seq
-    print(transmission_dct)
+
     timesteps = len(seq)
     # replace source keys (transmission objects) with hub objects
     for old_key, new_key in transmission_lookup.items():
@@ -432,9 +431,11 @@ def results_to_db(scenario_name, results_dict):
                 transmission_dct[(new_key, k[1])] = transmission_dct.pop(k)
             if k[1] == old_key:
                 transmission_dct[(k[0], new_key)] = transmission_dct.pop(k)
-    # right now only works for bidirectional transmissions
+    # right now only works for bidirectional transmissions between all nodes
     # calculate net export for each hub
-    hubs = [e[0] for e in list(transmission_dct.keys())]
+    edges = list(transmission_dct.keys())
+    hubs = list(set([e[0] for e in edges] + [e[1] for e in edges]))
+    print(hubs)
 
     # TODO: make slack hub generic. MAKE TODOS GREAT AGAIN
     slack_hub = [hub for hub in hubs if hub.name == 'kiel_electricity'][0]
@@ -454,14 +455,13 @@ def results_to_db(scenario_name, results_dict):
 
     # create directed graph
     graph = nx.complete_graph(len(hubs), create_using=nx.DiGraph())
-    print(graph)
+
     for edge in graph.edges():
         graph.edge[edge[0]][edge[1]]['weight'] = 1
 
-    # TODO: Save all seq values in dct and save to db
-    import_export_dct = {}
 
-    for i in range(1):#list(hub_net_exports.values())[0:1]):
+    import_export_dct = {(hubs[pre], hubs[suc]): [] for pre, suc in graph.edges()}
+    for i in range(timesteps):
         supply = []
         for hub in hubs:
             supply.append(hub_net_exports[hub][i])
@@ -477,13 +477,22 @@ def results_to_db(scenario_name, results_dict):
 
         flow_cost, flow_dct = nx.network_simplex(graph)
 
-        # set negative values for cooresponding negative flows
-        flow_lookup = flow_dct.copy()
-        for k,v in flow_lookup.items():
-            for kk, vv in v.items():
-                if vv > 0:
-                    flow_dct[kk][k] = - vv
-        
+        for pre, suc_dct in flow_dct.items():
+            print()
+            for suc, value in suc_dct.items():
+                print(pre, hubs[pre].name, suc, hubs[suc].name, value)
+                import_export_dct[(hubs[pre], hubs[suc])].append(value)
+
+    for edge, seq in import_export_dct.items():
+        print(edge[0].name, edge[1].name, seq)
+        result = schema.ResultSequences(scenario=scenario,
+                                        predecessor=edge[0],
+                                        successor=edge[1],
+                                        type='result',
+                                        value=seq)
+
+        session.add(result)
+        session.flush()
     session.commit()
 
 

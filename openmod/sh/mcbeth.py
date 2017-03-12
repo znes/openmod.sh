@@ -429,7 +429,8 @@ if __name__ == "__main__":
 #
     results_to_db(scenario['name'], es.results)
 
-    results = get_hub_results(scenario['name'], 'kiel_electicity', by='name')
+    results = get_hub_results(scenario['name'], 'kiel_electricity', by='name')
+    r = get_hub_results(scenario['name'], 'kiel_electricity', by='name', aggregated=False)
 
 
 
