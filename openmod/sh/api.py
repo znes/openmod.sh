@@ -414,14 +414,20 @@ def results_to_db(scenario_name, results_dict):
 
             session.add(result)
             session.flush()
-            if getattr(source, 'type', '') == 'transmission' and getattr(target, 'sector', '') == 'electricity':
+            if (getattr(source, 'type', '') == 'transmission' and
+            getattr(target, 'sector', '') == 'electricity'):
                 transmission_dct[(predecessor, successor)] = seq
-            if getattr(source, 'sector', '') == 'electricity' and getattr(target, 'type', '') == 'transmission':
+            if (getattr(source, 'sector', '') == 'electricity' and
+            getattr(target, 'type', '') == 'transmission'):
                 transmission_lookup[successor] = predecessor
-            if getattr(source, 'type', '') == 'source' and getattr(target, 'sector', '') == 'electricity':
+            if (getattr(source, 'type', '') == 'source' and
+            getattr(target, 'sector', '') == 'electricity'):
                 transmission_dct[(predecessor, successor)] = seq
-            if getattr(source, 'sector', '') == 'electricity' and getattr(target, 'type', '') == 'sink':
+                slack_source = (predecessor, successor)
+            if (getattr(source, 'sector', '') == 'electricity' and
+            getattr(target, 'type', '') == 'sink'):
                 transmission_dct[(predecessor, successor)] = seq
+                slack_sink = (predecessor, successor)
 
     timesteps = len(seq)
     # replace source keys (transmission objects) with hub objects
@@ -435,10 +441,15 @@ def results_to_db(scenario_name, results_dict):
     # calculate net export for each hub
     edges = list(transmission_dct.keys())
     hubs = list(set([e[0] for e in edges] + [e[1] for e in edges]))
-    print(hubs)
 
-    # TODO: make slack hub generic. MAKE TODOS GREAT AGAIN
-    slack_hub = [hub for hub in hubs if hub.name == 'kiel_electricity'][0]
+    # slack hub is definde as connected to type sink/source
+    try:
+        slack_hub = set([slack_source[1], slack_sink[0]])
+        if len(slack_hub) == 2:
+            raise Exception("Slack sink and source are at different hubs")
+        slack_hub = list(slack_hub)[0]
+    except:
+        raise Exception("Slack sink or slack source is not defined")
 
     hub_net_exports = {}
     for hub in hubs:
@@ -478,13 +489,10 @@ def results_to_db(scenario_name, results_dict):
         flow_cost, flow_dct = nx.network_simplex(graph)
 
         for pre, suc_dct in flow_dct.items():
-            print()
             for suc, value in suc_dct.items():
-                print(pre, hubs[pre].name, suc, hubs[suc].name, value)
                 import_export_dct[(hubs[pre], hubs[suc])].append(value)
 
     for edge, seq in import_export_dct.items():
-        print(edge[0].name, edge[1].name, seq)
         result = schema.ResultSequences(scenario=scenario,
                                         predecessor=edge[0],
                                         successor=edge[1],
