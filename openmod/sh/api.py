@@ -2,6 +2,8 @@ from geoalchemy2 import shape
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
+import networkx as nx
+
 import oemof.db as db
 
 from openmod.sh.schemas import oms as schema
@@ -385,7 +387,6 @@ def results_to_db(scenario_name, results_dict):
     """
     """
     # get scenario element by name
-
     session = db_session()
 
     scenario = session.query(schema.Element).filter(
@@ -420,16 +421,91 @@ def results_to_db(scenario_name, results_dict):
 
             session.add(result)
             session.flush()
-            if source.type == 'transmission':
-                transmission_dct[predecessor] = (successor, seq)
-            if target.type == 'transmission':
+            if (getattr(source, 'type', '') == 'transmission'
+                    and getattr(target, 'sector', '') == 'electricity'):
+                transmission_dct[(predecessor, successor)] = seq
+            if (getattr(source, 'sector', '') == 'electricity'
+                    and getattr(target, 'type', '') == 'transmission'):
                 transmission_lookup[successor] = predecessor
-    for k, v in transmission_dct.items():
+            if (getattr(source, 'type', '') == 'source'
+                    and getattr(target, 'sector', '') == 'electricity'):
+                transmission_dct[(predecessor, successor)] = seq
+                slack_source = (predecessor, successor)
+            if (getattr(source, 'sector', '') == 'electricity'
+                    and getattr(target, 'type', '') == 'sink'):
+                transmission_dct[(predecessor, successor)] = seq
+                slack_sink = (predecessor, successor)
+
+    timesteps = len(seq)
+    # replace source keys (transmission objects) with hub objects
+    for old_key, new_key in transmission_lookup.items():
+        for k in transmission_dct.keys():
+            if k[0] == old_key:
+                transmission_dct[(new_key, k[1])] = transmission_dct.pop(k)
+            if k[1] == old_key:
+                transmission_dct[(k[0], new_key)] = transmission_dct.pop(k)
+    # right now only works for bidirectional transmissions between all nodes
+    # calculate net export for each hub
+    edges = list(transmission_dct.keys())
+    hubs = list(set([e[0] for e in edges] + [e[1] for e in edges]))
+
+    # slack hub is definde as connected to type sink/source
+    try:
+        slack_hub = set([slack_source[1], slack_sink[0]])
+        if len(slack_hub) == 2:
+            raise Exception("Slack sink and source are at different hubs")
+        slack_hub = list(slack_hub)[0]
+    except:
+        raise Exception("Slack sink or slack source is not defined")
+
+    hub_net_exports = {}
+    for hub in hubs:
+        exports = [seq for key,seq in transmission_dct.items() if key[0] == hub]
+        imports = [seq for key,seq in transmission_dct.items() if key[1] == hub]
+        ex = [sum(x) for x in zip(*exports)]
+        im = [sum(x) for x in zip(*imports)]
+        if ex == []:
+            ex = [0 for i in range(timesteps)]
+        if im == []:
+            im = [0 for i in range(timesteps)]
+        net_ex = [e - i for e,i in zip(ex, im)]
+        hub_net_exports[hub] = [e - i for e,i in zip(ex, im)]
+
+    # create directed graph
+    graph = nx.complete_graph(len(hubs), create_using=nx.DiGraph())
+
+    for edge in graph.edges():
+        graph.edge[edge[0]][edge[1]]['weight'] = 1
+
+
+    import_export_dct = {(hubs[pre], hubs[suc]): [] for pre, suc in graph.edges()}
+    for i in range(timesteps):
+        supply = []
+        for hub in hubs:
+            supply.append(hub_net_exports[hub][i])
+        supply = [round(s) for s in supply]
+        slack_supply = supply.pop(hubs.index(slack_hub))
+        slack_supply = -sum(supply)
+        supply.insert(hubs.index(slack_hub), slack_supply)
+        
+        # add node to graph with negative (!) supply for each supply node
+        for j in range(len(hubs)):
+            graph.node[j]['demand'] = -supply[j]
+            graph.node[j]['hub'] = hubs[j]
+
+        flow_cost, flow_dct = nx.network_simplex(graph)
+
+        for pre, suc_dct in flow_dct.items():
+            for suc, value in suc_dct.items():
+                import_export_dct[(hubs[pre], hubs[suc])].append(value)
+
+    for edge, seq in import_export_dct.items():
         result = schema.ResultSequences(scenario=scenario,
-                                        predecessor=k,
-                                        successor=v[0],
+                                        predecessor=edge[0],
+                                        successor=edge[1],
                                         type='result',
                                         value=seq)
+
         session.add(result)
         session.flush()
     session.commit()
@@ -486,15 +562,21 @@ def get_hub_results(scenario_identifier, hub_name, by='id', aggregated=True):
         # add production and demand to dictionary
         for r in scenario_results:
             if r.successor.name == hub_name:
-                if (r.predecessor.type != 'transmission'
-                        and 'BRD' not in r.predecessor.name):
+                if r.predecessor.type not in ['transmission', 'sink']:
                     label = get_label(r.predecessor)
-                    hub_results[hub_name]['production'][label] = r.value
+                    if (r.predecessor.type == 'hub'
+                            or r.predecessor.type == 'source'):
+                        hub_results[hub_name]['import'][label] = r.value
+                    else:
+                        hub_results[hub_name]['production'][label] = r.value
             if r.predecessor.name == hub_name:
-                if (r.successor.type != 'transmission'
-                        and 'BRD' not in r.successor.name):
+                if r.successor.type not in ['transmission', 'source']:
                     label = get_label(r.successor)
-                    hub_results[hub_name]['demand'][label] = r.value
+                    if (r.successor.type == 'hub'
+                            or r.successor.type == 'sink'):
+                        hub_results[hub_name]['export'][label] = r.value
+                    else:
+                        hub_results[hub_name]['demand'][label] = r.value
 
         # fix storage: collect all storage keys from production and demand and
         # make them a set, substract demand from production and update production
@@ -512,8 +594,6 @@ def get_hub_results(scenario_identifier, hub_name, by='id', aggregated=True):
                 [p if p > 0 else p-p for p in storage_net]
             hub_results[hub_name]['demand'][storage] = \
                 [p if p < 0 else p+p for p in storage_net]
-
-    # TODO : Add import/export flows from database
 
         if aggregated:
             for k in hub_results[hub_name]:
