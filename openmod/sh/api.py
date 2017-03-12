@@ -414,18 +414,18 @@ def results_to_db(scenario_name, results_dict):
 
             session.add(result)
             session.flush()
-            if (getattr(source, 'type', '') == 'transmission' and
-            getattr(target, 'sector', '') == 'electricity'):
+            if (getattr(source, 'type', '') == 'transmission'
+                    and getattr(target, 'sector', '') == 'electricity'):
                 transmission_dct[(predecessor, successor)] = seq
-            if (getattr(source, 'sector', '') == 'electricity' and
-            getattr(target, 'type', '') == 'transmission'):
+            if (getattr(source, 'sector', '') == 'electricity'
+                    and getattr(target, 'type', '') == 'transmission'):
                 transmission_lookup[successor] = predecessor
-            if (getattr(source, 'type', '') == 'source' and
-            getattr(target, 'sector', '') == 'electricity'):
+            if (getattr(source, 'type', '') == 'source'
+                    and getattr(target, 'sector', '') == 'electricity'):
                 transmission_dct[(predecessor, successor)] = seq
                 slack_source = (predecessor, successor)
-            if (getattr(source, 'sector', '') == 'electricity' and
-            getattr(target, 'type', '') == 'sink'):
+            if (getattr(source, 'sector', '') == 'electricity'
+                    and getattr(target, 'type', '') == 'sink'):
                 transmission_dct[(predecessor, successor)] = seq
                 slack_sink = (predecessor, successor)
 
@@ -555,13 +555,19 @@ def get_hub_results(scenario_identifier, hub_name, by='id', aggregated=True):
         # add production and demand to dictionary
         for r in scenario_results:
             if r.successor.name == hub_name:
-                if (r.predecessor.type != 'transmission'
-                        and 'BRD' not in r.predecessor.name):
-                    hub_results[hub_name]['production'][r.predecessor.name] = r.value
+                if r.predecessor.type not in ['transmission', 'sink']:
+                    if (r.predecessor.type == 'hub'
+                            or r.predecessor.type == 'source'):
+                        hub_results[hub_name]['import'][r.predecessor.name] = r.value
+                    else:
+                        hub_results[hub_name]['production'][r.predecessor.name] = r.value
             if r.predecessor.name == hub_name:
-                if (r.successor.type != 'transmission'
-                        and 'BRD' not in r.successor.name):
-                    hub_results[hub_name]['demand'][r.successor.name] = r.value
+                if r.successor.type not in ['transmission', 'source']:
+                    if (r.successor.type == 'hub'
+                            or r.successor.type == 'sink'):
+                        hub_results[hub_name]['export'][r.successor.name] = r.value
+                    else:
+                        hub_results[hub_name]['demand'][r.successor.name] = r.value
 
         # fix storage: collect all storage keys from production and demand and
         # make them a set, substract demand from production and update production
@@ -579,8 +585,6 @@ def get_hub_results(scenario_identifier, hub_name, by='id', aggregated=True):
                 [p if p > 0 else p-p for p in storage_net]
             hub_results[hub_name]['demand'][storage] = \
                 [p if p < 0 else p+p for p in storage_net]
-
-    # TODO : Add import/export flows from database
 
         if aggregated:
             for k in hub_results[hub_name]:
