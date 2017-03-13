@@ -3,6 +3,7 @@
     "kiel_solar": {
       "value": "installed_power",
       "max": "potential_power",
+      "profile": "generator_profile",
       "pos": [
         54.3,
         10.1
@@ -12,6 +13,7 @@
     "kiel_wind": {
       "value": "installed_power",
       "max": "potential_power",
+      "profile": "generator_profile",
       "pos": [
         54.3,
         10.15

@@ -178,8 +178,62 @@ function makeTimeseriesPlot() {
             y: ts
         }];
         layout.title = "Stacked electricity production in Kiel";
-        Plotly.newPlot('timeseries_plot', data, layout);
+        Plotly.newPlot('old_timeseries_plot', data, layout);
     }
+}
+
+function makeSimpleTimeseriesPlot(layout_args, ts_args) {
+
+    trace_name = ts_args.name;
+    ts = ts_args.ts;
+    color = ts_args.color;
+
+    title = layout_args.title;
+    div_id = layout_args.div_id;
+
+    // TODO: make dates accoring to scenario.tags.year
+    dates = Array.apply(null, Array(ts.length)).map(function(_, i) {
+        return new Date(i * 3600 * 1000);
+    });
+
+    selectorOptions = {
+        buttons: [{
+                step: 'month',
+                stepmode: 'backward',
+                count: 1,
+                label: '1m'
+            },
+            {
+                step: 'all'
+            }
+        ]
+    };
+    layout = {
+        xaxis: {
+            rangeselector: selectorOptions,
+            rangeslider: {}
+        },
+        yaxis: {
+            fixedrange: true
+        }
+    };
+
+    data = [{
+        type: 'scatter',
+        mode: 'lines',
+        line: {
+            width: 0
+        },
+        fill: 'tozeroy',
+        x: dates,
+    }];
+
+    data[0].name = trace_name;
+    data[0].y = ts;
+    data[0].fillcolor = color;
+    layout.title = title;
+
+    Plotly.newPlot(div_id, data, layout);
 }
 
 function makeRegionPlot() {

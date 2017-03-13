@@ -57,9 +57,10 @@
 <div style="float:right; width:65%;">
  <div class="tab">
   <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab1')" id="defaultOpen">Region Plot</a>
-  <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab2')">Timeseries Plot</a>
+  <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab2')">Old Timeseries Plot</a>
   <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab3')">Heatmap Plot</a>
   <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab4');updateResults('kiel_electricity')">Production</a>
+  <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab5')">Timeseries Plot</a>
  </div>
 
  <div id="Tab1" class="tabcontent">
@@ -67,7 +68,7 @@
  </div>
 
  <div id="Tab2" class="tabcontent">
-  <div id="timeseries_plot" style="height 300px;"></div>
+  <div id="old_timeseries_plot" style="height 300px;"></div>
   <button type="button" onclick="reorderTimeseries()">Reorder</button>
  </div>
 
@@ -85,6 +86,10 @@
   <button type="button" onclick="updateResults('kiel_heat')">Kiel Wärme</button>
  </div>
 
+  <div id="Tab5" class="tabcontent">
+  <div id="timeseries_plot"></div>
+ </div>
+
 
 </div>
 
@@ -94,6 +99,26 @@
 <script src="static/plots.js"></script>
 
 <script type="text/javascript">
+function getTagValue(element, tag) {
+    return scenario.children_dict[element].tags[tag];
+}
+
+function getSequenceValue(element, sequence) {
+    return scenario.children_dict[element].sequences[sequence];
+}
+
+function prepareTimeseries(id) {
+    ts_args = {};
+    ts_args.name = getTagValue(id, 'label')
+    ts = getSequenceValue(id, lookup[id].profile);
+    ts_args.ts = ts.map(function(i) {
+        return i * parseFloat(getTagValue(id, lookup[id].value));
+    });
+    ts_args.color = lookup[id].color;
+    return ts_args;
+}
+
+
 function updateValue(slider_id, newValue) {
     document.getElementById(slider_id + "_slider").value = newValue;
     document.getElementById(slider_id + "_display").innerHTML = newValue;
@@ -104,6 +129,8 @@ function updateValue(slider_id, newValue) {
     makeRegionPlot();
     makeHeatmapPlot(layout_args={'title':'Heatplot Title'},
                     ts=scenario.children_dict.kiel_demand_heat.sequences.load_profile);
+    makeSimpleTimeseriesPlot(layout_args={'title':'Simple Timeseries Title', 'div_id': 'timeseries_plot'},
+                             ts_args=prepareTimeseries('kiel_solar'));
 }
 
 function updateResults(hub_name) {
@@ -207,10 +234,6 @@ function makeSlider(id, value, max) {
 
 function makeSpan(id, value) {
     return "<span id="+id+">"+value+"</span>"
-}
-
-function getTagValue(element, tag) {
-    return scenario.children_dict[element].tags[tag];
 }
 
 function makeAllSlider() {
