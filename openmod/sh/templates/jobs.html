@@ -1,0 +1,11 @@
+<div id="steve">
+{% if jobs %}
+<p>Queued/Running Simulations:</p>
+<ul id="jobs">
+  {% for job in jobs %}
+  <li><a href="/simulation/{{job}}">{{job}}</a></li>
+  {% endfor %}
+</ul>
+{% endif %}
+</div>
+

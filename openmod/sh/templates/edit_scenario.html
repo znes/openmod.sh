@@ -99,6 +99,7 @@
 </form>
 
 <button type="button" onclick="runSimulation(scenario)">Run Simulation</button>
+{% include 'jobs.html' %}
 </div>
 </div>
 
@@ -168,9 +169,10 @@ function runSimulation(scenario) {
             data: JSON.stringify(scenario),
             contentType: 'application/json; charset=utf-8',
             dataType: 'json',
-            complete: function() {
-                alert('Starting new model run to calculate results!');}
-        })
+            success: function(data) {
+              $("#steve").replaceWith(data.jobs);
+            }
+        });
     }
 
 

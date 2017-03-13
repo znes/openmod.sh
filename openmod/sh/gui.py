@@ -140,7 +140,8 @@ def edit_scenario():
     scenario = provide_element_api(query_args)
 
     return flask.render_template('edit_scenario.html', scenario=scenario,
-                                 scenario_db_id=scenario_db_id)
+                                 scenario_db_id=scenario_db_id,
+                                 jobs=sorted(app.results))
 
 @app.route('/graph_plot', methods=['GET'])
 @fl.login_required
@@ -220,6 +221,9 @@ def download_json():
 def main_menu():
     return flask.render_template('main_menu.html')
 
+@app.route('/jobs')
+def jobs():
+  return flask.render_template('jobs.html', jobs=sorted(app.results))
 
 @app.route('/simulate', methods=['GET', 'PUT'])
 def run_simulation():
@@ -234,9 +238,8 @@ def run_simulation():
 
     app.results[key] = result
 
-    return json.dumps({'success': True, 'job': key})
-
-
+    return json.dumps({'success': True, 'job': key,
+                       'jobs': jobs()})
 
 @app.route('/simulation/<job>')
 def simulation(job):
