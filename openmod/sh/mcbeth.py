@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from sys import version_info
 import traceback
 
 import pandas as pd
