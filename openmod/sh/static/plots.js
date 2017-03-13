@@ -194,7 +194,6 @@ function makeRegionPlot() {
         attribution: osmAttrib
     });
 
-    // start the map in South-East England
     map.setView(new L.LatLng(54.32133, 10.13489), 9);
     map.addLayer(osm);
     var polygons = ['kiel_electricity', 'ploe_electricity', 'nms_electricity', 'rdeck_electricity'];
@@ -205,11 +204,11 @@ function makeRegionPlot() {
         var polygon = wicket.toObject();
         map.addLayer(polygon);
     });
-    var bars = ['installed_power_solar', 'installed_power_wind'];
+    var bars = ['kiel_solar', 'kiel_wind'];
     bars.forEach(function(b) {
         var l = lookup[b];
         barBottom = l.pos;
-        barTop = [l.pos[0] + scenario.children_dict[l.child].tags[l.tag] / 100.0, l.pos[1]];
+        barTop = [l.pos[0] + scenario.children_dict[b].tags[l.value] / 100.0, l.pos[1]];
         var line = L.polyline([barBottom, barTop], {
             color: l.color,
             weight: 10,
