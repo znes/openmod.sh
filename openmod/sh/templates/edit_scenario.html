@@ -48,11 +48,8 @@
 <input type=submit value="Go to scenario overview">
 </form>
 
-<form action="{{ url_for('run_simulation') }}"
-      method=get>
- <input type=submit value="Run simulation">
- <input type="hidden" name="id" value={{scenario_db_id}}>
-</form>
+<button type="button" onclick="runSimulation(scenario)">Run Simulation</button>
+{% include 'jobs.html' %}
 </div>
 </div>
 
@@ -116,16 +113,17 @@ function updateResults(hub_name) {
 var timeseriesOrder = false;
 
 // JQUERY TO START NEW MODEL RUN (Send json)
-function runSimulation(scenario_json) {
+function runSimulation(scenario) {
         return $.ajax({
             url: 'simulate',
-            type: 'post',
-            data: JSON.stringify(scenario_json),
+            type: 'put',
+            data: JSON.stringify(scenario),
             contentType: 'application/json; charset=utf-8',
             dataType: 'json',
-            complete: function() {
-                alert('Starting new model run to calculate results!');}
-        })
+            success: function(data) {
+              $("#steve").replaceWith(data.jobs);
+            }
+        });
     }
 
 
