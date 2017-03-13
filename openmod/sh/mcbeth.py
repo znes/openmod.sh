@@ -311,7 +311,7 @@ def populate_energy_system(es, node_data):
 
         obj.type = n['type']
         for k,v in n['tags'].items():#
-            if k != 'label':
+            if k not in ['label', 'emission_factor']:
                 setattr(obj, k, v)
         es.add(obj)
 
