@@ -1,4 +1,5 @@
 import json
+import multiprocessing.dummy as mpd
 import multiprocessing.pool as mpp
 
 import flask
@@ -17,7 +18,7 @@ from openmod.sh import mcbeth
 
 # Set up a pool of workers to which jobs can be submitted and a dictionary
 # which stores the asynchronous result objects.
-app.workers = mpp.Pool(1)
+app.workers = mpd.Pool(1) if app.debug else mpp.Pool(1)
 app.results = {}
 
 babel = Babel(app)
