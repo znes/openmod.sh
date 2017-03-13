@@ -480,10 +480,7 @@ def results_to_db(scenario_name, results_dict):
 
     import_export_dct = {(hubs[pre], hubs[suc]): [] for pre, suc in graph.edges()}
     for i in range(timesteps):
-        supply = []
-        for hub in hubs:
-            supply.append(hub_net_exports[hub][i])
-        supply = [round(s) for s in supply]
+        supply = [round(hub_net_exports[hub][i]) for hub in hubs]
         slack_supply = supply.pop(hubs.index(slack_hub))
         slack_supply = -sum(supply)
         supply.insert(hubs.index(slack_hub), slack_supply)
