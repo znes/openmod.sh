@@ -98,11 +98,7 @@
 <input type=submit value="Go to scenario overview">
 </form>
 
-<form action="{{ url_for('run_simulation') }}"
-      method=get>
- <input type=submit value="Run simulation">
- <input type="hidden" name="id" value={{scenario_db_id}}>
-</form>
+<button type="button" onclick="runSimulation(scenario)">Run Simulation</button>
 </div>
 </div>
 
