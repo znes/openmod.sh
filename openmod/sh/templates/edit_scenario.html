@@ -29,6 +29,7 @@
 
 <div style="float:left; width:35%;">
 
+<div id="slider_table">
 <h3>Select values</h3>
  <table style="width:50%">
   <caption>Kiel</caption>
@@ -89,7 +90,9 @@
     </td>
   </tr>
 </table>
+</div>
 
+<div>
 <form action="{{ url_for('show_scenarios') }}"
       method=get>
 <input type=submit value="Go to scenario overview">
@@ -101,7 +104,7 @@
  <input type="hidden" name="id" value={{scenario_db_id}}>
 </form>
 </div>
-
+</div>
 
 
 <div style="float:right; width:65%;">
@@ -467,6 +470,13 @@ function updateScenario(scenario) {
    runSimulation(scenario)
 }
 
+function makeSlider(lookup) {
+    for (var key in lookup) {
+        var value = lookup[key];
+    }
+    $('#slider_table').append('<tr><td>test</td></tr>');
+}
+
 
 // Get the element with id="defaultOpen" and click on it
 document.getElementById("defaultOpen").click();
@@ -494,6 +504,8 @@ lookup = {
         color: 'darkblue'
     }
 };
+
+makeSlider(lookup);
 
 updateValue("installed_power_solar", 12);
 updateValue("installed_power_wind", 2);
