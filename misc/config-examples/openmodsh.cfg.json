@@ -1,0 +1,22 @@
+{
+  "gui_slider": {
+    "installed_power_solar": {
+      "child": "kiel_solar",
+      "tag": "installed_power",
+      "pos": [
+        54.3,
+        10.1
+      ],
+      "color": "orange"
+    },
+    "installed_power_wind": {
+      "child": "kiel_wind",
+      "tag": "installed_power",
+      "pos": [
+        54.3,
+        10.15
+      ],
+      "color": "darkblue"
+    }
+  }
+}
