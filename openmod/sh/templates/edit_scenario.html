@@ -190,8 +190,18 @@ function getResults(scenario_db_id, hub_name, callback) {
     }
 
 function saveNewScenario(scenario) {
-    scenario['name'] = prompt("New name", scenario['name']);
-    scenario['tags']['description'] = prompt("New description", scenario['tags']['description']);
+    do {
+        var newScenarioName = prompt("New name", scenario['name']);
+        if (newScenarioName == null) {
+            return;
+        }
+    } while (newScenarioName == "");
+    scenario['name'] = newScenarioName;
+    var newScenarioDescription = prompt("New description", scenario['tags']['description']);
+    if (newScenarioDescription == null) {
+        return;
+    }
+    scenario['tags']['description'] = newScenarioDescription;
     $.ajax({
         url: 'API/element',
         type: 'post',
@@ -202,15 +212,17 @@ function saveNewScenario(scenario) {
         dataType: 'json',
         success: function(data) {
             alert("Saved successfully! Opening new scenario.");
+            // ALWAYS START A NEW SIMULATION IF THE THE SCENARIO IS SAVED
+            runSimulation(scenario);
             window.location.replace('edit_scenario?id=' + data.scenario_db_id);
         },
         error: function() {
-            alert("Scenario name is already taken. Try again.");
+            if (! confirm("Scenario name is already taken. Try again.")) {
+                return;
+            }
             saveNewScenario(scenario);
         }
     });
-   // ALWAYS START A NEW SIMULATION IF THE THE SCENARIO IS SAVED
-   runSimulation(scenario)
 }
 
 function updateScenario(scenario) {
@@ -231,14 +243,14 @@ function updateScenario(scenario) {
         dataType: 'json',
         success: function(data) {
             alert("Updated successfully! Opening updated scenario.");
+            // ALWAYS START A NEW SIMULATION IF THE THE SCENARIO IS SAVED
+            runSimulation(scenario);
             window.location.replace('edit_scenario?id=' + data.scenario_db_id);
         },
         error: function() {
             alert("Error. This should not have happened. Call somebody.");
         }
     });
-   // ALWAYS START A NEW SIMULATION IF THE THE SCENARIO IS SAVED
-   runSimulation(scenario)
 }
 
 function makeSlider(lookup) {
