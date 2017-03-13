@@ -81,7 +81,8 @@ def subset_json(element_dct, query_args):
         element_dct (dict): with default element representation
     """
     # remove objects if query arguements are false
-    for k in ['geom', 'tags', 'sequences', 'children', 'parents', 'successors', 'predecessors']:
+    for k in [ 'geom', 'tags', 'sequences', 'children', 'parents',
+               'successors', 'predecessors']:
         if query_args.get(k, '') == 'false':
             element_dct.pop(k)
     return element_dct
