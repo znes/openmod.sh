@@ -28,7 +28,9 @@ def _float(obj, attr):
                 'variable_cost': 0,
                 'efficiency' : 1,
                 'min_amount':0,
-                'max_amount': None}
+                'max_amount': None,
+                'max_fullloadhours': None,
+                'min_fullloadhours': None}
 
 
     try:
@@ -226,7 +228,9 @@ def populate_energy_system(es, node_data):
             conversion_factors = {
                 sector: _float(n, 'efficiency')}
             outputs={
-                sector: Flow(nominval_value=_float(n, 'installed_power'))}
+                sector: Flow(nominal_value=_float(n, 'installed_power'),
+                             summed_max= _float(n, 'max_fullloadhours'),
+                             summed_min=_float(n, 'min_fullloadhours'))}
 
             # if co2-successor exist, add conversion factors and Flow
             if ss.get('co2'):
@@ -254,7 +258,10 @@ def populate_energy_system(es, node_data):
 
             outputs={
                 ss['heat']: Flow(),
-                ss['electricity']: Flow(nominval_value=_float(n, 'installed_power'))}
+                ss['electricity']: Flow(
+                    nominal_value=_float(n, 'installed_power'),
+                    summed_max= _float(n, 'max_fullloadhours'),
+                    summed_min=_float(n, 'min_fullloadhours'))}
 
             if ss.get('co2'):
                 # select input of predecessor for transformer (commodity source)
@@ -268,7 +275,6 @@ def populate_energy_system(es, node_data):
                 inputs={ps:
                     Flow()},
                 conversion_factors = conversion_factors)
-
 
         # create solph storage objects for storage elements
         if n['type'] == 'storage':
