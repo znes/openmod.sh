@@ -58,27 +58,18 @@ function makeBarPlot(hub_name) {
     });
 }
 
-function makeHeatmapPlot() {
-    var dates = Array.apply(null, Array(8760)).map(function(_, i) {
-        return new Date(i * 3600 * 1000);
-    });
-    var heat = scenario.children_dict.kiel_demand_heat.sequences.load_profile;
-    heat = heat.map(function(i) {
-        return i * scenario.children_dict.kiel_demand_heat.tags.amount
-    });
-
-
+function makeHeatmapPlot(layout_args, ts) {
     var data = []
 
     for (var i = 0; i < 24; i++) {
         data[i] = []
         for (var j = 0; j < 365; j++) {
-            data[i].push(heat[j * 24 + i])
+            data[i].push(ts[j * 24 + i])
         }
     }
 
     var layout = {
-        title: 'Heat demand MW in Kiel',
+        title: layout_args['title'],
         axis: {
             title: 'Day of the year'
         },

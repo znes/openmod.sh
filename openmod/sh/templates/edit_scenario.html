@@ -155,7 +155,8 @@ function updateValue(slider_id, newValue) {
     scenario.children_dict[l.child].tags[l.tag] = newValue;
     makeTimeseriesPlot();
     makeRegionPlot();
-    makeHeatmapPlot();
+    makeHeatmapPlot(layout_args={'title':'Heatplot Title'},
+                    ts=scenario.children_dict.kiel_demand_heat.sequences.load_profile);
 }
 
 function updateResults(hub_name) {
