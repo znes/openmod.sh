@@ -110,8 +110,6 @@ function updateResults(hub_name) {
     makeBarPlot(hub_name=hub_name);
 }
 
-var timeseriesOrder = false;
-
 // JQUERY TO START NEW MODEL RUN (Send json)
 function runSimulation(scenario) {
         return $.ajax({
@@ -242,11 +240,18 @@ var scenario = {{ scenario | tojson }};
 
 var lookup = {{ slider_lookup | tojson }};
 
+var timeseriesOrder = false;
+
 scenario.children_dict = {};
 scenario.children.forEach(function(data) {
     scenario.children_dict[data.name] = data
 });
 
 makeAllSlider();
+
+for (var element in lookup) {
+    var l = lookup[element];
+    updateValue(element, getTagValue(element, l.value));
+}
 </script>
 {% endblock %}
