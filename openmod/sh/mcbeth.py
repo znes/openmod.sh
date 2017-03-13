@@ -28,7 +28,7 @@ def _float(obj, attr):
                 'variable_cost': 0,
                 'efficiency' : 1,
                 'min_amount':0,
-                'max_amount': float('+inf')}
+                'max_amount': None}
 
 
     try:
@@ -128,14 +128,21 @@ def populate_energy_system(es, node_data):
                 # assign the lager value of min/max amount to nominal value
                 nv = max_amount
 
+                if nv is None:
+                    summed_max = None
+                    summed_min = None
+                else:
+                    summed_max = max_amount / nv
+                    summed_min = min_amount / nv
+
                 # summe_max is set to 1, to make summed max working!!!!!!!!
                 # contraints is: flow <= nominal_value * summed_max
                 obj = Source(label=n['name'],
                              outputs={ss:
                                  Flow(nominal_value=nv,
                                       variable_costs=_float(n, 'variable_cost'),
-                                      summed_max=max_amount/nv,
-                                      summed_min=min_amount/nv)})
+                                      summed_max=summed_max,
+                                      summed_min=summed_min)})
                 obj.type = n['type']
                 obj.emission_factor = _float(n, 'emission_factor')
 
