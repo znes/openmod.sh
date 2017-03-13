@@ -137,6 +137,10 @@ def populate_energy_system(es, node_data):
                 else:
                     summed_max = max_amount / nv
                     summed_min = min_amount / nv
+                # if summe_min i.e min_amount is 0, we do not want to build the
+                # constraint, therefore summed_min is set to None
+                if summed_min == 0:
+                    summed_min = None
 
                 # summe_max is set to 1, to make summed max working!!!!!!!!
                 # contraints is: flow <= nominal_value * summed_max
@@ -223,6 +227,12 @@ def populate_energy_system(es, node_data):
                   for i in n['successors'] if i}
             ps = es.groups[n['predecessors'][0]]
 
+            # if min fullload hours is 0, we do not want to build the
+            # constraint, therefore summed_min is set to None
+            if _float(n, 'min_fullloadhours') == 0:
+                summed_min = None
+            else:
+                summed_min = _float(n, 'min_fullloadhours')
             # select bus
             sector = [v for (k,v) in ss.items() if k !='co2'][0]
             conversion_factors = {
@@ -230,7 +240,8 @@ def populate_energy_system(es, node_data):
             outputs={
                 sector: Flow(nominal_value=_float(n, 'installed_power'),
                              summed_max= _float(n, 'max_fullloadhours'),
-                             summed_min=_float(n, 'min_fullloadhours'))}
+                             variable_costs=_float(n, 'variable_cost'),
+                             summed_min=summed_min)}
 
             # if co2-successor exist, add conversion factors and Flow
             if ss.get('co2'):
@@ -256,12 +267,17 @@ def populate_energy_system(es, node_data):
                 ss['heat']: _float(n, 'thermal_efficiency'),
                 ss['electricity']: _float(n, 'electrical_efficiency')}
 
+            if _float(n, 'min_fullloadhours') == 0:
+                summed_min = None
+            else:
+                summed_min = _float(n, 'min_fullloadhours')
+
             outputs={
                 ss['heat']: Flow(),
                 ss['electricity']: Flow(
                     nominal_value=_float(n, 'installed_power'),
                     summed_max= _float(n, 'max_fullloadhours'),
-                    summed_min=_float(n, 'min_fullloadhours'))}
+                    summed_min=summed_min)}
 
             if ss.get('co2'):
                 # select input of predecessor for transformer (commodity source)
