@@ -161,11 +161,11 @@ function updateResults(hub_name) {
 var timeseriesOrder = false;
 
 // JQUERY TO START NEW MODEL RUN (Send json)
-function runSimulation(scenario_json) {
+function runSimulation(scenario) {
         return $.ajax({
             url: 'simulate',
             type: 'put',
-            data: JSON.stringify(scenario_json),
+            data: JSON.stringify(scenario),
             contentType: 'application/json; charset=utf-8',
             dataType: 'json',
             complete: function() {
