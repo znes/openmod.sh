@@ -23,6 +23,10 @@ def _float(obj, attr):
     to float with explicit value error message and default setting of
     attributes.
     """
+
+    if attr == 'null':
+        attr == None
+
     defaults = {'installed_power': None,
                 'amount': None,
                 'variable_cost': 0,
@@ -30,7 +34,7 @@ def _float(obj, attr):
                 'min_amount':0,
                 'max_amount': None,
                 'max_fullloadhours': None,
-                'min_fullloadhours': None}
+                'min_fullloadhours': 0}
 
 
     try:
@@ -276,6 +280,7 @@ def populate_energy_system(es, node_data):
                 ss['heat']: Flow(),
                 ss['electricity']: Flow(
                     nominal_value=_float(n, 'installed_power'),
+                    variable_costs=_float(n, 'variable_cost'),
                     summed_max= _float(n, 'max_fullloadhours'),
                     summed_min=summed_min)}
 
