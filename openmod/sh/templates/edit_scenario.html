@@ -160,6 +160,20 @@ function updateResults(hub_name) {
 
 var timeseriesOrder = false;
 
+// JQUERY TO START NEW MODEL RUN (Send json)
+function runSimulation(scenario_json) {
+        return $.ajax({
+            url: 'simulate',
+            type: 'post',
+            data: JSON.stringify(scenario_json),
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            complete: function() {
+                alert('Starting new model run to calculate results!');}
+        })
+    }
+
+
 // GET RESULTS FUNCTION FOR AGGREGATE RESULTS
 function getResults(scenario_db_id, hub_name, callback) {
     return $.ajax({
@@ -421,6 +435,8 @@ function saveNewScenario(scenario) {
             saveNewScenario(scenario);
         }
     });
+   // ALWAYS START A NEW SIMULATION IF THE THE SCENARIO IS SAVED
+   runSimulation(scenario)
 }
 
 function updateScenario(scenario) {
@@ -447,6 +463,8 @@ function updateScenario(scenario) {
             alert("Error. This should not have happened. Call somebody.");
         }
     });
+   // ALWAYS START A NEW SIMULATION IF THE THE SCENARIO IS SAVED
+   runSimulation(scenario)
 }
 
 

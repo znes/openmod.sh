@@ -224,21 +224,32 @@ def main_menu():
 def run_simulation():
     """
     """
-    #scenario_json = flask.request.get_json()
-    query_args = flask.request.args.to_dict()
-    query_args['expand'] = 'children'
-    scenario_json = provide_element_api(query_args)
 
-    #try:
-    result = app.workers.apply_async(mcbeth.wrapped_simulation,
-                                     args=[scenario_json])
+    scenario_json = flask.request.get_json()
+    # if not a json file is send, an request with scenario id is assumed
+    if not scenario_json:
+        query_args = flask.request.args.to_dict()
+        query_args['expand'] = 'children'
+        scenario_json = provide_element_api(query_args)
 
-    key = str(id(result))
+        result = app.workers.apply_async(mcbeth.wrapped_simulation,
+                                         args=[scenario_json])
+        key = str(id(result))
 
-    app.results[key] = result
+        app.results[key] = result
 
-    #return result #json.dumps({'success':True, 'job':key})
-    return '<a href="/simulation/{0}">{0}</a>'.format(key)
+        return '<a href="/simulation/{0}">{0}</a>'.format(key)
+
+    else:
+        result = app.workers.apply_async(mcbeth.wrapped_simulation,
+                                         args=[scenario_json])
+
+        key = str(id(result))
+
+        app.results[key] = result
+
+        return json.dumps({'success':True, 'job':key})
+
 
 @app.route('/simulation/<job>')
 def simulation(job):
