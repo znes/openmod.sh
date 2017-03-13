@@ -221,7 +221,7 @@ def main_menu():
     return flask.render_template('main_menu.html')
 
 
-@app.route('/simulate', methods=['GET', 'POST'])
+@app.route('/simulate', methods=['GET', 'PUT'])
 def run_simulation():
     """
     """

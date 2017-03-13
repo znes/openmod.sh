@@ -164,7 +164,7 @@ var timeseriesOrder = false;
 function runSimulation(scenario_json) {
         return $.ajax({
             url: 'simulate',
-            type: 'post',
+            type: 'put',
             data: JSON.stringify(scenario_json),
             contentType: 'application/json; charset=utf-8',
             dataType: 'json',
