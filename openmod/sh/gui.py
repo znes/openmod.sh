@@ -14,6 +14,7 @@ from openmod.sh.forms import ComputeForm
 from openmod.sh.visualization import make_graph_plot
 from openmod.sh.web import app
 from openmod.sh import mcbeth
+from openmod.sh.config import get_config
 
 
 # Set up a pool of workers to which jobs can be submitted and a dictionary
@@ -139,8 +140,10 @@ def edit_scenario():
     scenario_db_id=query_args['id']
     scenario = provide_element_api(query_args)
 
-    return flask.render_template('edit_scenario.html', scenario=scenario,
-                                 scenario_db_id=scenario_db_id)
+    return flask.render_template('edit_scenario.html',
+                                 scenario=scenario,
+                                 scenario_db_id=scenario_db_id,
+                                 slider_lookup=get_config('gui_slider', {}))
 
 @app.route('/graph_plot', methods=['GET'])
 @fl.login_required
