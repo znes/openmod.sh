@@ -82,7 +82,8 @@ def create_energy_system(scenario):
     timeindex = pd.date_range(start=start, end=end, freq='H')
 
     # create energy sytem and disable automatic registry of node objects
-    es = EnergySystem(groupings=GROUPINGS, timeindex=timeindex)
+    es = EnergySystem(groupings=GROUPINGS,
+                      timeindex=timeindex)
     Node.registry = None
 
     es.scenario_description = scenario['tags'].get('scenario_description',
@@ -162,8 +163,6 @@ def populate_energy_system(es, node_data):
                            inputs={ps:
                               Flow(nominal_value=_float(n, 'installed_power'),
                                    variable_costs=_float(n, 'variable_cost'))})
-                obj.type = n['type']
-                es.add(obj)
 
         # create oemof solph source for sink elements  (e.g. export-slack)
         if n['type'] == 'source':
@@ -175,8 +174,6 @@ def populate_energy_system(es, node_data):
                              outputs={ss:
                               Flow(nominal_value=_float(n, 'installed_power'),
                                    variable_costs=_float(n, 'variable_cost'))})
-                obj.type = n['type']
-                es.add(obj)
 
         # create oemof solph source object for volatile generator elements
         if n['type'] == 'volatile_generator':
@@ -190,9 +187,7 @@ def populate_energy_system(es, node_data):
                                       actual_value=n['sequences']['generator_profile'],
                                       variable_cost=_float(n, 'variable_cost'),
                                       fixed=True)})
-                obj.fuel_type = n['tags'].get('fuel_type')
-                obj.type = n['type']
-                es.add(obj)    # create sink objects
+
 
         # cretae oemof solph sink object for demand elements
         if n['type'] == 'demand':
@@ -219,8 +214,6 @@ def populate_energy_system(es, node_data):
                                       actual_value=av,
                                       variable_costs=_float(n, 'variable_cost'),
                                       fixed=fixed)})
-                obj.type = n['type']
-                es.add(obj)
 
         # create linear transformers for flexible generators
         if n['type'] == 'flexible_generator':
@@ -248,8 +241,6 @@ def populate_energy_system(es, node_data):
                 inputs={ps:
                     Flow()},
                 conversion_factors=conversion_factors)
-            obj.type = n['type']
-            es.add(obj)
 
         # create linear transformers for combined flexible generators
         if n['type'] == 'combined_flexible_generator':
@@ -277,8 +268,7 @@ def populate_energy_system(es, node_data):
                 inputs={ps:
                     Flow()},
                 conversion_factors = conversion_factors)
-            obj.type = n['type']
-            es.add(obj)
+
 
         # create solph storage objects for storage elements
         if n['type'] == 'storage':
@@ -305,8 +295,6 @@ def populate_energy_system(es, node_data):
                         nominal_capacity=_float(n,'installed_energy'),
                         nominal_input_capacity_ratio=nicr,
                         nominal_output_capacity_ration=nocr)
-            obj.type = n['type']
-            es.add(obj)
 
         # create linear transformer(s) for transmission elements
         if n['type'] == 'transmission':
@@ -320,8 +308,12 @@ def populate_energy_system(es, node_data):
                 inputs={ps:
                     Flow()},
                 conversion_factors={ss: _float(n, 'efficiency')})
-            obj.type = n['type']
-            es.add(obj)
+
+        obj.type = n['type']
+        for k,v in n['tags'].items():#
+            if k != 'label':
+                setattr(obj, k, v)
+        es.add(obj)
 
     return es
 
