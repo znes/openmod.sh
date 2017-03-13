@@ -1,0 +1,24 @@
+{
+  "gui_slider": {
+    "kiel_solar": {
+      "label": "Solar Dach",
+      "value": "installed_power",
+      "max": "potential_power",
+      "pos": [
+        54.3,
+        10.1
+      ],
+      "color": "orange"
+    },
+    "kiel_wind": {
+      "label": "Wind",
+      "value": "installed_power",
+      "max": "potential_power",
+      "pos": [
+        54.3,
+        10.15
+      ],
+      "color": "darkblue"
+    }
+  }
+}

@@ -1,7 +1,11 @@
 from json import load
 from oemof.tools import helpers
 
-basicpath = helpers.get_basic_path()
+# TODO: switch back to config file in .oemof
+#basicpath = helpers.get_basic_path()
+import os.path
+basicpath = os.path.dirname(os.path.realpath(__file__))
+
 config_file = helpers.get_fullpath(basicpath, 'openmodsh.cfg.json')
 
 try:
