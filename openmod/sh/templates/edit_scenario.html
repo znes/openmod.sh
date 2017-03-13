@@ -213,18 +213,22 @@ function makeSpan(id, value) {
     return "<span id="+id+">"+value+"</span>"
 }
 
+function getTagValue(element, tag) {
+    return scenario.children_dict[element].tags[tag];
+}
+
 function makeAllSlider() {
     for (var element in lookup) {
         var l = lookup[element];
             $('#slider_table').append(
                 "<tr><td>"
-                // TODO: get label from scenario object
-                +l.label
+                +getTagValue(element, 'label')
                 +"</td><td>"
-                +makeSlider(element, l.value, l.max)
+                +makeSlider(element, getTagValue(element, l.value), getTagValue(element, l.max))
                 +"</td><td>"
-                +makeSpan(element+"_display", 0)
+                +makeSpan(element+"_display", getTagValue(element, l.value))
                 +"</td><td>"
+                // TODO: How to deal with area?
                 +makeSpan(element+"_area", 0)
                 +"</td></tr>");
     }
@@ -246,8 +250,5 @@ scenario.children.forEach(function(data) {
 });
 
 makeAllSlider();
-
-updateValue("kiel_solar", 12);
-updateValue("kiel_wind", 2);
 </script>
 {% endblock %}

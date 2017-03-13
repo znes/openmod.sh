@@ -150036,7 +150036,9 @@
       ],
       "tags": {
         "fuel_type": "wind",
-        "installed_power": "251"
+        "installed_power": "10",
+        "potential_power": "50",
+        "label": "Wind"
       },
       "sequences": {
         "generator_profile": [
@@ -158888,7 +158890,9 @@
       ],
       "tags": {
         "fuel_type": "solar",
-        "installed_power": "251"
+        "installed_power": "12",
+        "potential_power": "25",
+        "label": "Solar"
       },
       "sequences": {
         "generator_profile": [
