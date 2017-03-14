@@ -573,62 +573,63 @@ def get_hub_results(scenario_identifier, hub_name, by='id', aggregated=True):
 
         else:
             scenario_id = scenario_identifier
+
         # check if results exist, if so: delete from database
         scenario_results = (session
             .query(schema.ResultSequences)
             .filter_by(scenario_id=scenario_id)
             .all())
-    if scenario_results:
-        hub_results = {hub_name: {'demand': {},
-                                  'production': {},
-                                  'import':{},
-                                  'export': {}}}
 
-        # add production and demand to dictionary
-        for r in scenario_results:
-            if r.successor.name == hub_name:
-                if r.predecessor.type not in ['transmission', 'sink']:
-                    label = get_label(r.predecessor)
-                    if (r.predecessor.type == 'hub'
-                            or r.predecessor.type == 'source'):
-                        hub_results[hub_name]['import'][label] = r.value
-                    else:
-                        hub_results[hub_name]['production'][label] = r.value
-            if r.predecessor.name == hub_name:
-                if r.successor.type not in ['transmission', 'source']:
-                    label = get_label(r.successor)
-                    if (r.successor.type == 'hub'
-                            or r.successor.type == 'sink'):
-                        hub_results[hub_name]['export'][label] = r.value
-                    else:
-                        hub_results[hub_name]['demand'][label] = r.value
+        if scenario_results:
+            hub_results = {hub_name: {'demand': {},
+                                      'production': {},
+                                      'import':{},
+                                      'export': {}}}
 
-        # fix storage: collect all storage keys from production and demand and
-        # make them a set, substract demand from production and update production
-        # and demand with net values
-        storage_net = {}
-        keys = ([k for k in hub_results[hub_name]['production'].keys()] + \
-                [k for k in hub_results[hub_name]['demand'].keys()])
+            # add production and demand to dictionary
+            for r in scenario_results:
+                if r.successor.name == hub_name:
+                    if r.predecessor.type not in ['transmission', 'sink']:
+                        label = get_label(r.predecessor)
+                        if (r.predecessor.type == 'hub' or
+                            r.predecessor.type == 'source'):
+                            hub_results[hub_name]['import'][label] = r.value
+                        else:
+                            hub_results[hub_name]['production'][label] = r.value
+                if r.predecessor.name == hub_name:
+                    if r.successor.type not in ['transmission', 'source']:
+                        label = get_label(r.successor)
+                        if (r.successor.type == 'hub'
+                                or r.successor.type == 'sink'):
+                            hub_results[hub_name]['export'][label] = r.value
+                        else:
+                            hub_results[hub_name]['demand'][label] = r.value
 
-        storages = set([k for k in keys if keys.count(k) > 1])
-        for storage in storages:
-            storage_net = [p-d for p,d in
-                            zip(hub_results[hub_name]['production'][storage],
-                                hub_results[hub_name]['demand'][storage])]
-            hub_results[hub_name]['production'][storage] = \
-                [p if p > 0 else p-p for p in storage_net]
-            hub_results[hub_name]['demand'][storage] = \
-                [p if p < 0 else p+p for p in storage_net]
+            # fix storage: collect all storage keys from production and demand
+            # and make them a set, substract demand from production and update
+            # production and demand with net values
+            storage_net = {}
+            keys = ([k for k in hub_results[hub_name]['production'].keys()] +
+                    [k for k in hub_results[hub_name]['demand'].keys()])
 
-        if aggregated:
-            for k in hub_results[hub_name]:
-                for kk in hub_results[hub_name][k]:
-                    hub_results[hub_name][k][kk] = \
-                        sum(hub_results[hub_name][k][kk])
+            storages = set([k for k in keys if keys.count(k) > 1])
+            for storage in storages:
+                storage_net = [p-d for p,d in
+                               zip(hub_results[hub_name]['production'][storage],
+                                   hub_results[hub_name]['demand'][storage])]
+                hub_results[hub_name]['production'][storage] = \
+                    [p if p > 0 else p-p for p in storage_net]
+                hub_results[hub_name]['demand'][storage] = \
+                    [p if p < 0 else p+p for p in storage_net]
 
-        return hub_results
+            if aggregated:
+                for k in hub_results[hub_name]:
+                    for kk in hub_results[hub_name][k]:
+                        hub_results[hub_name][k][kk] = \
+                            sum(hub_results[hub_name][k][kk])
 
-    else:
-        return False
+            return hub_results
 
+        else:
+            return False
 
