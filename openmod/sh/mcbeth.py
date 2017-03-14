@@ -24,7 +24,7 @@ def _float(obj, attr):
     attributes.
     """
 
-    if obj['tags'].get(attr)  == 'null':
+    if obj['tags'].get(attr)  in ['null', '+inf']:
         obj['tags'][attr] = None
 
     defaults = {'installed_energy': 0,
@@ -337,7 +337,7 @@ def populate_energy_system(es, node_data):
             obj = LinearTransformer(
                 label=n['name'],
                 outputs={ss:
-                    Flow(nominal_value=float(n['tags']['installed_power']))},
+                    Flow(nominal_value=_float(n, 'installed_power'))},
                 inputs={ps:
                     Flow()},
                 conversion_factors={ss: _float(n, 'efficiency')})
