@@ -150,7 +150,7 @@ function makeTimeseriesPlot() {
             y: ts
         }];
         layout.title = "Duration curve of electricity production in Kiel";
-        Plotly.newPlot('timeseries_plot', data, layout);
+        Plotly.newPlot('old_timeseries_plot', data, layout);
     } else {
         var data = [{
             name: 'solar',

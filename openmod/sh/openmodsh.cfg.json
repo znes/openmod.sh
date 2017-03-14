@@ -20,5 +20,6 @@
       ],
       "color": "darkblue"
     }
-  }
+  },
+"timeseries_available": ["kiel_wind", "kiel_solar"]
 }
