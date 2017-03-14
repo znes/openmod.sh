@@ -1,4 +1,4 @@
-<div id="steve">
+<div id="{{ container_id | default('steve') }}">
 {% if jobs %}
 <p>Queued/Running Simulations:</p>
 <ul id="jobs">
