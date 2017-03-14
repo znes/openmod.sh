@@ -1,7 +1,8 @@
+from contextlib import contextmanager
+
 from geoalchemy2 import shape
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
-
 import networkx as nx
 
 import oemof.db as db
@@ -9,13 +10,21 @@ import oemof.db as db
 from openmod.sh.schemas import oms as schema
 
 
+@contextmanager
 def db_session():
-    """ Create a session to communicate with the database.
+    """ Provide a session context to communicate with the database.
     """
     engine = db.engine(schema.configsection)
-
     Session = sessionmaker(bind=engine)
-    return Session()
+    session = Session()
+    try:
+        yield session
+        session.commit()
+    except:
+        session.rollback()
+        raise
+    finally:
+        session.close()
 
 def objects_to_dict(objects):
     """
@@ -95,11 +104,11 @@ def expand_element(element, query_args):
         expand_list.append(subset_json(serialize_element(e), query_args))
     return expand_list
 
-def get_elements(query_parameters):
+def get_elements(query_parameters, session):
     """
     works for name and type
     """
-    query = db_session().query(schema.Element)
+    query = session.query(schema.Element)
     if 'name' in query_parameters.keys():
         query = query.filter(schema.Element.name.like(query_parameters['name']))
     if 'type' in query_parameters.keys():
@@ -119,33 +128,34 @@ def create_element_from_json(json):
     return element
 
 def json_to_db(json):
-    session = db_session()
-    try:
-        exist = session.query(schema.Element).filter_by(name=json['name']).one()
-        return {"success": False}
+    with db_session() as session:
+        try:
+            exist = (session
+                      .query(schema.Element)
+                      .filter_by(name=json['name'])
+                      .one())
+            return {"success": False}
 
-    except:
-        element = create_element_from_json(json)
+        except:
+            element = create_element_from_json(json)
 
-        children_dct = {e['name']: create_element_from_json(e)
-                        for e in json.get('children', [])}
-        element.children = list(children_dct.values())
+            children_dct = {e['name']: create_element_from_json(e)
+                            for e in json.get('children', [])}
+            element.children = list(children_dct.values())
 
 
-        for child in json.get('children', []):
-            if child.get('predecessors'):
-                children_dct[child['name']].predecessors = [
-                                    children_dct[ps]
-                                    for ps in child['predecessors']]
-            if child.get('successors'):
-                children_dct[child['name']].successors = [
-                                    children_dct[ss]
-                                    for ss in child['successors']]
+            for child in json.get('children', []):
+                if child.get('predecessors'):
+                    children_dct[child['name']].predecessors = [
+                                        children_dct[ps]
+                                        for ps in child['predecessors']]
+                if child.get('successors'):
+                    children_dct[child['name']].successors = [
+                                        children_dct[ss]
+                                        for ss in child['successors']]
 
-        session.add(element)
-        session.commit()
-
-        return {"success": True, "scenario_db_id": element.id}
+            session.add(element)
+            return {"success": True, "scenario_db_id": element.id}
 
 # API for element and elements
 def provide_element_api(query_args):
@@ -177,17 +187,19 @@ def provide_element_api(query_args):
                       'predecessors': 'true',
                       'successors': 'true',
                       'hubs_explicitly':'true'}
-    query = db_session().query
-    element = query(schema.Element).filter_by(id=query_args['id']).first()
-    element_dct = serialize_element(element)
-    element_dct['api_parameters'] = {'version': '0.0.1',
-                                     'type': 'element'}
-    all_query_args = get_query_args(query_args, query_defaults)
-    element_dct['api_parameters']['query'] = all_query_args
-    # Use api parameters query for subsetting
-    element_dct = subset_json(element_dct, all_query_args)
-    if 'expand' in query_args.keys():
-        element_dct[query_args['expand']] = expand_element(element, query_args)
+    with db_session() as session:
+        query = session.query
+        element = query(schema.Element).filter_by(id=query_args['id']).first()
+        element_dct = serialize_element(element)
+        element_dct['api_parameters'] = {'version': '0.0.1',
+                                        'type': 'element'}
+        all_query_args = get_query_args(query_args, query_defaults)
+        element_dct['api_parameters']['query'] = all_query_args
+        # Use api parameters query for subsetting
+        element_dct = subset_json(element_dct, all_query_args)
+        if 'expand' in query_args.keys():
+            element_dct[query_args['expand']] = expand_element(
+                element, query_args)
     return element_dct
 
 def provide_elements_api(query_args):
@@ -219,18 +231,19 @@ def provide_elements_api(query_args):
                       'predecessors': 'true',
                       'successors': 'true'}
 
-    elements = get_elements(query_args)
-    outer_json = {}
-    outer_json['api_parameters'] = {'version': '0.0.1',
-                                     'type': 'elements'}
-    all_query_args = get_query_args(query_args, query_defaults)
-    outer_json['api_parameters']['query'] = all_query_args
-    for element in elements:
-        json = serialize_element(element)
-        json = subset_json(json, all_query_args)
-        if 'expand' in query_args.keys():
-            json[query_args['expand']] = expand_element(element, query_args)
-        outer_json[str(element.id)] = json
+    with db_session() as session:
+        elements = get_elements(query_args, session)
+        outer_json = {}
+        outer_json['api_parameters'] = {'version': '0.0.1',
+                                        'type': 'elements'}
+        all_query_args = get_query_args(query_args, query_defaults)
+        outer_json['api_parameters']['query'] = all_query_args
+        for element in elements:
+            json = serialize_element(element)
+            json = subset_json(json, all_query_args)
+            if 'expand' in query_args.keys():
+                json[query_args['expand']] = expand_element(element, query_args)
+            outer_json[str(element.id)] = json
     return outer_json
 
 def create_transmission(json):
@@ -347,36 +360,37 @@ def update_scenario(scenario_json=None, update_json=None):
 def delete_element_from_db(element_identifier, by='id'):
     """
     """
-    session = db_session()
-    if by == 'id':
-        element = session.query(schema.Element).filter_by(
-                id=element_identifier).first()
-    if by == 'name':
-        element = session.query(schema.Element).filter_by(
-                name=element_identifier).first()
+    with db_session() as session:
+        if by == 'id':
+            element = session.query(schema.Element).filter_by(
+                    id=element_identifier).first()
+        if by == 'name':
+            element = session.query(schema.Element).filter_by(
+                    name=element_identifier).first()
 
-    # check if element has more than one parent, if so: raise error
-    for child in element.children:
-        parents = [parent for parent in child.parents]
-        if len(parents) > 1:
-            raise ValueError(
-                "Deleting element {0} with all its children failed. " \
-                "Child {1} does have more than one parent.".format(element.name,
-                                                                   child.name))
+        # check if element has more than one parent, if so: raise error
+        for child in element.children:
+            parents = [parent for parent in child.parents]
+            if len(parents) > 1:
+                raise ValueError(
+                    "Deleting element {0} with all its children failed. " \
+                    "Child {1} does have more than one parent.".format(
+                      element.name,
+                      child.name))
 
-    session.delete(element)
+        session.delete(element)
 
-    session.commit()
 
 def provide_sequence_api(query_args):
     """
     needs at least id as query argument
     """
-    query = db_session().query
-    sequence = query(schema.Sequence).filter_by(id=query_args['id']).first()
-    json = {}
-    if sequence:
-        json[sequence.key] = sequence.value
+    with db_session() as session:
+        q = session.query
+        sequence = q(schema.Sequence).filter_by(id=query_args['id']).first()
+        json = {}
+        if sequence:
+            json[sequence.key] = sequence.value
     return json
 
 def allowed_file(filename):
@@ -388,125 +402,136 @@ def results_to_db(scenario_name, results_dict):
     """
     """
     # get scenario element by name
-    session = db_session()
+    with db_session() as session:
+        scenario = session.query(schema.Element).filter(
+                        schema.Element.name.like(scenario_name)).first()
 
-    scenario = session.query(schema.Element).filter(
-                    schema.Element.name.like(scenario_name)).first()
+        # check if results exist, if so: delete from database
+        scenario_results_exist = (session
+            .query(schema.ResultSequences)
+            .filter_by(scenario_id=scenario.id)
+            .all())
+        if scenario_results_exist:
+            for result in scenario_results_exist:
+                session.delete(result)
+            session.flush()
 
-    # check if results exist, if so: delete from database
-    scenario_results_exist = session.query(schema.ResultSequences).filter_by(
-                                                    scenario_id=scenario.id
-                                                    ).all()
-    if scenario_results_exist:
-        for result in scenario_results_exist:
-            session.delete(result)
-        session.flush()
+        transmission_dct = {}
+        transmission_lookup = {}
+        for source, v in results_dict.items():
+            predecessor = (session
+                .query(schema.Element)
+                .filter(schema.Element.name.like(source.label))
+                .first())
+            if not predecessor:
+                raise Warning("Missing predeccesor element in db for oemof " \
+                              "object {}.".format(source.label))
 
-    transmission_dct = {}
-    transmission_lookup = {}
-    for source, v in results_dict.items():
-        predecessor = session.query(schema.Element).filter(
-                                schema.Element.name.like(source.label)).first()
-        if not predecessor:
-            raise Warning("Missing predeccesor element in db for oemof " \
-                          "object {}.".format(source.label))
+            for target, seq in v.items():
+                successor = (session
+                    .query(schema.Element)
+                    .filter(schema.Element.name.like(target.label))
+                    .first())
+                result = schema.ResultSequences(scenario=scenario,
+                                                predecessor=predecessor,
+                                                successor=successor,
+                                                type='result',
+                                                value=seq)
 
-        for target, seq in v.items():
-            successor = session.query(schema.Element).filter(
-                                schema.Element.name.like(target.label)).first()
+                session.add(result)
+                session.flush()
+                if (getattr(source, 'type', '') == 'transmission'
+                        and getattr(target, 'sector', '') == 'electricity'):
+                    transmission_dct[(predecessor, successor)] = seq
+                if (getattr(source, 'sector', '') == 'electricity'
+                        and getattr(target, 'type', '') == 'transmission'):
+                    transmission_lookup[successor] = predecessor
+                if (getattr(source, 'slack', '') == 'true'
+                        and getattr(target, 'sector', '') == 'electricity'):
+                    transmission_dct[(predecessor, successor)] = seq
+                    slack_source = (predecessor, successor)
+                if (getattr(source, 'sector', '') == 'electricity'
+                        and getattr(target, 'slack', '') == 'true'):
+                    transmission_dct[(predecessor, successor)] = seq
+                    slack_sink = (predecessor, successor)
+
+        timesteps = len(seq)
+        # replace source keys (transmission objects) with hub objects
+        for old_key, new_key in transmission_lookup.items():
+            for k in transmission_dct.keys():
+                if k[0] == old_key:
+                    transmission_dct[(new_key, k[1])] = transmission_dct.pop(k)
+                if k[1] == old_key:
+                    transmission_dct[(k[0], new_key)] = transmission_dct.pop(k)
+        # right now only works for bidirectional transmissions between all nodes
+        # calculate net export for each hub
+        edges = list(transmission_dct.keys())
+        hubs = list(set([e[0] for e in edges] + [e[1] for e in edges]))
+
+        # slack hub is definde as connected to type sink/source
+        try:
+            slack_hub = set([slack_source[1], slack_sink[0]])
+            if len(slack_hub) == 2:
+                raise Exception("Slack sink and source are at different hubs")
+            slack_hub = list(slack_hub)[0]
+        except:
+            raise Exception("Slack sink or slack source is not defined")
+
+        hub_net_exports = {}
+        for hub in hubs:
+            exports = [
+                seq
+                for key,seq in transmission_dct.items()
+                if key[0] == hub]
+            imports = [
+                seq
+                for key,seq in transmission_dct.items()
+                if key[1] == hub]
+            ex = [sum(x) for x in zip(*exports)]
+            im = [sum(x) for x in zip(*imports)]
+            if ex == []:
+                ex = [0 for i in range(timesteps)]
+            if im == []:
+                im = [0 for i in range(timesteps)]
+            net_ex = [e - i for e,i in zip(ex, im)]
+            hub_net_exports[hub] = [e - i for e,i in zip(ex, im)]
+
+        # create directed graph
+        graph = nx.complete_graph(len(hubs), create_using=nx.DiGraph())
+
+        for edge in graph.edges():
+            graph.edge[edge[0]][edge[1]]['weight'] = 1
+
+
+        import_export_dct = {
+            (hubs[pre], hubs[suc]): []
+            for pre, suc in graph.edges()}
+        for i in range(timesteps):
+            supply = [round(hub_net_exports[hub][i]) for hub in hubs]
+            slack_supply = supply.pop(hubs.index(slack_hub))
+            slack_supply = -sum(supply)
+            supply.insert(hubs.index(slack_hub), slack_supply)
+
+            # add node to graph with negative (!) supply for each supply node
+            for j in range(len(hubs)):
+                graph.node[j]['demand'] = -supply[j]
+                graph.node[j]['hub'] = hubs[j]
+
+            flow_cost, flow_dct = nx.network_simplex(graph)
+
+            for pre, suc_dct in flow_dct.items():
+                for suc, value in suc_dct.items():
+                    import_export_dct[(hubs[pre], hubs[suc])].append(value)
+
+        for edge, seq in import_export_dct.items():
             result = schema.ResultSequences(scenario=scenario,
-                                            predecessor=predecessor,
-                                            successor=successor,
+                                            predecessor=edge[0],
+                                            successor=edge[1],
                                             type='result',
                                             value=seq)
 
             session.add(result)
             session.flush()
-            if (getattr(source, 'type', '') == 'transmission'
-                    and getattr(target, 'sector', '') == 'electricity'):
-                transmission_dct[(predecessor, successor)] = seq
-            if (getattr(source, 'sector', '') == 'electricity'
-                    and getattr(target, 'type', '') == 'transmission'):
-                transmission_lookup[successor] = predecessor
-            if (getattr(source, 'slack', '') == 'true'
-                    and getattr(target, 'sector', '') == 'electricity'):
-                transmission_dct[(predecessor, successor)] = seq
-                slack_source = (predecessor, successor)
-            if (getattr(source, 'sector', '') == 'electricity'
-                    and getattr(target, 'slack', '') == 'true'):
-                transmission_dct[(predecessor, successor)] = seq
-                slack_sink = (predecessor, successor)
-
-    timesteps = len(seq)
-    # replace source keys (transmission objects) with hub objects
-    for old_key, new_key in transmission_lookup.items():
-        for k in transmission_dct.keys():
-            if k[0] == old_key:
-                transmission_dct[(new_key, k[1])] = transmission_dct.pop(k)
-            if k[1] == old_key:
-                transmission_dct[(k[0], new_key)] = transmission_dct.pop(k)
-    # right now only works for bidirectional transmissions between all nodes
-    # calculate net export for each hub
-    edges = list(transmission_dct.keys())
-    hubs = list(set([e[0] for e in edges] + [e[1] for e in edges]))
-
-    # slack hub is definde as connected to type sink/source
-    try:
-        slack_hub = set([slack_source[1], slack_sink[0]])
-        if len(slack_hub) == 2:
-            raise Exception("Slack sink and source are at different hubs")
-        slack_hub = list(slack_hub)[0]
-    except:
-        raise Exception("Slack sink or slack source is not defined")
-
-    hub_net_exports = {}
-    for hub in hubs:
-        exports = [seq for key,seq in transmission_dct.items() if key[0] == hub]
-        imports = [seq for key,seq in transmission_dct.items() if key[1] == hub]
-        ex = [sum(x) for x in zip(*exports)]
-        im = [sum(x) for x in zip(*imports)]
-        if ex == []:
-            ex = [0 for i in range(timesteps)]
-        if im == []:
-            im = [0 for i in range(timesteps)]
-        net_ex = [e - i for e,i in zip(ex, im)]
-        hub_net_exports[hub] = [e - i for e,i in zip(ex, im)]
-
-    # create directed graph
-    graph = nx.complete_graph(len(hubs), create_using=nx.DiGraph())
-
-    for edge in graph.edges():
-        graph.edge[edge[0]][edge[1]]['weight'] = 1
-
-
-    import_export_dct = {(hubs[pre], hubs[suc]): [] for pre, suc in graph.edges()}
-    for i in range(timesteps):
-        supply = [round(hub_net_exports[hub][i]) for hub in hubs]
-        slack_supply = supply.pop(hubs.index(slack_hub))
-        slack_supply = -sum(supply)
-        supply.insert(hubs.index(slack_hub), slack_supply)
-        
-        # add node to graph with negative (!) supply for each supply node
-        for j in range(len(hubs)):
-            graph.node[j]['demand'] = -supply[j]
-            graph.node[j]['hub'] = hubs[j]
-
-        flow_cost, flow_dct = nx.network_simplex(graph)
-
-        for pre, suc_dct in flow_dct.items():
-            for suc, value in suc_dct.items():
-                import_export_dct[(hubs[pre], hubs[suc])].append(value)
-
-    for edge, seq in import_export_dct.items():
-        result = schema.ResultSequences(scenario=scenario,
-                                        predecessor=edge[0],
-                                        successor=edge[1],
-                                        type='result',
-                                        value=seq)
-
-        session.add(result)
-        session.flush()
-    session.commit()
 
 
 def get_hub_results(scenario_identifier, hub_name, by='id', aggregated=True):
@@ -538,19 +563,21 @@ def get_hub_results(scenario_identifier, hub_name, by='id', aggregated=True):
 
 
     """
-    session = db_session()
+    with db_session() as session:
+        if by == 'name':
+          scenario = (session
+              .query(schema.Element)
+              .filter(schema.Element.name.like(scenario_identifier))
+              .first())
+          scenario_id = scenario.id
 
-    if by == 'name':
-        scenario = session.query(schema.Element).filter(
-                        schema.Element.name.like(scenario_identifier)).first()
-        scenario_id = scenario.id
-
-    else:
-        scenario_id = scenario_identifier
-    # check if results exist, if so: delete from database
-    scenario_results = session.query(schema.ResultSequences).filter_by(
-                                                    scenario_id=scenario_id
-                                                    ).all()
+        else:
+            scenario_id = scenario_identifier
+        # check if results exist, if so: delete from database
+        scenario_results = (session
+            .query(schema.ResultSequences)
+            .filter_by(scenario_id=scenario_id)
+            .all())
     if scenario_results:
         hub_results = {hub_name: {'demand': {},
                                   'production': {},
