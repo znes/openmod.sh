@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from sys import version_info
+import sys
 import traceback
 
 import pandas as pd
@@ -459,8 +459,11 @@ def wrapped_simulation(scenario):
             "on this page.")
 
     except Exception as e:
-        if version_info >= (3, 5):
-            result = '<br/>'.join(traceback.TracebackException.from_exception(e).format())
+        if sys.version_info >= (3, 5):
+            result = '<br/>'.join(traceback
+                .TracebackException
+                .from_exception(e)
+                .format())
         else:
             result = '<br/>'.joint(traceback.format_exc())
 
