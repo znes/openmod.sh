@@ -226,10 +226,12 @@ def main_menu():
     return flask.render_template('main_menu.html')
 
 @app.route('/jobs')
+@fl.login_required
 def jobs():
   return flask.render_template('jobs.html', jobs=sorted(app.results))
 
 @app.route('/simulate', methods=['GET', 'PUT'])
+@fl.login_required
 def run_simulation():
     """
     """
@@ -246,6 +248,7 @@ def run_simulation():
                        'jobs': jobs()})
 
 @app.route('/simulation/<job>')
+@fl.login_required
 def simulation(job):
     if not job in app.results:
         return "Unknown job."
