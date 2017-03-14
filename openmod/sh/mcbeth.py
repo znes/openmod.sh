@@ -115,7 +115,7 @@ def populate_energy_system(es, node_data):
     # create solph components
     hubs = {}
     for n in node_data:
-        if n['type'] == 'hub' and n['tags'].get('sector', '') != 'co2':
+        if n['type'] == 'hub':
             b = Bus(label=n['name'], geo=n.get('geom'))
             b.type = n['type']
             # add all tags as attributes to hub/bus
