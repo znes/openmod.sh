@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
-from sys import version_info
+import multiprocessing as mp
+import os
+import signal
+import sys
 import traceback
 
 import pandas as pd
@@ -443,7 +446,10 @@ def compute_results(es):
 
     return es
 
-def wrapped_simulation(scenario):
+def stop_worker(signal_number, stack_frame, message="Stopped by user."):
+    raise(Exception(message))
+
+def wrapped_simulation(scenario, connection):
     """
 
     Parameters
@@ -451,7 +457,17 @@ def wrapped_simulation(scenario):
 
     scenario : dict
         Complete scenario definition including all elements.
+    connection : `multiprocessing.Connection`
+        A connection object with which the child process can communicate with
+        the parent.
+
     """
+    signal.signal(signal.SIGINT, stop_worker)
+    connection.send(mp.current_process().pid)
+    # If theres anything available on our end of the pipe, that means our
+    # parent wants us to stop immediately.
+    if connection.poll():
+      return "Stopped.\n<br/>Terminated without any action."
     try:
         # create an energy system object
         es = create_energy_system(scenario)
@@ -467,18 +483,19 @@ def wrapped_simulation(scenario):
 
         results_to_db(scenario['name'], es.results)
 
-        result =(
-            "Computation done (successfully).<br />" +
-            "Once I finished the necessary TODOs, you'll see the process" +
-            "output" +
-            "<br />" +
-            "on this page.")
+        result = "Success."
 
     except Exception as e:
-        if version_info >= (3, 5):
-            result = '<br/>'.join(traceback.TracebackException.from_exception(e).format())
+        result = "Failure.\n<br/>"
+        if sys.version_info >= (3, 5):
+            result += '<br/>'.join(traceback
+                .TracebackException
+                .from_exception(e)
+                .format())
         else:
-            result = '<br/>'.joint(traceback.format_exc())
+            result += '<br/>'.join(traceback.format_exc())
+    finally:
+        connection.close()
 
     return result
 
