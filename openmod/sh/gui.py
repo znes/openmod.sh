@@ -230,6 +230,13 @@ def main_menu():
 def jobs():
   return flask.render_template('jobs.html', jobs=sorted(app.results))
 
+@app.route('/kill/<job>', methods=['PUT'])
+@fl.login_required
+def kill(job):
+  if job in app.results:
+    del app.results[job]
+  return flask.render_template('jobs.html', jobs=sorted(app.results))
+
 @app.route('/simulate', methods=['GET', 'PUT'])
 @fl.login_required
 def run_simulation():
@@ -257,7 +264,6 @@ def simulation(job):
                 "Please come back later.")
     else:
         result = app.results[job].get()
-        del app.results[job]
         return result
 
 

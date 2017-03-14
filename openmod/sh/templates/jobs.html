@@ -3,7 +3,12 @@
 <p>Queued/Running Simulations:</p>
 <ul id="jobs">
   {% for job in jobs %}
-  <li><a href="/simulation/{{job}}">{{job}}</a></li>
+  <li>
+    <a href="/simulation/{{job}}">{{job}}</a>
+    <button onclick="$.ajax({ url: '/kill/{{job}}', type: 'put', success: function(data) { $('#{{ container_id | default('steve') }}').replaceWith(data.jobs)} } );">
+      Dequeue/Kill
+    </button>
+  </li>
   {% endfor %}
 </ul>
 {% endif %}
