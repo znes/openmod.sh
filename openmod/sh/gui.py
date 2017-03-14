@@ -261,13 +261,18 @@ def run_simulation():
 @app.route('/simulation/<job>')
 @fl.login_required
 def simulation(job):
-    if not job in app.results:
+    job = app.results.get(job)
+    if not job:
         return "Unknown job."
-    elif not app.results[job].ready():
+    elif not job.ready():
+        if job.status() == "Cancelled.":
+            return ("Job cancelled. <br/>" +
+                    "It's still queued but will be disposed " +
+                    "of before it starts.")
         return ("Job running, but not finished yet. <br />" +
                 "Please come back later.")
     else:
-        result = app.results[job].get()
+        result = job.get()
         return result
 
 
