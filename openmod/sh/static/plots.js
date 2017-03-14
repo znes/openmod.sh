@@ -183,7 +183,6 @@ function makeTimeseriesPlot() {
 }
 
 function makeSimpleTimeseriesPlot(layout_args, ts_args) {
-
     trace_name = ts_args.name;
     ts = ts_args.ts;
     color = ts_args.color;
