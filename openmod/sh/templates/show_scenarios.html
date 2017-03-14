@@ -1,76 +1,82 @@
 {% extends "base_layout.html" %}
-{% block body %}
+{% block content %}
 
-<table border='1' align="center", id="hor-minimalist-a">
- <tr>
-  <th>Scenario Name</th>
-  <th>Show JSON - dataset</th>
-  <th>Download JSON - dataset</th>
-  <th>Edit Scenario</th>
-  <th>Show Graph</th>
-  <th>Open in iD</th>
-  <th>Delete</th>
- </tr>
-
- {% for k,v in scenarios.items() %}
-
- <tr>
-  <td>{{ scenarios[k]['name'] }}</td>
-  <td>
-   <form action="{{ url_for('provide_element_api_route') }}"
-         method=get>
-    <input type=submit value="Show">
-    <input type="hidden" name="id" value={{k}}>
-    <input type="hidden" name="expand" value="children">
-   </form>
-  </td>
-  <td>
-   <form action="{{ url_for('download_json') }}"
-         method=get>
-    <input type=submit value="Download">
-    <input type="hidden" name="id" value={{k}}>
-   </form>
-  </td>
-  <td>
-   <form action="{{ url_for('edit_scenario') }}"
-         method=get>
-    <input type=submit value="Edit">
-    <input type="hidden" name="id" value={{k}}>
-   </form>
-  </td>
-  <td>
-   <form action="{{ url_for('plot_graph') }}"
-         method=get>
-    <input type=submit value="Show">
-    <input type="hidden" name="id" value={{k}}>
-   </form>
-  </td>
-  <td>
-   <form action="{{url_for('id_editor') }}"
-         method=get>
-    <input type=submit value="Open">
-    <input type="hidden" name="id" value={{k}}>
-   </form>
-   </td>
-   <td>
-   <form action="{{url_for('delete_scenario') }}"
-         method=get onsubmit="return ConfirmDelete();">
-    <input type=submit value="Delete">
-    <input type="hidden" name="id" value={{k}}>
-   </form>
-   </td>
- </tr>
-
-{% endfor %}
-
-</table>
+<!-- interface -->
+<div class="tool">
+	<header>
+		Scenarios
+	</header>
+	<div class="toolbar">
+		<br />
+	</div>
+	<table class="table table-hover">
+	  <thead>
+	    <tr>
+			<th>Scenario Name</th>
+			<th>Show JSON - dataset</th>
+			<th>Download JSON - dataset</th>
+			<th>Edit Scenaio</th>
+			<th>Show Graph</th>
+			<th>Open in iD</th>
+			<th>Delete</th>
+	    </tr>
+	  </thead>
+	  <tbody>
+	  
+	   {% for k,v in scenarios.items() %}
+	   
+	    <tr>
+	    	<td>{{ scenarios[k]['name'] }}</td>
+	    	<td>
+			   <form action="{{ url_for('provide_element_api_route') }}"
+			         method=get>
+			    <input type=submit value="Show" class="btn btn-primary">
+			    <input type="hidden" name="id" value="">
+			    <input type="hidden" name="expand" value="children">
+			   </form>
+		    </td>
+			<td>
+	      		<form action="{{ url_for('download_json') }}" method=get>
+				<input type=submit value="Download" class="btn btn-primary">
+				<input type="hidden" name="id" value="{{k}}">
+				</form>
+	      	</td>
+			<td>
+				<form action="{{ url_for('edit_scenario') }}" method=get>
+				<input type=submit value="Edit" class="btn btn-primary">
+				<input type="hidden" name="id" value="{{k}}">
+				</form>
+			</td>
+			<td>
+				<form action="{{ url_for('plot_graph') }}" method=get>
+				<input type=submit value="Show" class="btn btn-primary">
+				<input type="hidden" name="id" value="{{k}}">
+				</form>		      
+	      	</td>
+	      	<td>
+				<form action="{{url_for('id_editor') }}" method=get>
+				<input type=submit value="Open" class="btn btn-primary">
+				<input type="hidden" name="id" value="{{k}}">
+				</form>
+	      	</td>
+	      	<td>
+				<form action="{{url_for('delete_scenario') }}" method=get onsubmit="return ConfirmDelete();">
+				<input type=submit value="Delete" class="btn btn-primary">
+				<input type="hidden" name="id" value="{{k}}">
+				</form>
+	      	</td>
+	    </tr>
+	    
+	    {% endfor %}
+	    
+	  </tbody>
+	</table>
+</div>
 
 <h3> Miss a scenario? Click below to import:</h3>
-<a href={{ url_for('upload_file') }}>Scenario import</a>
+<form action="{{ url_for('upload_file') }}" method=get>
+<input type=submit value="Scenario import" class="btn btn-primary">
 
-{% endblock %}
-
-{% block footer %}
 <script>
     function ConfirmDelete()
     {
@@ -81,7 +87,5 @@
         return false;
     }
 </script>
-
 {% endblock %}
-
 

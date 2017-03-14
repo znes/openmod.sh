@@ -1,0 +1,87 @@
+{% extends "base_layout.html" %}
+{% block body %}
+
+<table border='1' align="center", id="hor-minimalist-a">
+ <tr>
+  <th>Scenario Name</th>
+  <th>Show JSON - dataset</th>
+  <th>Download JSON - dataset</th>
+  <th>Edit Scenario</th>
+  <th>Show Graph</th>
+  <th>Open in iD</th>
+  <th>Delete</th>
+ </tr>
+
+ {% for k,v in scenarios.items() %}
+
+ <tr>
+  <td>{{ scenarios[k]['name'] }}</td>
+  <td>
+   <form action="{{ url_for('provide_element_api_route') }}"
+         method=get>
+    <input type=submit value="Show">
+    <input type="hidden" name="id" value={{k}}>
+    <input type="hidden" name="expand" value="children">
+   </form>
+  </td>
+  <td>
+   <form action="{{ url_for('download_json') }}"
+         method=get>
+    <input type=submit value="Download">
+    <input type="hidden" name="id" value={{k}}>
+   </form>
+  </td>
+  <td>
+   <form action="{{ url_for('edit_scenario') }}"
+         method=get>
+    <input type=submit value="Edit">
+    <input type="hidden" name="id" value={{k}}>
+   </form>
+  </td>
+  <td>
+   <form action="{{ url_for('plot_graph') }}"
+         method=get>
+    <input type=submit value="Show">
+    <input type="hidden" name="id" value={{k}}>
+   </form>
+  </td>
+  <td>
+   <form action="{{url_for('id_editor') }}"
+         method=get>
+    <input type=submit value="Open">
+    <input type="hidden" name="id" value={{k}}>
+   </form>
+   </td>
+   <td>
+   <form action="{{url_for('delete_scenario') }}"
+         method=get onsubmit="return ConfirmDelete();">
+    <input type=submit value="Delete">
+    <input type="hidden" name="id" value={{k}}>
+   </form>
+   </td>
+ </tr>
+
+{% endfor %}
+
+</table>
+
+<h3> Miss a scenario? Click below to import:</h3>
+<a href={{ url_for('upload_file') }}>Scenario import</a>
+
+{% endblock %}
+
+{% block footer %}
+<script>
+    function ConfirmDelete()
+    {
+      var x = confirm("Are you sure you want to delete?");
+      if (x)
+          return true;
+      else
+        return false;
+    }
+</script>
+
+{% endblock %}
+
+

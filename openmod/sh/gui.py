@@ -148,6 +148,7 @@ def edit_scenario():
                                  scenario_db_id=scenario_db_id,
                                  slider_lookup=get_config('gui_slider', {}),
                                  timeseries_available=get_config('timeseries_available', {}),
+                                 plot_tabs=get_config('plot_tabs', {}),
                                  jobs=sorted(app.results))
 
 @app.route('/graph_plot', methods=['GET'])
