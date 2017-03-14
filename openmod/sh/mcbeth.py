@@ -115,7 +115,7 @@ def populate_energy_system(es, node_data):
     # create solph components
     hubs = {}
     for n in node_data:
-        if n['type'] == 'hub' and n['name'] != 'co2':
+        if n['type'] == 'hub' and n['tags'].get('sector', '') != 'co2':
             b = Bus(label=n['name'], geo=n.get('geom'))
             b.type = n['type']
             # add all tags as attributes to hub/bus
@@ -167,6 +167,9 @@ def populate_energy_system(es, node_data):
     for n in node_data:
         logging.info("Creating component {0}...".format(n['name']))
 
+        if n['type'] in ['area_factor', 'unit']:
+            pass
+
         # create oemof solph sinks for sink elements  (e.g. co2-sink, import-slack)
         if n['type'] == 'sink':
             ps = es.groups.get(n['predecessors'][0])
@@ -178,6 +181,8 @@ def populate_energy_system(es, node_data):
                               Flow(nominal_value=_float(n, 'installed_power'),
                                    variable_costs=_float(n, 'variable_cost'))})
                 es.add(obj)
+                obj.type = n['type']
+
         # create oemof solph source for sink elements  (e.g. export-slack)
         if n['type'] == 'source':
             ss = es.groups.get(n['successors'][0])
@@ -189,6 +194,8 @@ def populate_energy_system(es, node_data):
                               Flow(nominal_value=_float(n, 'installed_power'),
                                    variable_costs=_float(n, 'variable_cost'))})
                 es.add(obj)
+                obj.type = n['type']
+
         # create oemof solph source object for volatile generator elements
         if n['type'] == 'volatile_generator':
             ss = es.groups[n['successors'][0]]
@@ -202,7 +209,7 @@ def populate_energy_system(es, node_data):
                                       variable_cost=_float(n, 'variable_cost'),
                                       fixed=True)})
                 es.add(obj)
-
+                obj.type = n['type']
 
         # cretae oemof solph sink object for demand elements
         if n['type'] == 'demand':
@@ -230,6 +237,8 @@ def populate_energy_system(es, node_data):
                                       variable_costs=_float(n, 'variable_cost'),
                                       fixed=fixed)})
                 es.add(obj)
+                obj.type = n['type']
+
         # create linear transformers for flexible generators
         if n['type'] == 'flexible_generator':
             ss = {es.groups[i].sector: es.groups[i] for i in n['successors']
@@ -266,6 +275,8 @@ def populate_energy_system(es, node_data):
                     Flow()},
                 conversion_factors=conversion_factors)
             es.add(obj)
+            obj.type = n['type']
+
         # create linear transformers for combined flexible generators
         if n['type'] == 'combined_flexible_generator':
             ss = {es.groups[i].sector: es.groups[i] for i in n['successors']
@@ -302,6 +313,8 @@ def populate_energy_system(es, node_data):
                     Flow()},
                 conversion_factors = conversion_factors)
             es.add(obj)
+            obj.type = n['type']
+
         # create solph storage objects for storage elements
         if n['type'] == 'storage':
             # Oemof solph does not provide direct way to set power in/out of
@@ -328,6 +341,7 @@ def populate_energy_system(es, node_data):
                         nominal_input_capacity_ratio=nicr,
                         nominal_output_capacity_ration=nocr)
             es.add(obj)
+            obj.type = n['type']
 
         # create linear transformer(s) for transmission elements
         if n['type'] == 'transmission':
@@ -342,12 +356,11 @@ def populate_energy_system(es, node_data):
                     Flow()},
                 conversion_factors={ss: _float(n, 'efficiency')})
             es.add(obj)
+            obj.type = n['type']
 
 
-        obj.type = n['type']
-        for k,v in n['tags'].items():#
-            if k not in ['label', 'emission_factor']:
-                setattr(obj, k, v)
+
+
 
     return es
 
