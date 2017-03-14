@@ -10,6 +10,7 @@ import flask
 import flask_login as fl
 from flask_babel import Babel, gettext, ngettext, lazy_gettext
 
+from .bookkeeping import Job
 from openmod.sh.api import (provide_element_api, json_to_db,
                            provide_elements_api, provide_sequence_api,
                            allowed_file, explicate_hubs, delete_element_from_db,
@@ -239,11 +240,10 @@ def jobs():
 @fl.login_required
 def kill(job):
     if job in app.results:
-        d = app.results[job]
-        c = d["connection"]
+        c = app.results[job].connection
         try:
             c.send("Stop!");
-            if d["connection"].poll():
+            if c.poll():
                 pid = c.recv()
                 os.kill(pid, signal.SIGINT)
         except BrokenPipeError as e:
@@ -261,11 +261,11 @@ def run_simulation():
     parent, child = mp.Pipe()
     result = app.workers.apply_async(mcbeth.wrapped_simulation,
                                      args=(scenario, child))
-    key = str(id(result))
+    job = Job(result=result, connection=parent)
 
-    app.results[key] = {"result": result, "connection": parent}
+    app.results[job.key()] = job
 
-    return flask.jsonify({'success': True, 'job': key,
+    return flask.jsonify({'success': True, 'job': job.key(),
                           'jobs': jobs()})
 
 @app.route('/simulation/<job>')
@@ -273,11 +273,11 @@ def run_simulation():
 def simulation(job):
     if not job in app.results:
         return "Unknown job."
-    elif not app.results[job]["result"].ready():
+    elif not app.results[job].ready():
         return ("Job running, but not finished yet. <br />" +
                 "Please come back later.")
     else:
-        result = app.results[job]["result"].get()
+        result = app.results[job].get()
         return result
 
 
