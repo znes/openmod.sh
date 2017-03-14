@@ -61,6 +61,7 @@
   <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab3')">Heatmap Plot</a>
   <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab4');updateResults('kiel_electricity')">Production</a>
   <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab5')">Timeseries Plot</a>
+  <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab6')">Stacked Timeseries Plot</a>
  </div>
 
  <div id="Tab1" class="tabcontent">
@@ -87,11 +88,14 @@
   <button type="button" onclick="updateResults('kiel_heat')">Kiel Wärme</button>
  </div>
 
-  <div id="Tab5" class="tabcontent">
+ <div id="Tab5" class="tabcontent">
   <select id="timeseriesDataSimple"></select>
   <div id="timeseries_plot"></div>
  </div>
 
+ <div id="Tab6" class="tabcontent">
+  <div id="stacked_timeseries_plot"></div>
+ </div>
 
 </div>
 
@@ -132,7 +136,9 @@ function updateValue(slider_id, newValue) {
     makeHeatmapPlot(layout_args={'title':'Heatplot Title'},
                     ts=scenario.children_dict.kiel_demand_heat.sequences.load_profile);
     makeSimpleTimeseriesPlot(layout_args={'title':'Simple Timeseries Title', 'div_id': 'timeseries_plot'},
-                             ts_args=prepareTimeseries(currentTimeseriesData));
+                             ts=[prepareTimeseries(currentTimeseriesData)]);
+    makeSimpleTimeseriesPlot(layout_args={'title':'Simple Stacked Timeseries Title', 'div_id': 'stacked_timeseries_plot'},
+                             ts=[prepareTimeseries('kiel_solar'), prepareTimeseries('kiel_wind')]);
 }
 
 function updateResults(hub_name) {
@@ -271,7 +277,7 @@ function initSelectors() {
             currentTimeseriesData = $(this).text();
         });
         makeSimpleTimeseriesPlot(layout_args={'title':'Simple Timeseries Title', 'div_id': 'timeseries_plot'},
-                         ts_args=prepareTimeseries(currentTimeseriesData));
+                         ts=[prepareTimeseries(currentTimeseriesData)]);
     });
 }
 
