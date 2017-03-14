@@ -26410,7 +26410,8 @@
       ],
       "tags": {
         "variable_cost": "0",
-        "installed_power": "100000"
+        "installed_power": "100000",
+        "slack": "true"
       },
       "sequences": {},
       "children": [],
@@ -70395,7 +70396,8 @@
       ],
       "tags": {
         "variable_cost": "10000",
-        "installed_power": "100000"
+        "installed_power": "100000",
+        "slack": "true"
       },
       "sequences": {},
       "children": [],
