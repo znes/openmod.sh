@@ -9,6 +9,12 @@
 <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/wicket/1.3.2/wicket.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/wicket/1.3.2/wicket-leaflet.js"></script>
+<style>
+#timeseriesDataOrder { list-style-type: none; margin: 0; padding: 0;}
+#timeseriesDataOrder li { margin: 0 5px 5px 5px; padding: 5px; font-size: 1.2em; height: 1.5em; }
+html>body #timeseriesDataOrder li { height: 1.5em; line-height: 1.2em; }
+#timeseriesDataOrder li.placeholder { height: 1.5em; line-height: 1.2em; }
+</style>
 {% endblock %}
 
 {% block header %}
@@ -73,7 +79,6 @@
  <div id="Tab2" class="tabcontent">
   <div id="old_timeseries_plot" style="height 300px;"></div>
   <button type="button" onclick="reorderTimeseries()">Reorder</button>
-  <select id="timeseriesDataMultiple" multiple></select>
  </div>
 
 
@@ -96,7 +101,9 @@
  </div>
 
  <div id="Tab6" class="tabcontent">
+  <select id="timeseriesDataMultiple" multiple></select>
   <div id="stacked_timeseries_plot"></div>
+  <ul id="timeseriesDataOrder"></ul> 
  </div>
 
 </div>
@@ -138,9 +145,14 @@ function updateValue(slider_id, newValue) {
     makeHeatmapPlot(layout_args={'title':'Heatplot Title'},
                     ts=scenario.children_dict.kiel_demand_heat.sequences.load_profile);
     makeSimpleTimeseriesPlot(layout_args={'title':'Simple Timeseries Title', 'div_id': 'timeseries_plot'},
-                             ts=[prepareTimeseries(currentTimeseriesData)]);
+                             ts=[prepareTimeseries(currentTimeseriesDataSimple[0])]);
+
+   var timeSeriesData = [];
+    for (var i = 0; i < currentTimeseriesDataMultiple.length; i++) {
+    	timeSeriesData.push(prepareTimeseries(currentTimeseriesDataMultiple[i]));
+    }
     makeSimpleTimeseriesPlot(layout_args={'title':'Simple Stacked Timeseries Title', 'div_id': 'stacked_timeseries_plot'},
-                             ts=[prepareTimeseries('kiel_solar'), prepareTimeseries('kiel_wind')]);
+                             ts=timeSeriesData);
 }
 
 function updateResults(hub_name) {
@@ -266,23 +278,78 @@ function makeAllSlider() {
 
 function initSelectors() {
     for (var i = timeseries_available.length - 1; i >= 0; i--) {
-        if(currentTimeseriesData == timeseries_available[i]) {
+        // Simple
+        if(currentTimeseriesDataSimple[0] == timeseries_available[i]) {
             $("#timeseriesDataSimple").append("<option selected=\"selected\"  value=" + timeseries_available[i] + ">" + timeseries_available[i] + "</option>");
         }
         else {
             $("#timeseriesDataSimple").append("<option  value=" + timeseries_available[i] + ">" + timeseries_available[i] + "</option>");
         }
-    }
 
+
+        // Multiple
+        var selected = false;
+        for (var j = currentTimeseriesDataMultiple.length - 1; j >= 0; j--) {
+        	if(currentTimeseriesDataMultiple[j] == timeseries_available[i]) {
+        		selected = true;	
+        	}
+       	}
+       	if(selected) {
+            $("#timeseriesDataMultiple").append("<option selected=\"selected\" value=" + timeseries_available[i] + ">" + timeseries_available[i] + "</option>");
+        }
+        else {
+            $("#timeseriesDataMultiple").append("<option value=" + timeseries_available[i] + ">" + timeseries_available[i] + "</option>");
+        }
+    }
+    // Simple
     $("#timeseriesDataSimple").change(function() {
         $( "#timeseriesDataSimple option:selected" ).each(function() {
-            currentTimeseriesData = $(this).text();
+            currentTimeseriesDataSimple[0] = $(this).text();
         });
         makeSimpleTimeseriesPlot(layout_args={'title':'Simple Timeseries Title', 'div_id': 'timeseries_plot'},
-                         ts=[prepareTimeseries(currentTimeseriesData)]);
+                         ts=[prepareTimeseries(currentTimeseriesDataSimple[0])]);
+    });
+
+
+    // Multiple
+    $("#timeseriesDataMultiple").change(function() {
+		currentTimeseriesDataMultiple = [];
+   
+        $( "#timeseriesDataMultiple option:selected" ).each(function() {
+            currentTimeseriesDataMultiple.push( $(this).text() );
+        });
+
+        var timeSeriesData = [];
+	    for (var i = 0; i < currentTimeseriesDataMultiple.length; i++) {
+	    	timeSeriesData.push(prepareTimeseries(currentTimeseriesDataMultiple[i]));
+	    }
+        makeSimpleTimeseriesPlot(layout_args={'title':'Simple Stacked Timeseries Title', 'div_id': 'stacked_timeseries_plot'},
+                             ts=timeSeriesData);
+
+        updateStackList();
     });
 }
 
+function updateStackList() {
+	$("#timeseriesDataOrder").html('');
+	for (var i = 0; i < currentTimeseriesDataMultiple.length; i++) {
+		$("#timeseriesDataOrder").append("<li class='itemTimeseriesDataOrder ui-state-default'  id='" + currentTimeseriesDataMultiple[i] + "'>" + currentTimeseriesDataMultiple[i] + "</li>");
+	}
+
+	$("#timeseriesDataOrder").sortable({
+    	placeholder: "ui-state-highlight",
+    	update: function() { 
+    		console.log("test");
+    		currentTimeseriesDataMultiple = $(this).sortable('toArray');
+    		var timeSeriesData = [];
+		    for (var i = 0; i < currentTimeseriesDataMultiple.length; i++) {
+		    	timeSeriesData.push(prepareTimeseries(currentTimeseriesDataMultiple[i]));
+		    }
+		    makeSimpleTimeseriesPlot(layout_args={'title':'Simple Stacked Timeseries Title', 'div_id': 'stacked_timeseries_plot'},
+		                             ts=timeSeriesData);
+    	}
+    });
+}
 
 // Get the element with id="defaultOpen" and click on it
 document.getElementById("defaultOpen").click();
@@ -298,8 +365,11 @@ var timeseries_available = {{ timeseries_available | tojson }};
 var timeseriesOrder = false;
 
 
-var currentTimeseriesData = timeseries_available[0];
+var currentTimeseriesDataSimple = [timeseries_available[0]];
+var currentTimeseriesDataMultiple = timeseries_available;
 initSelectors();
+updateStackList();
+
 
 scenario.children_dict = {};
 scenario.children.forEach(function(data) {
