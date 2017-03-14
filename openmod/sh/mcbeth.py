@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import multiprocessing as mp
 import sys
 import traceback
 
@@ -440,6 +441,10 @@ def wrapped_simulation(scenario, connection):
         the parent.
 
     """
+    # If theres anything available on our end of the pipe, that means our
+    # parent wants us to stop immediately.
+    if connection.poll():
+      return "Stopped.\n<br/>Terminated without any action."
     try:
         # create an energy system object
         es = create_energy_system(scenario)

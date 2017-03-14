@@ -234,9 +234,15 @@ def jobs():
 @app.route('/kill/<job>', methods=['PUT'])
 @fl.login_required
 def kill(job):
-  if job in app.results:
-    del app.results[job]
-  return flask.render_template('jobs.html', jobs=sorted(app.results))
+    if job in app.results:
+        d = app.results[job]
+        c = d["connection"]
+        try:
+            c.send("Stop!");
+        except BrokenPipeError as e:
+            # That's ok. It just means the worker has already stopped.
+            pass
+    return flask.jsonify({'jobs': jobs()})
 
 @app.route('/simulate', methods=['GET', 'PUT'])
 @fl.login_required
