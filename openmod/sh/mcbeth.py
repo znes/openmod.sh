@@ -469,7 +469,7 @@ def wrapped_simulation(scenario, connection):
                 .from_exception(e)
                 .format())
         else:
-            result = '<br/>'.joint(traceback.format_exc())
+            result = '<br/>'.join(traceback.format_exc())
     finally:
         connection.close()
 
