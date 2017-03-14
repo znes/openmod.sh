@@ -358,6 +358,9 @@ def populate_energy_system(es, node_data):
             es.add(obj)
             obj.type = n['type']
 
+        for k,v in n['tags'].items():
+            if k == 'slack':
+                setattr(obj, k, v)
 
 
 
