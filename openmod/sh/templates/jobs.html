@@ -1,11 +1,24 @@
-<div id="{{ container_id | default('steve') }}">
+{% set container_id = container_id | default('steve') %}
+<div id="{{ container_id }}">
+<script type="text/javascript">
+function update_job_list(job, container_id) {
+  console.log('Kill clicked.');
+  $.ajax({
+    url: '/kill/' + job,
+    type: 'put',
+    success: function(data) {
+      $(container_id).replaceWith(data.jobs);
+    }
+  });
+};
+</script>
 {% if jobs %}
 <p>Queued/Running Simulations:</p>
 <ul id="jobs">
   {% for job in jobs %}
   <li>
     <a href="/simulation/{{job}}">{{job}}</a>
-    <button onclick="$.ajax({ url: '/kill/{{job}}', type: 'put', success: function(data) { $('#{{ container_id | default('steve') }}').replaceWith(data.jobs)} } );">
+    <button onclick="update_job_list({{job}}, '#{{container_id}}')">
       Dequeue/Kill
     </button>
   </li>
