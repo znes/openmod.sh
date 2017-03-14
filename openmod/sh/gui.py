@@ -3,8 +3,6 @@ import json
 import multiprocessing as mp
 import multiprocessing.dummy as mpd
 import multiprocessing.pool as mpp
-import os
-import signal
 
 import flask
 import flask_login as fl
@@ -240,15 +238,7 @@ def jobs():
 @fl.login_required
 def kill(job):
     if job in app.results:
-        c = app.results[job].connection
-        try:
-            c.send("Stop!");
-            if c.poll():
-                pid = c.recv()
-                os.kill(pid, signal.SIGINT)
-        except BrokenPipeError as e:
-            # That's ok. It just means the worker has already stopped.
-            pass
+        app.results[job].cancel()
     return flask.jsonify({'jobs': jobs()})
 
 @app.route('/simulate', methods=['GET', 'PUT'])
