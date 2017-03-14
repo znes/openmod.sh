@@ -427,7 +427,7 @@ def compute_results(es):
 
     return es
 
-def wrapped_simulation(scenario):
+def wrapped_simulation(scenario, connection):
     """
 
     Parameters
@@ -435,6 +435,10 @@ def wrapped_simulation(scenario):
 
     scenario : dict
         Complete scenario definition including all elements.
+    connection : `multiprocessing.Connection`
+        A connection object with which the child process can communicate with
+        the parent.
+
     """
     try:
         # create an energy system object
@@ -466,6 +470,8 @@ def wrapped_simulation(scenario):
                 .format())
         else:
             result = '<br/>'.joint(traceback.format_exc())
+    finally:
+        connection.close()
 
     return result
 

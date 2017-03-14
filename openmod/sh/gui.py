@@ -1,4 +1,5 @@
 import json
+import multiprocessing as mp
 import multiprocessing.dummy as mpd
 import multiprocessing.pool as mpp
 
@@ -244,12 +245,12 @@ def run_simulation():
     """
 
     scenario = flask.request.get_json()
+    parent, child = mp.Pipe()
     result = app.workers.apply_async(mcbeth.wrapped_simulation,
-                                     args=[scenario])
-
+                                     args=(scenario, child))
     key = str(id(result))
 
-    app.results[key] = result
+    app.results[key] = {"result": result, "connection": parent}
 
     return flask.jsonify({'success': True, 'job': key,
                           'jobs': jobs()})
@@ -259,11 +260,11 @@ def run_simulation():
 def simulation(job):
     if not job in app.results:
         return "Unknown job."
-    elif not app.results[job].ready():
+    elif not app.results[job]["result"].ready():
         return ("Job running, but not finished yet. <br />" +
                 "Please come back later.")
     else:
-        result = app.results[job].get()
+        result = app.results[job]["result"].get()
         return result
 
 
