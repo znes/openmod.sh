@@ -251,8 +251,8 @@ def run_simulation():
 
     app.results[key] = result
 
-    return json.dumps({'success': True, 'job': key,
-                       'jobs': jobs()})
+    return flask.jsonify({'success': True, 'job': key,
+                          'jobs': jobs()})
 
 @app.route('/simulation/<job>')
 @fl.login_required
