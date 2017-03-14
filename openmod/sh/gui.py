@@ -52,7 +52,8 @@ def provide_element_api_route():
         if 'id' in query_args.keys():
             element_dct = provide_element_api(query_args)
             return flask.jsonify(element_dct)
-        return gettext("Please provide correct query parameters. At least 'id'.")
+        return gettext(
+            "Please provide correct query parameters. At least 'id'.")
     if flask.request.method == 'POST':
         data = flask.request.get_json()
         db_response = json_to_db(data)
