@@ -455,21 +455,17 @@ def wrapped_simulation(scenario, connection):
 
         results_to_db(scenario['name'], es.results)
 
-        result =(
-            "Computation done (successfully).<br />" +
-            "Once I finished the necessary TODOs, you'll see the process" +
-            "output" +
-            "<br />" +
-            "on this page.")
+        result = "Success."
 
     except Exception as e:
+        result = "Failure.\n<br/>"
         if sys.version_info >= (3, 5):
-            result = '<br/>'.join(traceback
+            result += '<br/>'.join(traceback
                 .TracebackException
                 .from_exception(e)
                 .format())
         else:
-            result = '<br/>'.join(traceback.format_exc())
+            result += '<br/>'.join(traceback.format_exc())
     finally:
         connection.close()
 
