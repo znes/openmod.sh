@@ -293,19 +293,6 @@ def explicate_hubs(json):
             dct[p] = dct.get(p, obj)
             dct[p]['successors'] = dct[p].get('successors', [])
             dct[p]['successors'].append(child['name'])
-        # add global hubs (kind of dirty...)
-        if child.get('tags'):
-            if (child['tags'].get('fuel_type')
-                and child['tags'].get('fuel_type')
-                        not in child.get('predecessors', [])
-                and child['type'] in ['combined_flexible_generator',
-                                      'flexible_generator']):
-                obj = {'type': 'hub',
-                       'name': child['tags']['fuel_type'],
-                       'tags': {'balanced': 'false'}}
-                dct[obj['name']] = dct.get(obj['name'], obj)
-                dct[obj['name']]['successors'] = dct[obj['name']].get('successors', [])
-                dct[obj['name']]['successors'].append(child['name'])
 
     json['children'].extend(dct.values())
 
