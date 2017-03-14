@@ -1,3 +1,4 @@
+from collections import OrderedDict as OD
 import json
 import multiprocessing as mp
 import multiprocessing.dummy as mpd
@@ -23,7 +24,7 @@ from openmod.sh.config import get_config
 # Set up a pool of workers to which jobs can be submitted and a dictionary
 # which stores the asynchronous result objects.
 app.workers = mpd.Pool(1) if app.debug else mpp.Pool(1)
-app.results = {}
+app.results = OD()
 
 babel = Babel(app)
 
@@ -148,7 +149,7 @@ def edit_scenario():
                                  scenario_db_id=scenario_db_id,
                                  slider_lookup=get_config('gui_slider', {}),
                                  timeseries_available=get_config('timeseries_available', {}),
-                                 jobs=sorted(app.results))
+                                 jobs=app.results)
 
 @app.route('/graph_plot', methods=['GET'])
 @fl.login_required
@@ -231,7 +232,7 @@ def main_menu():
 @app.route('/jobs')
 @fl.login_required
 def jobs():
-  return flask.render_template('jobs.html', jobs=sorted(app.results))
+  return flask.render_template('jobs.html', jobs=app.results)
 
 @app.route('/kill/<job>', methods=['PUT'])
 @fl.login_required
