@@ -2,6 +2,8 @@ import json
 import multiprocessing as mp
 import multiprocessing.dummy as mpd
 import multiprocessing.pool as mpp
+import os
+import signal
 
 import flask
 import flask_login as fl
@@ -239,6 +241,9 @@ def kill(job):
         c = d["connection"]
         try:
             c.send("Stop!");
+            if d["connection"].poll():
+                pid = c.recv()
+                os.kill(pid, signal.SIGINT)
         except BrokenPipeError as e:
             # That's ok. It just means the worker has already stopped.
             pass

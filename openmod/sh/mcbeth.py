@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import multiprocessing as mp
+import os
+import signal
 import sys
 import traceback
 
@@ -428,6 +430,9 @@ def compute_results(es):
 
     return es
 
+def stop_worker(signal_number, stack_frame, message="Stopped by user."):
+    raise(Exception(message))
+
 def wrapped_simulation(scenario, connection):
     """
 
@@ -441,6 +446,8 @@ def wrapped_simulation(scenario, connection):
         the parent.
 
     """
+    signal.signal(signal.SIGINT, stop_worker)
+    connection.send(mp.current_process().pid)
     # If theres anything available on our end of the pipe, that means our
     # parent wants us to stop immediately.
     if connection.poll():
