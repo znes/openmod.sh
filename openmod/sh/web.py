@@ -170,7 +170,7 @@ def logout():
 @app.route('/')
 @fl.login_required
 def root():
-    return flask.redirect('/main_menu')
+    return flask.redirect('/scenario_overview')
 
 @app.route('/iD/api/capabilities')
 @app.route('/osm/api/capabilities')

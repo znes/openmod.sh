@@ -155,6 +155,7 @@ def json_to_db(json):
                                         for ss in child['successors']]
 
             session.add(element)
+            session.flush()
             return {"success": True, "scenario_db_id": element.id}
 
 # API for element and elements

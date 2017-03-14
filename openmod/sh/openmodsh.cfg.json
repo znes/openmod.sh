@@ -21,5 +21,7 @@
       "color": "darkblue"
     }
   },
-"timeseries_available": ["kiel_wind", "kiel_solar"]
+  "timeseries_available": ["kiel_wind", "kiel_solar"],
+  "plot_tabs": [{"id": "timeseries_plot", "label": "Timeseries", "options": "Here dropdown"},
+                {"id": "stacked_timeseries_plot", "label": "Stacked Timeseries", "options": "Here dropdown"}]
 }

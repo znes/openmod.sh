@@ -9,71 +9,96 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/wicket/1.3.2/wicket-leaflet.js"></script>
 {% endblock %}
 
-{% block submenu %}
+{% block header %}
 
-<li class="nav-item">
-<a class="nav-link" href="#">Selected scenario: {{ scenario.get('name', 'NONE') }}</a>
-</li>
-
-<li class="nav-item" onclick="updateScenario(scenario)">
-<a class="nav-link" href="javascript:void(0)">Update scenario</a>
-</li>
-
-<li class="nav-item" onclick="saveNewScenario(scenario)">
-<a class="nav-link" href="javascript:void(0)">Save New</a>
-</li>
+<div style="float:left; width:50%;">
+ Selected scenario: {{ scenario.get('name', 'NONE') }}
+</div>
+<div align="right", id="boxlink", style="float:left; width:25%;"
+     onclick="updateScenario(scenario)">
+ <a href="javascript:void(0)">Update scenario</a>
+</div>
+<div align="right", id="boxlink", style="float:right; width:25%;"
+     onclick="saveNewScenario(scenario)">
+ <a href="javascript:void(0)">Save New</a>
+</div>
 
 {% endblock %}
 
+{% block body %}
 
-{% block content %}
+<div style="float:left; width:35%;">
 
-<!-- interface -->
-<div class="row no-gutters tool">
-	<div class="col-4">
-		<header>
-			Parameter
-		</header>
-		<div class="toolbar">
-			<br />
-		</div>
-		<div class="body">
-			<form id="slider_form">
-			</form>
-		</div>
-	</div>
-	<div class="col">
-		<ul class="nav nav-tabs" id="plot_tab">
-			<li class="nav-item">
-				<a class="nav-link active" data-toggle="tab" href="#region_plot_tab">Region Plot</a>
-			</li>
-		</ul>
-        <div class="tab-content" id="plot_tab_content">
-            <div class="tab-pane active" id="region_plot_tab" role="tabpanel">
-                <div class="toolbar">
-                    Here could be options for plotting (e.g. drop down menu, buttons...)<br />
-                </div>
-                <div id="region_plot"></div>
-            </div>
-        </div>
-	</div>
+<div>
+<h3>Select values</h3>
+ <table id="slider_table" style="width:50%">
+   <caption>Kiel</caption>
+  <tr>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td>{{_("Area Usage")}}</td>
+  </tr>
+</table>
 </div>
 
+<div>
+<form action="{{ url_for('show_scenarios') }}"
+      method=get>
+<input type=submit value="Go to scenario overview">
+</form>
+
+<button type="button" onclick="runSimulation(scenario)">Run Simulation</button>
+{% include 'jobs.html' %}
+</div>
+</div>
+
+
+<div style="float:right; width:65%;">
+ <div class="tab">
+  <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab1')" id="defaultOpen">Region Plot</a>
+  <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab2')">Old Timeseries Plot</a>
+  <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab3')">Heatmap Plot</a>
+  <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab4');updateResults('kiel_electricity')">Production</a>
+  <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab5')">Timeseries Plot</a>
+ </div>
+
+ <div id="Tab1" class="tabcontent">
+  <div id="region_plot"></div>
+ </div>
+
+ <div id="Tab2" class="tabcontent">
+  <div id="old_timeseries_plot" style="height 300px;"></div>
+  <button type="button" onclick="reorderTimeseries()">Reorder</button>
+ </div>
+
+
+ <div id="Tab3" class="tabcontent">
+  <div id="heatmap_plot"></div>
+ </div>
+
+ <div id="Tab4" class="tabcontent">
+  <div id="bar_plot", style="height 300px;"> </div>
+  <button type="button" onclick="updateResults('kiel_electricity')">Kiel</button>
+  <button type="button" onclick="updateResults('nms_electricity')">Neumünster</button>
+  <button type="button" onclick="updateResults('ploe_electricity')">Plön</button>
+  <button type="button" onclick="updateResults('rdeck_electricity')">Rendsburg Eck</button>
+  <button type="button" onclick="updateResults('kiel_heat')">Kiel Wärme</button>
+ </div>
+
+  <div id="Tab5" class="tabcontent">
+  <div id="timeseries_plot"></div>
+ </div>
+
+
+</div>
+
+{% endblock %}
+
+{% block footer %}
 <script src="static/plots.js"></script>
 
 <script type="text/javascript">
-function makeTab(id, label, options) {
-    $('#plot_tab').append(
-        '<li class="nav-item">'
-        +'<a class="nav-link" data-toggle="tab" href="#'+id+'_tab">'+label+'</a>'
-        +'</li>');
-    $('#plot_tab_content').append(
-        '<div class="tab-pane" id="'+id+'_tab" role="tabpanel">'
-        +'<div class="toolbar">'+options+'</div>'
-        +'<div id="'+id+'"></div>'
-        +'</div>');
-}
-
 function getTagValue(element, tag) {
     return scenario.children_dict[element].tags[tag];
 }
@@ -100,6 +125,10 @@ function updateValue(slider_id, newValue) {
     document.getElementById(slider_id + "_area").innerHTML = newValue * 10;
     var l = lookup[slider_id];
     scenario.children_dict[slider_id].tags[l.value] = newValue;
+    makeTimeseriesPlot();
+    makeRegionPlot();
+    makeHeatmapPlot(layout_args={'title':'Heatplot Title'},
+                    ts=scenario.children_dict.kiel_demand_heat.sequences.load_profile);
     makeSimpleTimeseriesPlot(layout_args={'title':'Simple Timeseries Title', 'div_id': 'timeseries_plot'},
                              ts_args=prepareTimeseries('kiel_solar'));
 }
@@ -199,7 +228,7 @@ function updateScenario(scenario) {
 }
 
 function makeSlider(id, value, max) {
-    return "<input id='"+id+"_slider' class='form-control' type='range' min='0' step='0.1' value='"
+    return "<input id='"+id+"_slider' type='range' min='0' step='5' value='"
            +value+"' max='"+max+"' onchange="+'"'+"updateValue('"+id+"', this.value)"+'"'+"/>";
 }
 
@@ -210,22 +239,23 @@ function makeSpan(id, value) {
 function makeAllSlider() {
     for (var element in lookup) {
         var l = lookup[element];
-            $('#slider_form').append(
-                '<div class="form-group row">'
-                    +'<label for="'+element+'" class="col-5 col-form-label">'+getTagValue(element, 'label')+'</label>'
-                    +'<div class="col">'
-                        +makeSlider(element, getTagValue(element, l.value), getTagValue(element, l.max))
-                    +'</div>'
-				    +'<div class="col-1">'
-                        +makeSpan(element+"_display", getTagValue(element, l.value))
-                    +'</div>'
-				    +'<div class="col-1">'
-                        // TODO: How to deal with area?
-                       +makeSpan(element+"_area", 0)
-                    +"</div>"
-                +"</div>");
+            $('#slider_table').append(
+                "<tr><td>"
+                +getTagValue(element, 'label')
+                +"</td><td>"
+                +makeSlider(element, getTagValue(element, l.value), getTagValue(element, l.max))
+                +"</td><td>"
+                +makeSpan(element+"_display", getTagValue(element, l.value))
+                +"</td><td>"
+                // TODO: How to deal with area?
+                +makeSpan(element+"_area", 0)
+                +"</td></tr>");
     }
 }
+
+
+// Get the element with id="defaultOpen" and click on it
+document.getElementById("defaultOpen").click();
 
 var scenario_db_id = {{ scenario_db_id }};
 
@@ -235,8 +265,6 @@ var lookup = {{ slider_lookup | tojson }};
 
 var timeseries_available = {{ timeseries_available | tojson }};
 
-var plot_tabs = {{ plot_tabs | tojson }};
-
 var timeseriesOrder = false;
 
 scenario.children_dict = {};
@@ -245,10 +273,6 @@ scenario.children.forEach(function(data) {
 });
 
 makeAllSlider();
-
-plot_tabs.forEach(function(tab) {
-    makeTab(tab.id, tab.label, tab.options);
-});
 
 for (var element in lookup) {
     var l = lookup[element];

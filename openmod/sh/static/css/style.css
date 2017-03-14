@@ -1,0 +1,87 @@
+body {
+	font-size: 14px;
+}
+
+body > header {
+	background: #2f1b56;
+	color: #ffffff;
+	padding: 5px 10px;
+}
+
+body > header .logo {
+	padding: 10px 30px 15px;
+	text-transform: uppercase;
+	font-size: 12px;
+}
+body > header .logo .name {
+	font-size: 20px;
+}
+body > header .logo span {
+	font-size: 10px;
+	vertical-align: 10px;
+}
+
+body > header .nav {
+	font-size: 14px;
+}
+
+body > header a, nav.subnav a {
+	color: #ffffff;
+}
+body > header a:focus, body > header a:hover, nav.subnav a:focus, nav.subnav a:hover {
+	color: #ffff00;
+}
+
+nav.subnav {
+	background: #36215e;
+	font-size: 12px;
+}
+
+/**
+ * Tool
+ */
+.row.tool > div {
+	border-right: 1px solid #dadada;
+	border-bottom: 1px solid #dadada;
+}
+.tool header {
+	padding: 10px 15px;
+	border-bottom: 1px solid #dadada;
+	font-weight: 800;
+}
+.tool .nav-tabs {
+	border-bottom: 1px solid #dadada;
+	font-size: 12px;
+}
+.tool .nav-link {
+	border: 0px;
+	border-right: 1px solid #dadada;
+	padding: 10px 15px;
+	border-radius: 0px;
+	background: #ebebeb;
+	color: #969696;
+	font-weight: normal;
+}
+.tool .nav-link.active, .tool .nav-link:focus, .tool .nav-link:hover {
+	background: #ffffff;
+	color: #000000;
+	font-weight: 800;
+}
+.tool .nav-tabs .nav-item {
+	margin-bottom: 0px;
+}
+.tool .toolbar {
+	background: #ebebeb;
+	border-bottom: 1px solid #d7d7d7;
+	padding: 5px 15px;
+	font-size: 12px;
+}
+.tool .body {
+	padding: 15px 20px;
+}
+.tool label {
+	display: block;
+}
+.tool .table th {
+	border-top: 0px;
+}
