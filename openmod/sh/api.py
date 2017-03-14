@@ -95,11 +95,11 @@ def expand_element(element, query_args):
         expand_list.append(subset_json(serialize_element(e), query_args))
     return expand_list
 
-def get_elements(query_parameters):
+def get_elements(query_parameters, session):
     """
     works for name and type
     """
-    query = db_session().query(schema.Element)
+    query = session.query(schema.Element)
     if 'name' in query_parameters.keys():
         query = query.filter(schema.Element.name.like(query_parameters['name']))
     if 'type' in query_parameters.keys():
@@ -219,7 +219,8 @@ def provide_elements_api(query_args):
                       'predecessors': 'true',
                       'successors': 'true'}
 
-    elements = get_elements(query_args)
+    session = db_session()
+    elements = get_elements(query_args, session)
     outer_json = {}
     outer_json['api_parameters'] = {'version': '0.0.1',
                                      'type': 'elements'}
