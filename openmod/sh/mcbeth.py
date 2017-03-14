@@ -24,10 +24,11 @@ def _float(obj, attr):
     attributes.
     """
 
-    if attr == 'null':
-        attr == None
+    if obj['tags'].get(attr)  == 'null':
+        obj['tags'][attr] = None
 
-    defaults = {'installed_power': None,
+    defaults = {'installed_energy': 0,
+                'installed_power': None,
                 'amount': None,
                 'variable_cost': 0,
                 'efficiency' : 1,
