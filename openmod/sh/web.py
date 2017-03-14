@@ -161,6 +161,7 @@ def login():
 @app.route('/logout')
 def logout():
     fl.logout_user()
+    del app.session_interface[flask.session.sid]
     flask.flash('Logged out')
     return flask.redirect(flask.url_for('login'))
 

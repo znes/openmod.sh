@@ -423,7 +423,12 @@ def wrapped_simulation(scenario):
 
         results_to_db(scenario['name'], es.results)
 
-        result = json.dumps(es.results)
+        result =(
+            "Computation done (successfully).<br />" +
+            "Once I finished the necessary TODOs, you'll see the process" +
+            "output" +
+            "<br />" +
+            "on this page.")
 
     except Exception as e:
         if version_info >= (3, 5):
