@@ -22,6 +22,6 @@
     }
   },
   "timeseries_available": ["kiel_wind", "kiel_solar"],
-  "plot_tabs": [{"id": "timeseries_plot", "label": "Timeseries", "options": "Here dropdown"},
-                {"id": "stacked_timeseries_plot", "label": "Stacked Timeseries", "options": "Here dropdown"}]
+  "plot_tabs": [{"id": "timeseries_plot", "label": "Timeseries", "options": "<select id='timeseriesDataSimple'></select>", "content": ""},
+                {"id": "stacked_timeseries_plot", "label": "Stacked Timeseries", "options": "Here could be options and buttions", "content": "<select id='timeseriesDataMultiple' multiple></select><ul id='timeseriesDataOrder'></ul>"}]
 }

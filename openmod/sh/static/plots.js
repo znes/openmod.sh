@@ -182,17 +182,13 @@ function makeTimeseriesPlot() {
     }
 }
 
-function makeSimpleTimeseriesPlot(layout_args, ts_args) {
-
-    trace_name = ts_args.name;
-    ts = ts_args.ts;
-    color = ts_args.color;
-
-    title = layout_args.title;
-    div_id = layout_args.div_id;
+function makeSimpleTimeseriesPlot(layout_args, ts) {
+    // layout_args: Object with title, div_id
+    // ts: Array ot ts Object with name, ts, color
+    // first element in ts is highest in stack
 
     // TODO: make dates accoring to scenario.tags.year
-    dates = Array.apply(null, Array(ts.length)).map(function(_, i) {
+    dates = Array.apply(null, Array(ts[0].ts.length)).map(function(_, i) {
         return new Date(i * 3600 * 1000);
     });
 
@@ -217,23 +213,35 @@ function makeSimpleTimeseriesPlot(layout_args, ts_args) {
             fixedrange: true
         }
     };
+    layout.title = layout_args.title;
 
-    data = [{
-        type: 'scatter',
-        mode: 'lines',
-        line: {
-            width: 0
-        },
-        fill: 'tozeroy',
-        x: dates,
-    }];
+    data = [];
+    d = {type: 'scatter', mode: 'lines', line: {width: 0}, fill: 'tozeroy',
+         x: dates};
+    
+    t = ts.pop();
+    d.name = t.name;
+    d.y = t.ts;
+    d.fillcolor = t.color;
+    data.push(d);
 
-    data[0].name = trace_name;
-    data[0].y = ts;
-    data[0].fillcolor = color;
-    layout.title = title;
+    base = t.ts;
+    for (var j = ts.length-1; j >= 0; j--) {
+        t = ts[j];
+        d = {type: 'scatter', mode: 'lines', line: {width: 0}, fill: 'tonexty',
+             x: dates};
+        d.name = t.name;
+        base_plus = []
+        for (var i = 0; i < base.length; i++) {
+            base_plus.push(base[i] + t.ts[i]);
+        }
+        d.y = base_plus;
+        base = base_plus;
+        d.fillcolor = t.color;
+        data.push(d);
+    };
 
-    Plotly.newPlot(div_id, data, layout);
+    Plotly.newPlot(layout_args.div_id, data, layout);
 }
 
 function makeRegionPlot() {

@@ -1,3 +1,7 @@
+{% extends "base_layout.html" %}
+
+{% block content %}
+
 {% set container_id = container_id | default('steve') %}
 <div id="{{ container_id }}">
 <script type="text/javascript">
@@ -29,3 +33,4 @@ function update_job_list(job, container_id) {
 {% endif %}
 </div>
 
+{% endblock %}

@@ -3,10 +3,18 @@
 {% block head %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 <script src="https://cdn.plot.ly/plotly-1.23.1.min.js"></script>
+<script src="/static/jquery-ui.min.js"></script>
+<link rel="stylesheet" href="/static/jquery-ui.min.css"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/wicket/1.3.2/wicket.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/wicket/1.3.2/wicket-leaflet.js"></script>
+<style>
+#timeseriesDataOrder { list-style-type: none; margin: 0; padding: 0;}
+#timeseriesDataOrder li { margin: 0 5px 5px 5px; padding: 5px; font-size: 1.2em; height: 1.5em; }
+html>body #timeseriesDataOrder li { height: 1.5em; line-height: 1.2em; }
+#timeseriesDataOrder li.placeholder { height: 1.5em; line-height: 1.2em; }
+</style>
 {% endblock %}
 
 {% block submenu %}
@@ -23,11 +31,14 @@
 <a class="nav-link" href="javascript:void(0)">Save New</a>
 </li>
 
+<li class="nav-item" onclick="runSimulation(scenario)">
+<a class="nav-link" href="javascript:void(0)">Run Simulation</a>
+</li>
+
 {% endblock %}
 
 
 {% block content %}
-
 <!-- interface -->
 <div class="row no-gutters tool">
 	<div class="col-4">
@@ -59,10 +70,12 @@
 	</div>
 </div>
 
+{% include 'jobs.html' %}
+
 <script src="static/plots.js"></script>
 
 <script type="text/javascript">
-function makeTab(id, label, options) {
+function makeTab(id, label, options, content) {
     $('#plot_tab').append(
         '<li class="nav-item">'
         +'<a class="nav-link" data-toggle="tab" href="#'+id+'_tab">'+label+'</a>'
@@ -71,6 +84,7 @@ function makeTab(id, label, options) {
         '<div class="tab-pane" id="'+id+'_tab" role="tabpanel">'
         +'<div class="toolbar">'+options+'</div>'
         +'<div id="'+id+'"></div>'
+        +content
         +'</div>');
 }
 
@@ -101,7 +115,14 @@ function updateValue(slider_id, newValue) {
     var l = lookup[slider_id];
     scenario.children_dict[slider_id].tags[l.value] = newValue;
     makeSimpleTimeseriesPlot(layout_args={'title':'Simple Timeseries Title', 'div_id': 'timeseries_plot'},
-                             ts_args=prepareTimeseries('kiel_solar'));
+                             ts=[prepareTimeseries(currentTimeseriesDataSimple[0])]);
+
+   var timeSeriesData = [];
+    for (var i = 0; i < currentTimeseriesDataMultiple.length; i++) {
+    	timeSeriesData.push(prepareTimeseries(currentTimeseriesDataMultiple[i]));
+    }
+    makeSimpleTimeseriesPlot(layout_args={'title':'Simple Stacked Timeseries Title', 'div_id': 'stacked_timeseries_plot'},
+                             ts=timeSeriesData);
 }
 
 function updateResults(hub_name) {
@@ -121,6 +142,7 @@ function runSimulation(scenario) {
             }
         });
     }
+
 
 
 // GET RESULTS FUNCTION FOR AGGREGATE RESULTS
@@ -227,6 +249,81 @@ function makeAllSlider() {
     }
 }
 
+function initSelectors() {
+    for (var i = timeseries_available.length - 1; i >= 0; i--) {
+        // Simple
+        if(currentTimeseriesDataSimple[0] == timeseries_available[i]) {
+            $("#timeseriesDataSimple").append("<option selected=\"selected\"  value=" + timeseries_available[i] + ">" + timeseries_available[i] + "</option>");
+        }
+        else {
+            $("#timeseriesDataSimple").append("<option  value=" + timeseries_available[i] + ">" + timeseries_available[i] + "</option>");
+        }
+
+
+        // Multiple
+        var selected = false;
+        for (var j = currentTimeseriesDataMultiple.length - 1; j >= 0; j--) {
+        	if(currentTimeseriesDataMultiple[j] == timeseries_available[i]) {
+        		selected = true;	
+        	}
+       	}
+       	if(selected) {
+            $("#timeseriesDataMultiple").append("<option selected=\"selected\" value=" + timeseries_available[i] + ">" + timeseries_available[i] + "</option>");
+        }
+        else {
+            $("#timeseriesDataMultiple").append("<option value=" + timeseries_available[i] + ">" + timeseries_available[i] + "</option>");
+        }
+    }
+    // Simple
+    $("#timeseriesDataSimple").change(function() {
+        $( "#timeseriesDataSimple option:selected" ).each(function() {
+            currentTimeseriesDataSimple[0] = $(this).text();
+        });
+        makeSimpleTimeseriesPlot(layout_args={'title':'Simple Timeseries Title', 'div_id': 'timeseries_plot'},
+                         ts=[prepareTimeseries(currentTimeseriesDataSimple[0])]);
+    });
+
+
+    // Multiple
+    $("#timeseriesDataMultiple").change(function() {
+		currentTimeseriesDataMultiple = [];
+   
+        $( "#timeseriesDataMultiple option:selected" ).each(function() {
+            currentTimeseriesDataMultiple.push( $(this).text() );
+        });
+
+        var timeSeriesData = [];
+	    for (var i = 0; i < currentTimeseriesDataMultiple.length; i++) {
+	    	timeSeriesData.push(prepareTimeseries(currentTimeseriesDataMultiple[i]));
+	    }
+        makeSimpleTimeseriesPlot(layout_args={'title':'Simple Stacked Timeseries Title', 'div_id': 'stacked_timeseries_plot'},
+                             ts=timeSeriesData);
+
+        updateStackList();
+    });
+}
+
+function updateStackList() {
+	$("#timeseriesDataOrder").html('');
+	for (var i = 0; i < currentTimeseriesDataMultiple.length; i++) {
+		$("#timeseriesDataOrder").append("<li class='itemTimeseriesDataOrder ui-state-default'  id='" + currentTimeseriesDataMultiple[i] + "'>" + currentTimeseriesDataMultiple[i] + "</li>");
+	}
+
+	$("#timeseriesDataOrder").sortable({
+    	placeholder: "ui-state-highlight",
+    	update: function() { 
+    		console.log("test");
+    		currentTimeseriesDataMultiple = $(this).sortable('toArray');
+    		var timeSeriesData = [];
+		    for (var i = 0; i < currentTimeseriesDataMultiple.length; i++) {
+		    	timeSeriesData.push(prepareTimeseries(currentTimeseriesDataMultiple[i]));
+		    }
+		    makeSimpleTimeseriesPlot(layout_args={'title':'Simple Stacked Timeseries Title', 'div_id': 'stacked_timeseries_plot'},
+		                             ts=timeSeriesData);
+    	}
+    });
+}
+
 var scenario_db_id = {{ scenario_db_id }};
 
 var scenario = {{ scenario | tojson }};
@@ -239,6 +336,13 @@ var plot_tabs = {{ plot_tabs | tojson }};
 
 var timeseriesOrder = false;
 
+
+var currentTimeseriesDataSimple = [timeseries_available[0]];
+var currentTimeseriesDataMultiple = timeseries_available;
+initSelectors();
+updateStackList();
+
+
 scenario.children_dict = {};
 scenario.children.forEach(function(data) {
     scenario.children_dict[data.name] = data
@@ -247,7 +351,7 @@ scenario.children.forEach(function(data) {
 makeAllSlider();
 
 plot_tabs.forEach(function(tab) {
-    makeTab(tab.id, tab.label, tab.options);
+    makeTab(tab.id, tab.label, tab.options, tab.content);
 });
 
 for (var element in lookup) {
