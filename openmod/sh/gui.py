@@ -151,8 +151,7 @@ def edit_scenario():
                                  timeseries_available=get_config(
                                      'timeseries_available',
                                      {}),
-                                 plot_tabs=get_config('plot_tabs', {}),
-                                 jobs=app.results)
+                                 plot_tabs=get_config('plot_tabs', {}))
 
 @app.route('/graph_plot', methods=['GET'])
 @fl.login_required

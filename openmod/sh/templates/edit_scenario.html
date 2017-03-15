@@ -70,8 +70,6 @@ html>body #timeseriesDataOrder li { height: 1.5em; line-height: 1.2em; }
 	</div>
 </div>
 
-{% include 'jobs.html' %}
-
 <script src="static/plots.js"></script>
 
 <script type="text/javascript">
@@ -137,9 +135,7 @@ function runSimulation(scenario) {
             data: JSON.stringify(scenario),
             contentType: 'application/json; charset=utf-8',
             dataType: 'json',
-            success: function(data) {
-              $("#steve").replaceWith(data.jobs);
-            }
+            success: function(data) {}
         });
     }
 
