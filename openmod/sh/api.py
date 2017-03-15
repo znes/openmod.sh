@@ -447,7 +447,8 @@ def results_to_db(scenario_name, results_dict):
                     transmission_dct[(predecessor, successor)] = seq
                     slack_source = (predecessor, successor)
                 if (getattr(source, 'sector', '') == 'electricity'
-                        and getattr(target, 'slack', '') == 'true'):
+                        and (getattr(target, 'type', '') == 'sink'
+                                and getattr(target, 'slack', '') == 'true')):
                     transmission_dct[(predecessor, successor)] = seq
                     slack_sink = (predecessor, successor)
 
