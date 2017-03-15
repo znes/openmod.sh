@@ -1,6 +1,7 @@
 {% extends "base_layout.html" %}
 
 {% block head %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 <script src="https://cdn.plot.ly/plotly-1.23.1.min.js"></script>
 <link rel="stylesheet" href="/static/jquery-ui.min.css"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css"/>
@@ -69,7 +70,7 @@ html>body #timeseriesDataOrder li { height: 1.5em; line-height: 1.2em; }
     <ul id='timeseriesDataOrder1'></ul>
 </div>
 
-{% include 'jobs.html' %}
+<script src="/static/jquery-ui.min.js"></script>
 
 <script src="static/plots.js"></script>
 
@@ -220,7 +221,7 @@ function updateScenario(scenario) {
 }
 
 function makeSlider(id, value, max) {
-    return "<input id='"+id+"_slider' class='form-control' type='range' min='0' step='0.1' value='"
+    return "<input id='"+id+"_slider' class='form-control' type='range' min='0' step='1' value='"
            +value+"' max='"+max+"' onchange="+'"'+"updateValue('"+id+"', this.value)"+'"'+"/>";
 }
 
@@ -231,20 +232,20 @@ function makeSpan(id, value) {
 function makeAllSlider() {
     for (var element in lookup) {
         var l = lookup[element];
-            $('#slider_form').append(
-                '<div class="form-group row">'
-                    +'<label for="'+element+'" class="col-5 col-form-label">'+getTagValue(element, 'label')+'</label>'
-                    +'<div class="col">'
-                        +makeSlider(element, getTagValue(element, l.value), getTagValue(element, l.max))
-                    +'</div>'
-				    +'<div class="col-1">'
-                        +makeSpan(element+"_display", getTagValue(element, l.value))
-                    +'</div>'
-				    +'<div class="col-1">'
-                        // TODO: How to deal with area?
-                       +makeSpan(element+"_area", 0)
-                    +"</div>"
-                +"</div>");
+        $('#slider_form').append(
+            '<div class="form-group row">'
+                +'<label for="'+element+'" class="col-5 col-form-label">'+getTagValue(element, 'label')+'</label>'
+                +'<div class="col">'
+                    +makeSlider(element, getTagValue(element, l.value), getTagValue(element, l.max))
+                +'</div>'
+			    +'<div class="col-1">'
+                    +makeSpan(element+"_display", getTagValue(element, l.value))
+                +'</div>'
+			    +'<div class="col-1">'
+                    // TODO: How to deal with area?
+                   +makeSpan(element+"_area", 0)
+                +"</div>"
+            +"</div>");
     }
 }
 
@@ -308,7 +309,7 @@ function updateStackList() {
 		dragBox.append("<li class='ui-state-default'  id='" + currentTimeseriesDataMultiple[i] + "'>" + currentTimeseriesDataMultiple[i] + "</li>");
 	}
 
-    dragBox.disableSelection();
+    //dragBox.disableSelection();
 	dragBox.sortable({
     	placeholder: "ui-state-highlight",
     	update: function() { 
