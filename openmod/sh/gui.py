@@ -238,7 +238,7 @@ def jobs():
 
 @app.route('/pages/jobs')
 @fl.login_required
-def job_page():
+def jobs_page():
   return flask.render_template('pages/jobs.html', jobs=app.results)
 
 @app.route('/kill/<job>', methods=['PUT'])
