@@ -1,9 +1,9 @@
-function makeBarPlot(hub_name) {
+function makeBarPlot(hub_name, layout_args) {
 
     result = getResults(scenario_db_id, hub_name, function(data) {
 
             if (data == false) {
-                document.getElementById("Tab4").innerHTML = 'No results in db';
+                document.getElementById(layout_args.div_id).innerHTML = 'No results in db';
             }
             else {
                 var x_vals = [];
@@ -52,7 +52,7 @@ function makeBarPlot(hub_name) {
                 }
             ];
 
-            Plotly.newPlot('bar_plot', data, layout);
+            Plotly.newPlot(layout_args.div_id, data, layout);
           }
 
     });
@@ -83,7 +83,7 @@ function makeHeatmapPlot(layout_args, ts) {
         type: 'heatmap'
     }];
 
-    Plotly.newPlot('heatmap_plot', data, layout);
+    Plotly.newPlot(layout_args.div_id, data, layout);
 }
 
 

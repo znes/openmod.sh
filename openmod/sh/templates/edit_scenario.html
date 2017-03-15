@@ -123,10 +123,7 @@ function updateValue(slider_id, newValue) {
     }
     makeSimpleTimeseriesPlot(layout_args={'title':'Simple Stacked Timeseries Title', 'div_id': 'stacked_timeseries_plot'},
                              ts=timeSeriesData);
-}
-
-function updateResults(hub_name) {
-    makeBarPlot(hub_name=hub_name);
+    makeBarPlot(hub_name='kiel_electricity', layout_args={'div_id': 'hub_barplot'});
 }
 
 // JQUERY TO START NEW MODEL RUN (Send json)
