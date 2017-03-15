@@ -1,9 +1,8 @@
 {% extends "base_layout.html" %}
 
 {% block head %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 <script src="https://cdn.plot.ly/plotly-1.23.1.min.js"></script>
-<script src="/static/jquery-ui.min.js"></script>
 <link rel="stylesheet" href="/static/jquery-ui.min.css"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
@@ -68,9 +67,10 @@ html>body #timeseriesDataOrder li { height: 1.5em; line-height: 1.2em; }
             </div>
         </div>
 	</div>
+    <ul id='timeseriesDataOrder1'></ul>
 </div>
 
-{% include 'jobs.html' %}
+<script src="/static/jquery-ui.min.js"></script>
 
 <script src="static/plots.js"></script>
 
@@ -221,7 +221,7 @@ function updateScenario(scenario) {
 }
 
 function makeSlider(id, value, max) {
-    return "<input id='"+id+"_slider' class='form-control' type='range' min='0' step='0.1' value='"
+    return "<input id='"+id+"_slider' class='form-control' type='range' min='0' step='1' value='"
            +value+"' max='"+max+"' onchange="+'"'+"updateValue('"+id+"', this.value)"+'"'+"/>";
 }
 
@@ -232,20 +232,20 @@ function makeSpan(id, value) {
 function makeAllSlider() {
     for (var element in lookup) {
         var l = lookup[element];
-            $('#slider_form').append(
-                '<div class="form-group row">'
-                    +'<label for="'+element+'" class="col-5 col-form-label">'+getTagValue(element, 'label')+'</label>'
-                    +'<div class="col">'
-                        +makeSlider(element, getTagValue(element, l.value), getTagValue(element, l.max))
-                    +'</div>'
-				    +'<div class="col-1">'
-                        +makeSpan(element+"_display", getTagValue(element, l.value))
-                    +'</div>'
-				    +'<div class="col-1">'
-                        // TODO: How to deal with area?
-                       +makeSpan(element+"_area", 0)
-                    +"</div>"
-                +"</div>");
+        $('#slider_form').append(
+            '<div class="form-group row">'
+                +'<label for="'+element+'" class="col-5 col-form-label">'+getTagValue(element, 'label')+'</label>'
+                +'<div class="col">'
+                    +makeSlider(element, getTagValue(element, l.value), getTagValue(element, l.max))
+                +'</div>'
+			    +'<div class="col-1">'
+                    +makeSpan(element+"_display", getTagValue(element, l.value))
+                +'</div>'
+			    +'<div class="col-1">'
+                    // TODO: How to deal with area?
+                   +makeSpan(element+"_area", 0)
+                +"</div>"
+            +"</div>");
     }
 }
 
@@ -287,7 +287,7 @@ function initSelectors() {
     // Multiple
     $("#timeseriesDataMultiple").change(function() {
 		currentTimeseriesDataMultiple = [];
-   
+
         $( "#timeseriesDataMultiple option:selected" ).each(function() {
             currentTimeseriesDataMultiple.push( $(this).text() );
         });
@@ -304,24 +304,26 @@ function initSelectors() {
 }
 
 function updateStackList() {
-	$("#timeseriesDataOrder").html('');
+	dragBox.html('');
 	for (var i = 0; i < currentTimeseriesDataMultiple.length; i++) {
-		$("#timeseriesDataOrder").append("<li class='itemTimeseriesDataOrder ui-state-default'  id='" + currentTimeseriesDataMultiple[i] + "'>" + currentTimeseriesDataMultiple[i] + "</li>");
+		dragBox.append("<li class='ui-state-default'  id='" + currentTimeseriesDataMultiple[i] + "'>" + currentTimeseriesDataMultiple[i] + "</li>");
 	}
 
-	$("#timeseriesDataOrder").sortable({
+    //dragBox.disableSelection();
+	dragBox.sortable({
     	placeholder: "ui-state-highlight",
     	update: function() { 
-    		console.log("test");
-    		currentTimeseriesDataMultiple = $(this).sortable('toArray');
+     		currentTimeseriesDataMultiple = dragBox.sortable("toArray");
     		var timeSeriesData = [];
 		    for (var i = 0; i < currentTimeseriesDataMultiple.length; i++) {
 		    	timeSeriesData.push(prepareTimeseries(currentTimeseriesDataMultiple[i]));
 		    }
+
 		    makeSimpleTimeseriesPlot(layout_args={'title':'Simple Stacked Timeseries Title', 'div_id': 'stacked_timeseries_plot'},
 		                             ts=timeSeriesData);
     	}
     });
+    
 }
 
 var scenario_db_id = {{ scenario_db_id }};
@@ -337,12 +339,6 @@ var plot_tabs = {{ plot_tabs | tojson }};
 var timeseriesOrder = false;
 
 
-var currentTimeseriesDataSimple = [timeseries_available[0]];
-var currentTimeseriesDataMultiple = timeseries_available;
-initSelectors();
-updateStackList();
-
-
 scenario.children_dict = {};
 scenario.children.forEach(function(data) {
     scenario.children_dict[data.name] = data
@@ -353,6 +349,13 @@ makeAllSlider();
 plot_tabs.forEach(function(tab) {
     makeTab(tab.id, tab.label, tab.options, tab.content);
 });
+
+var dragBox = $("#timeseriesDataOrder");
+var currentTimeseriesDataSimple = [timeseries_available[0]];
+var currentTimeseriesDataMultiple = timeseries_available;
+
+initSelectors();
+updateStackList();
 
 for (var element in lookup) {
     var l = lookup[element];
