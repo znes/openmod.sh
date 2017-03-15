@@ -237,6 +237,11 @@ def main_menu():
 def jobs():
   return flask.render_template('jobs.html', jobs=app.results)
 
+@app.route('/pages/jobs')
+@fl.login_required
+def job_page():
+  return flask.render_template('pages/jobs.html', jobs=app.results)
+
 @app.route('/kill/<job>', methods=['PUT'])
 @fl.login_required
 def kill(job):
