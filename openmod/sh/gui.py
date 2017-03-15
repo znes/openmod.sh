@@ -231,10 +231,10 @@ def download_json():
 def main_menu():
     return flask.render_template('main_menu.html')
 
-@app.route('/jobs')
+@app.route('/widgets/jobs')
 @fl.login_required
-def jobs():
-  return flask.render_template('jobs.html', jobs=app.results)
+def jobs_widget():
+  return flask.render_template('widgets/jobs.html', jobs=app.results)
 
 @app.route('/pages/jobs')
 @fl.login_required
@@ -246,7 +246,7 @@ def jobs_page():
 def kill(job):
     if job in app.results:
         app.results[job].cancel()
-    return flask.jsonify({'jobs': jobs()})
+    return flask.jsonify({'jobs': jobs_widget()})
 
 @app.route('/simulate', methods=['GET', 'PUT'])
 @fl.login_required
@@ -263,7 +263,7 @@ def run_simulation():
     app.results[job.key()] = job
 
     return flask.jsonify({'success': True, 'job': job.key(),
-                          'jobs': jobs()})
+                          'jobs': jobs_widget()})
 
 @app.route('/simulation/<job>')
 @fl.login_required
