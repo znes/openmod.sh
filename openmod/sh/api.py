@@ -439,7 +439,8 @@ def results_to_db(scenario_name, results_dict):
                         and getattr(target, 'sector', '') == 'electricity'):
                     transmission_dct[(predecessor, successor)] = seq
                 if (getattr(source, 'sector', '') == 'electricity'
-                        and getattr(target, 'type', '') == 'transmission'):
+                        and (getattr(target, 'type', '') == 'transmission'
+                                or getattr(target, 'slack', '') == 'true')):
                     transmission_lookup[successor] = predecessor
                 if (getattr(source, 'slack', '') == 'true'
                         and getattr(target, 'sector', '') == 'electricity'):
@@ -449,6 +450,13 @@ def results_to_db(scenario_name, results_dict):
                         and getattr(target, 'slack', '') == 'true'):
                     transmission_dct[(predecessor, successor)] = seq
                     slack_sink = (predecessor, successor)
+
+        # Take slack source hub as hub for slack source and sink
+        new_slack_hub = transmission_lookup[slack_source[0]]
+        transmission_dct[(new_slack_hub, slack_source[1])] = transmission_dct.pop(slack_source)
+        transmission_dct[(slack_sink[0], new_slack_hub)] = transmission_dct.pop(slack_sink)
+        slack_source = (new_slack_hub, slack_source[1])
+        slack_sink = (slack_sink[0], new_slack_hub)
 
         timesteps = len(seq)
         # replace source keys (transmission objects) with hub objects
