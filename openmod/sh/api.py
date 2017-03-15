@@ -569,6 +569,44 @@ def get_flow_result(scenario_identifier, predecessor_name, successor_name,
 
     return flow_result
 
+def get_flow_results(scenario_identifier, by='id'):
+    """
+    Returns
+    -------
+
+    If results exist:
+
+    flow_results : dict
+
+    If results do not exist:
+
+    False
+    """
+    with db_session() as session:
+        if by == 'name':
+          scenario = (session
+              .query(schema.Element)
+              .filter(schema.Element.name.like(scenario_identifier))
+              .first())
+          scenario_id = scenario.id
+
+        else:
+            scenario_id = scenario_identifier
+
+        flow_results = (session
+                       .query(schema.ResultSequences)
+                       .filter_by(scenario_id=scenario_id)
+                   .all())
+
+        if flow_results:
+            flow_results = {f.predecessor.name: {f.successor.name: {'type': f.type,
+                                                                    'value': f.value}}
+                                for f in flow_results}
+            return flow_results
+
+        else:
+            return False
+
 def get_co2_results(scenario_identifier, multi_hub_name, by='id', aggregated=True):
     """ CAUTION: Though this function tries to be kind of generic but was
         developed for the city of KIEL. The co2-balance might therefore not be
