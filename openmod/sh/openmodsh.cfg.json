@@ -24,5 +24,6 @@
   "timeseries_available": ["kiel_wind", "kiel_solar"],
   "plot_tabs": [{"id": "timeseries_plot", "label": "Timeseries", "options": "<select id='timeseriesDataSimple'></select>", "content": ""},
                 {"id": "stacked_timeseries_plot", "label": "Stacked Timeseries", "options": "Here could be options and buttions", "content": "<select id='timeseriesDataMultiple' multiple></select><ul id='timeseriesDataOrder'></ul>"},
-                {"id": "hub_barplot", "label": "Hub Barplot", "options": "<select id='selectHub'></select>","content": ""}]
+                {"id": "hub_barplot", "label": "Hub Barplot", "options": "<select id='selectHub'></select>","content": ""},
+                {"id": "flow_results", "label": "Result flows", "options": "<select id='selectFlow'></select>", "content": "", "onclick": "flowPlot('#selectFlow', '#flow_results')"}]
 }

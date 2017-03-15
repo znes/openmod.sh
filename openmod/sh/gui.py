@@ -287,7 +287,7 @@ def provide_flow_results_api():
     query_args = flask.request.args.to_dict()
     
     # by scenario id
-    flow_results = get_flow_results(query_args['id'])
+    flow_results = get_flow_results(query_args['scenario_id'])
     
     return flask.jsonify(flow_results)
 

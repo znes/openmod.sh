@@ -54,7 +54,7 @@ html>body #timeseriesDataOrder li { height: 1.5em; line-height: 1.2em; }
 	</div>
 	<div class="col">
 		<ul class="nav nav-tabs" id="plot_tab">
-			<li class="nav-item">
+			<li class="nav-item" onclick="alert('this could be a plotting function')">
 				<a class="nav-link active" data-toggle="tab" href="#region_plot_tab">Region Plot</a>
 			</li>
 		</ul>
@@ -75,9 +75,9 @@ html>body #timeseriesDataOrder li { height: 1.5em; line-height: 1.2em; }
 <script src="static/plots.js"></script>
 
 <script type="text/javascript">
-function makeTab(id, label, options, content) {
+function makeTab(id, label, options, content, onclick="") {
     $('#plot_tab').append(
-        '<li class="nav-item">'
+        '<li class="nav-item" onclick="'+onclick+'">'
         +'<a class="nav-link" data-toggle="tab" href="#'+id+'_tab">'+label+'</a>'
         +'</li>');
     $('#plot_tab_content').append(
@@ -149,6 +149,15 @@ function getResults(scenario_db_id, hub_name, callback) {
         type: 'get',
         data : {scenario_id: scenario_db_id,
                 hub_name: hub_name}
+        })
+    .done(callback)
+    }
+
+function getFlowResults(scenario_db_id, callback) {
+    return $.ajax({
+        url: 'API/results',
+        type: 'get',
+        data : {scenario_id: scenario_db_id}
         })
     .done(callback)
     }
@@ -323,6 +332,20 @@ function updateStackList() {
     
 }
 
+function flowPlot(select_id, plot_tab_id) {
+    getFlowResults(scenario_db_id, function(data) {
+        if (data == false) {
+            $(plot_tab_id).append("No results in db");
+        }
+        else {
+            keys = Object.keys(data);
+            keys.forEach(function (key) {
+                $(select_id).append("<option value='"+key+"'>"+key+"</option>");
+            });
+        }
+    });
+}
+
 var scenario_db_id = {{ scenario_db_id }};
 
 var scenario = {{ scenario | tojson }};
@@ -344,7 +367,7 @@ scenario.children.forEach(function(data) {
 makeAllSlider();
 
 plot_tabs.forEach(function(tab) {
-    makeTab(tab.id, tab.label, tab.options, tab.content);
+    makeTab(tab.id, tab.label, tab.options, tab.content, tab.onclick);
 });
 
 var dragBox = $("#timeseriesDataOrder");
