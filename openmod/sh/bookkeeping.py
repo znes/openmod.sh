@@ -7,8 +7,72 @@ needs to do bookkeping on top of it's regular duties.
 """
 
 from uuid import uuid4
+import os
+import signal
 
 from flask.sessions import (SessionInterface as SI, SessionMixin as SM)
+
+
+class Job():
+    """ A convenience class enhancing `multiprocessing.pool.AsyncResult` with additional information.
+    """
+    def __init__(self, result, connection):
+        """
+        Parameters
+        ----------
+
+        result : multiprocessing.pool.AsyncResult
+            The `AsyncResult` object for which additional information should
+            be tracked.
+        connection: multiprocessing.Connection
+            The connection which allows us to communicate with the child
+            process.
+        """
+        self._status = False
+        self.connection = connection
+        self.result = result
+
+    def key(self):
+        return str(id(self.result))
+
+    def get(self):
+        return self.result.get()
+
+    def ready(self):
+        return self.result.ready()
+
+    def status(self):
+        if self._status:
+            return self._status
+        if self.ready():
+            s = self.get()
+            if s[0:len("Stopped.")] == "Stopped.":
+                return "Stopped."
+            elif s[0:len("Success.")] == "Success.":
+                return "Done."
+            elif s[0:len("Failure.")] == "Failure.":
+                return "Failed."
+            elif s[0:len("Cancelled.")] == "Cancelled.":
+                return "Cancelled."
+        elif self.connection.poll():
+            return "Running."
+        else:
+            return "Queued."
+        return "Something's wrong. Please file a bug."
+
+    def cancel(self):
+        c = self.connection
+        try:
+            c.send("Cancel!");
+            if c.poll():
+                pid = c.recv()
+                os.kill(pid, signal.SIGINT)
+                self._status = "Stopped."
+            else:
+                self._status = "Cancelled."
+        except BrokenPipeError as e:
+            # That's ok. It just means the worker has already stopped.
+            pass
 
 
 class InMemorySession(dict, SM):

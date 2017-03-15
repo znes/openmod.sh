@@ -446,8 +446,11 @@ def compute_results(es):
 
     return es
 
+class JobStoppedException(Exception):
+    pass
+
 def stop_worker(signal_number, stack_frame, message="Stopped by user."):
-    raise(Exception(message))
+    raise(JobStoppedException(message))
 
 def wrapped_simulation(scenario, connection):
     """
@@ -467,7 +470,7 @@ def wrapped_simulation(scenario, connection):
     # If theres anything available on our end of the pipe, that means our
     # parent wants us to stop immediately.
     if connection.poll():
-      return "Stopped.\n<br/>Terminated without any action."
+      return "Cancelled.\n<br/>Terminated without any action."
     try:
         # create an energy system object
         es = create_energy_system(scenario)
@@ -485,6 +488,15 @@ def wrapped_simulation(scenario, connection):
 
         result = "Success."
 
+    except JobStoppedException as e:
+        result = "Stopped.\n<br/>"
+        if sys.version_info >= (3, 5):
+            result += '<br/>'.join(traceback
+                .TracebackException
+                .from_exception(e)
+                .format())
+        else:
+            result += '<br/>'.join(traceback.format_exc())
     except Exception as e:
         result = "Failure.\n<br/>"
         if sys.version_info >= (3, 5):

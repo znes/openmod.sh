@@ -1,14 +1,14 @@
+from collections import OrderedDict as OD
 import json
 import multiprocessing as mp
 import multiprocessing.dummy as mpd
 import multiprocessing.pool as mpp
-import os
-import signal
 
 import flask
 import flask_login as fl
 from flask_babel import Babel, gettext, ngettext, lazy_gettext
 
+from .bookkeeping import Job
 from openmod.sh.api import (provide_element_api, json_to_db,
                            provide_elements_api, provide_sequence_api,
                            allowed_file, explicate_hubs, delete_element_from_db,
@@ -23,7 +23,7 @@ from openmod.sh.config import get_config
 # Set up a pool of workers to which jobs can be submitted and a dictionary
 # which stores the asynchronous result objects.
 app.workers = mpd.Pool(1) if app.debug else mpp.Pool(1)
-app.results = {}
+app.results = OD()
 
 babel = Babel(app)
 
@@ -51,7 +51,8 @@ def provide_element_api_route():
         if 'id' in query_args.keys():
             element_dct = provide_element_api(query_args)
             return flask.jsonify(element_dct)
-        return gettext("Please provide correct query parameters. At least 'id'.")
+        return gettext(
+            "Please provide correct query parameters. At least 'id'.")
     if flask.request.method == 'POST':
         data = flask.request.get_json()
         db_response = json_to_db(data)
@@ -147,9 +148,11 @@ def edit_scenario():
                                  scenario=scenario,
                                  scenario_db_id=scenario_db_id,
                                  slider_lookup=get_config('gui_slider', {}),
-                                 timeseries_available=get_config('timeseries_available', {}),
+                                 timeseries_available=get_config(
+                                     'timeseries_available',
+                                     {}),
                                  plot_tabs=get_config('plot_tabs', {}),
-                                 jobs=sorted(app.results))
+                                 jobs=app.results)
 
 @app.route('/graph_plot', methods=['GET'])
 @fl.login_required
@@ -232,22 +235,13 @@ def main_menu():
 @app.route('/jobs')
 @fl.login_required
 def jobs():
-  return flask.render_template('jobs.html', jobs=sorted(app.results))
+  return flask.render_template('jobs.html', jobs=app.results)
 
 @app.route('/kill/<job>', methods=['PUT'])
 @fl.login_required
 def kill(job):
     if job in app.results:
-        d = app.results[job]
-        c = d["connection"]
-        try:
-            c.send("Stop!");
-            if d["connection"].poll():
-                pid = c.recv()
-                os.kill(pid, signal.SIGINT)
-        except BrokenPipeError as e:
-            # That's ok. It just means the worker has already stopped.
-            pass
+        app.results[job].cancel()
     return flask.jsonify({'jobs': jobs()})
 
 @app.route('/simulate', methods=['GET', 'PUT'])
@@ -260,23 +254,28 @@ def run_simulation():
     parent, child = mp.Pipe()
     result = app.workers.apply_async(mcbeth.wrapped_simulation,
                                      args=(scenario, child))
-    key = str(id(result))
+    job = Job(result=result, connection=parent)
 
-    app.results[key] = {"result": result, "connection": parent}
+    app.results[job.key()] = job
 
-    return flask.jsonify({'success': True, 'job': key,
+    return flask.jsonify({'success': True, 'job': job.key(),
                           'jobs': jobs()})
 
 @app.route('/simulation/<job>')
 @fl.login_required
 def simulation(job):
-    if not job in app.results:
+    job = app.results.get(job)
+    if not job:
         return "Unknown job."
-    elif not app.results[job]["result"].ready():
+    elif not job.ready():
+        if job.status() == "Cancelled.":
+            return ("Job cancelled. <br/>" +
+                    "It's still queued but will be disposed " +
+                    "of before it starts.")
         return ("Job running, but not finished yet. <br />" +
                 "Please come back later.")
     else:
-        result = app.results[job]["result"].get()
+        result = job.get()
         return result
 
 
