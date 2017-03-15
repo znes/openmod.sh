@@ -43,6 +43,13 @@ def get_label(element):
     else:
         return element.name
 
+def get_tag_value(tags, tag_key):
+    value = [t.value for t in tags if t.key == tag_key]
+    if value:
+        return value[0]
+    else:
+        return False
+
 def dict_to_tags(dic):
     return [schema.Tag(k, v) for k,v in dic.items()]
 
@@ -155,6 +162,7 @@ def json_to_db(json):
                                         for ss in child['successors']]
 
             session.add(element)
+            session.flush()
             return {"success": True, "scenario_db_id": element.id}
 
 # API for element and elements
@@ -293,19 +301,6 @@ def explicate_hubs(json):
             dct[p] = dct.get(p, obj)
             dct[p]['successors'] = dct[p].get('successors', [])
             dct[p]['successors'].append(child['name'])
-        # add global hubs (kind of dirty...)
-        if child.get('tags'):
-            if (child['tags'].get('fuel_type')
-                and child['tags'].get('fuel_type')
-                        not in child.get('predecessors', [])
-                and child['type'] in ['combined_flexible_generator',
-                                      'flexible_generator']):
-                obj = {'type': 'hub',
-                       'name': child['tags']['fuel_type'],
-                       'tags': {'balanced': 'false'}}
-                dct[obj['name']] = dct.get(obj['name'], obj)
-                dct[obj['name']]['successors'] = dct[obj['name']].get('successors', [])
-                dct[obj['name']]['successors'].append(child['name'])
 
     json['children'].extend(dct.values())
 
@@ -533,6 +528,82 @@ def results_to_db(scenario_name, results_dict):
             session.add(result)
             session.flush()
 
+def get_co2_results(scenario_identifier, multi_hub_name, by='id', aggregated=True):
+    with db_session() as session:
+        if by == 'name':
+          scenario = (session
+              .query(schema.Element)
+              .filter(schema.Element.name.like(scenario_identifier))
+              .first())
+          scenario_id = scenario.id
+
+        else:
+            scenario_id = scenario_identifier
+
+        # check if results exist, if so: delete from database
+        scenario_results = (session
+            .query(schema.ResultSequences)
+            .filter_by(scenario_id=scenario_id)
+            .all())
+
+        co2_dict = {'import': {},
+                    'export': {},
+                    'electricity': {},
+                    'heat': {}}
+        if scenario_results:
+            for r in scenario_results:
+                if get_tag_value(r.successor.tags, tag_key='sector') == 'co2' \
+                        and [ss.name for ss in r.predecessor.successors
+                                     if multi_hub_name in ss.name]:
+
+                    if r.predecessor.type == 'flexible_generator' \
+                        and not get_tag_value(r.predecessor.tags, 'slack'):
+                        # heat components
+                        if 'heat' in [get_tag_value(ss.tags, 'sector')
+                                      for ss in r.predecessor.successors]:
+                            co2_dict['heat'][get_label(r.predecessor)] = r.value
+                        # electricity components
+                        if 'electricity' in [get_tag_value(ss.tags, 'sector')
+                                            for ss in r.predecessor.successors]:
+                            co2_dict['electricity'][get_label(r.predecessor)] = r.value
+                    # this is the same as above, only for slack, which is then
+                    # import
+                    if r.predecessor.type == 'flexible_generator' \
+                        and get_tag_value(r.predecessor.tags, 'slack'):
+                            # electricity slack
+                        if 'electricity' in [get_tag_value(ss.tags, 'sector')
+                                             for ss in r.predecessor.successors]:
+                            co2_dict['import'][get_label(r.predecessor)] = r.value
+
+                    if r.predecessor.type == 'combined_flexible_generator':
+                        total_efficiency = float(get_tag_value(r.predecessor.tags,
+                                                         'thermal_efficiency')) \
+                                         + float(get_tag_value(r.predecessor.tags,
+                                                         'electrical_efficiency'))
+                        heat_share = (float(
+                                        get_tag_value(r.predecessor.tags,
+                                                      'thermal_efficiency')) /
+                                      total_efficiency)
+                        el_share = (float(
+                                        get_tag_value(r.predecessor.tags,
+                                                      'electrical_efficiency')) /
+                                      total_efficiency)
+
+                        co2_dict['heat'][get_label(r.predecessor)] = [
+                                               v * heat_share for v in r.value]
+                        co2_dict['electricity'][get_label(r.predecessor)] = [
+                                                v * el_share for v in r.value]
+
+                if r.successor.type == 'sink' \
+                        and get_tag_value(r.successor.tags, 'slack'):
+                        if 'electricity' in [get_tag_value(ss.tags, 'sector')
+                                             for ss in r.successor.predecessors]:
+                            co2_dict['export'][get_label(r.successor)] = r.value
+
+
+            return co2_dict
+        else:
+            return False
 
 def get_hub_results(scenario_identifier, hub_name, by='id', aggregated=True):
     """ Get the results from the dabase for a given scenario and a given hub.

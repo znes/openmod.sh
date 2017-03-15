@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
-from sys import version_info
+import multiprocessing as mp
+import os
+import signal
+import sys
 import traceback
 
 import pandas as pd
@@ -23,14 +26,19 @@ def _float(obj, attr):
     to float with explicit value error message and default setting of
     attributes.
     """
-    defaults = {'installed_power': None,
+
+    if obj['tags'].get(attr)  in ['null', '+inf']:
+        obj['tags'][attr] = None
+
+    defaults = {'installed_energy': 0,
+                'installed_power': None,
                 'amount': None,
                 'variable_cost': 0,
                 'efficiency' : 1,
                 'min_amount':0,
                 'max_amount': None,
                 'max_fullloadhours': None,
-                'min_fullloadhours': None}
+                'min_fullloadhours': 0}
 
 
     try:
@@ -107,6 +115,8 @@ def populate_energy_system(es, node_data):
 
     # create solph buses
     logging.info("Creating hubs...")
+    # create solph components
+    hubs = {}
     for n in node_data:
         if n['type'] == 'hub':
             b = Bus(label=n['name'], geo=n.get('geom'))
@@ -115,6 +125,7 @@ def populate_energy_system(es, node_data):
             for k,v in n['tags'].items():
                 setattr(b, k, v)
             es.add(b)
+            hubs[n['name']] = b
 
     # create solph components
     commodities = {}
@@ -137,6 +148,10 @@ def populate_energy_system(es, node_data):
                 else:
                     summed_max = max_amount / nv
                     summed_min = min_amount / nv
+                # if summe_min i.e min_amount is 0, we do not want to build the
+                # constraint, therefore summed_min is set to None
+                if summed_min == 0:
+                    summed_min = None
 
                 # summe_max is set to 1, to make summed max working!!!!!!!!
                 # contraints is: flow <= nominal_value * summed_max
@@ -155,6 +170,9 @@ def populate_energy_system(es, node_data):
     for n in node_data:
         logging.info("Creating component {0}...".format(n['name']))
 
+        if n['type'] in ['area_factor', 'unit']:
+            pass
+
         # create oemof solph sinks for sink elements  (e.g. co2-sink, import-slack)
         if n['type'] == 'sink':
             ps = es.groups.get(n['predecessors'][0])
@@ -165,6 +183,8 @@ def populate_energy_system(es, node_data):
                            inputs={ps:
                               Flow(nominal_value=_float(n, 'installed_power'),
                                    variable_costs=_float(n, 'variable_cost'))})
+                es.add(obj)
+                obj.type = n['type']
 
         # create oemof solph source for sink elements  (e.g. export-slack)
         if n['type'] == 'source':
@@ -176,6 +196,8 @@ def populate_energy_system(es, node_data):
                              outputs={ss:
                               Flow(nominal_value=_float(n, 'installed_power'),
                                    variable_costs=_float(n, 'variable_cost'))})
+                es.add(obj)
+                obj.type = n['type']
 
         # create oemof solph source object for volatile generator elements
         if n['type'] == 'volatile_generator':
@@ -189,7 +211,8 @@ def populate_energy_system(es, node_data):
                                       actual_value=n['sequences']['generator_profile'],
                                       variable_cost=_float(n, 'variable_cost'),
                                       fixed=True)})
-
+                es.add(obj)
+                obj.type = n['type']
 
         # cretae oemof solph sink object for demand elements
         if n['type'] == 'demand':
@@ -216,13 +239,21 @@ def populate_energy_system(es, node_data):
                                       actual_value=av,
                                       variable_costs=_float(n, 'variable_cost'),
                                       fixed=fixed)})
+                es.add(obj)
+                obj.type = n['type']
 
         # create linear transformers for flexible generators
         if n['type'] == 'flexible_generator':
-            ss = {es.groups[i].sector: es.groups[i]
-                  for i in n['successors'] if i}
+            ss = {es.groups[i].sector: es.groups[i] for i in n['successors']
+                  if i in [n.label for n in es.nodes]}
             ps = es.groups[n['predecessors'][0]]
 
+            # if min fullload hours is 0, we do not want to build the
+            # constraint, therefore summed_min is set to None
+            if _float(n, 'min_fullloadhours') == 0:
+                summed_min = None
+            else:
+                summed_min = _float(n, 'min_fullloadhours')
             # select bus
             sector = [v for (k,v) in ss.items() if k !='co2'][0]
             conversion_factors = {
@@ -230,7 +261,8 @@ def populate_energy_system(es, node_data):
             outputs={
                 sector: Flow(nominal_value=_float(n, 'installed_power'),
                              summed_max= _float(n, 'max_fullloadhours'),
-                             summed_min=_float(n, 'min_fullloadhours'))}
+                             variable_costs=_float(n, 'variable_cost'),
+                             summed_min=summed_min)}
 
             # if co2-successor exist, add conversion factors and Flow
             if ss.get('co2'):
@@ -245,23 +277,31 @@ def populate_energy_system(es, node_data):
                 inputs={ps:
                     Flow()},
                 conversion_factors=conversion_factors)
+            es.add(obj)
+            obj.type = n['type']
 
         # create linear transformers for combined flexible generators
         if n['type'] == 'combined_flexible_generator':
-            ss = {es.groups[i].sector: es.groups[i]
-                  for i in n['successors'] if i}
+            ss = {es.groups[i].sector: es.groups[i] for i in n['successors']
+                  if i in [n.label for n in es.nodes]}
             ps = es.groups[n['predecessors'][0]]
 
             conversion_factors = {
                 ss['heat']: _float(n, 'thermal_efficiency'),
                 ss['electricity']: _float(n, 'electrical_efficiency')}
 
+            if _float(n, 'min_fullloadhours') == 0:
+                summed_min = None
+            else:
+                summed_min = _float(n, 'min_fullloadhours')
+
             outputs={
                 ss['heat']: Flow(),
                 ss['electricity']: Flow(
                     nominal_value=_float(n, 'installed_power'),
+                    variable_costs=_float(n, 'variable_cost'),
                     summed_max= _float(n, 'max_fullloadhours'),
-                    summed_min=_float(n, 'min_fullloadhours'))}
+                    summed_min=summed_min)}
 
             if ss.get('co2'):
                 # select input of predecessor for transformer (commodity source)
@@ -275,6 +315,8 @@ def populate_energy_system(es, node_data):
                 inputs={ps:
                     Flow()},
                 conversion_factors = conversion_factors)
+            es.add(obj)
+            obj.type = n['type']
 
         # create solph storage objects for storage elements
         if n['type'] == 'storage':
@@ -301,6 +343,8 @@ def populate_energy_system(es, node_data):
                         nominal_capacity=_float(n,'installed_energy'),
                         nominal_input_capacity_ratio=nicr,
                         nominal_output_capacity_ration=nocr)
+            es.add(obj)
+            obj.type = n['type']
 
         # create linear transformer(s) for transmission elements
         if n['type'] == 'transmission':
@@ -310,16 +354,19 @@ def populate_energy_system(es, node_data):
             obj = LinearTransformer(
                 label=n['name'],
                 outputs={ss:
-                    Flow(nominal_value=float(n['tags']['installed_power']))},
+                    Flow(nominal_value=_float(n, 'installed_power'))},
                 inputs={ps:
                     Flow()},
                 conversion_factors={ss: _float(n, 'efficiency')})
+            es.add(obj)
+            obj.type = n['type']
 
-        obj.type = n['type']
-        for k,v in n['tags'].items():#
-            if k not in ['label', 'emission_factor']:
+        for k,v in n['tags'].items():
+            if k == 'slack':
                 setattr(obj, k, v)
-        es.add(obj)
+
+
+
 
     return es
 
@@ -399,7 +446,10 @@ def compute_results(es):
 
     return es
 
-def wrapped_simulation(scenario):
+def stop_worker(signal_number, stack_frame, message="Stopped by user."):
+    raise(Exception(message))
+
+def wrapped_simulation(scenario, connection):
     """
 
     Parameters
@@ -407,7 +457,17 @@ def wrapped_simulation(scenario):
 
     scenario : dict
         Complete scenario definition including all elements.
+    connection : `multiprocessing.Connection`
+        A connection object with which the child process can communicate with
+        the parent.
+
     """
+    signal.signal(signal.SIGINT, stop_worker)
+    connection.send(mp.current_process().pid)
+    # If theres anything available on our end of the pipe, that means our
+    # parent wants us to stop immediately.
+    if connection.poll():
+      return "Stopped.\n<br/>Terminated without any action."
     try:
         # create an energy system object
         es = create_energy_system(scenario)
@@ -423,18 +483,19 @@ def wrapped_simulation(scenario):
 
         results_to_db(scenario['name'], es.results)
 
-        result =(
-            "Computation done (successfully).<br />" +
-            "Once I finished the necessary TODOs, you'll see the process" +
-            "output" +
-            "<br />" +
-            "on this page.")
+        result = "Success."
 
     except Exception as e:
-        if version_info >= (3, 5):
-            result = '<br/>'.join(traceback.TracebackException.from_exception(e).format())
+        result = "Failure.\n<br/>"
+        if sys.version_info >= (3, 5):
+            result += '<br/>'.join(traceback
+                .TracebackException
+                .from_exception(e)
+                .format())
         else:
-            result = '<br/>'.joint(traceback.format_exc())
+            result += '<br/>'.join(traceback.format_exc())
+    finally:
+        connection.close()
 
     return result
 

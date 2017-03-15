@@ -1,59 +1,181 @@
-
+<!DOCTYPE html>
 <html>
- <head> <link rel="stylesheet" type="text/css" href="/static/style.css">
-  <title>openMod.sh</title>
-  {% block head %}
-  {% endblock %}
- </head>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
- <header>
-  </br></br>
-  <div style="float:left; width:70%;" class="base-header">
-  {% block header %}
-  {% endblock %}
-  </div>
-  <div style="float:right; width:30%;" class="base-header">
-   <div align="right", id="boxlink">
-    <a href={{ url_for('main_menu') }}>Go back to main menu</a>
-   </div>
-  <div>
- </header>
+    <title>openMod.sh</title>
 
- <main class="header">
-  {% block body %}
+	<link rel="stylesheet" type="text/css" href="/static/bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="/static/css/style.css">
 
-  {% endblock %}
- </main>
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
 
+	{% block head %}
+	{% endblock %}
 
- <footer>
-  <div style="position:fixed; bottom:10px; height:auto;margin-top:40px;width:100%;text-align:center">
-   Energiekollektiv<br>
-   <em>openmod.sh: an oemof based modelling software.</em>
-  </div>
-  <script type="text/javascript">
-   function openTab(evt, tabName) {
-    // Declare all variables
-    var i, tabcontent, tablinks;
+  </head>
+  <body>
+  	<header>
+  		<div class="row align-items-center">
+		  	<div class="col-2 logo">
+			  	<div class="name">
+			  		OPENMOD.SH <span>0.2</span>
+			  	</div>
+			  	Energiekollektiv
+		  	</div>
+		  	<div class="col">
+  				<ul class="nav">
+					<li class="nav-item">
+						<a class="nav-link" href="scenario_overview">Scenario Overview</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="import">Import</a>
+					</li>
+					<!-- TODO: Add link to running/queued jobs -->
+					<li class="nav-item">
+						<a class="nav-link" href="#">Jobs</a>
+					</li>
+				</ul>
+			</div>
+		  	<div class="col-2">
+  				<ul class="nav">
+  				    <!-- TODO: Add help page -->
+					<li class="nav-item">
+						<a class="nav-link" href="#">Help</a>
+					</li>
+  				    <!-- TODO: User name should be showing up here -->
+					<li class="nav-item">
+						<a class="nav-link" href="#">User</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="logout">Logout</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+  	</header>
+  	<nav class="subnav">
+	  	<div class="col">
+			<ul class="nav">
+            
+            {% block submenu %}
+            {% endblock %}
+            
+			</ul>
+		</div>  		
+  	</nav>
 
-    // Get all elements with class="tabcontent" and hide them
-    tabcontent = document.getElementsByClassName("tabcontent");
-    for (i = 0; i < tabcontent.length; i++) {
-        tabcontent[i].style.display = "none";
-    }
+	{% block content %}
+	{% endblock %}
 
-    // Get all elements with class="tablinks" and remove the class "active"
-    tablinks = document.getElementsByClassName("tablinks");
-    for (i = 0; i < tablinks.length; i++) {
-        tablinks[i].className = tablinks[i].className.replace(" active", "");
-    }
+<!--  	<header>
+	  	<div class="container">
+			<ul class="nav">
+				<li class="nav-item logo">
+					Energiekollektiv<br />
+					<span>openmod.sh</span>
+				</li>
+				{% block nav %}
+				<li class="nav-item">
+					<a class="nav-link active" href="#">Overview</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" href="#">Import</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" href="#">Compare Results</a>
+				</li>
+				{% endblock %}
+			</ul>
+	  	</div>
+  	</header>
+  	<nav class="subnav">
+  		{% block subnav %}
+	  	<div class="container">
+			<ul class="nav">
+				<li class="nav-item">
+					<a class="nav-link" href="#">Update</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" href="#">Save new</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" href="#">Go to Overview</a>
+				</li>
+			</ul>
+	  	</div>
+		{% endblock %}
+  	</nav>
+	<footer>
+		<div class="container">
+			<div class="row navfooter">
+				<div class="col">
+					<b>openmod.sh</b>
+					<ul class="nav flex-column">
+						<li class="nav-item">
+							<a class="nav-link active" href="#">Overview</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="#">Import</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="#">Compare Results</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="#">Logout</a>
+						</li>
+					</ul>
+				</div>
+				<div class="col">
+					<b>Energiekollektiv</b>
+					<ul class="nav flex-column">
+						<li class="nav-item">
+							<a class="nav-link" href="#">Press Releases</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="#">Mission</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="#">Team</a>
+						</li>
+					</ul>
+				</div>
+				<div class="col">
+					<b>Externe Links</b>
+				</div>
+			</div>
+			
+			<div class="row legalfooter">
+				<div class="col-5">
+					Energiekollektiv<br />
+				   <em>openmod.sh: an oemof based modelling software.</em>
+				</div>
+				<div class="col">
+					Private Policy
+				</div>
+				<div class="col">
+					Terms & Conditions
+				</div>
+				<div class="col">
+					Copyright Notifications
+				</div>
+			</div>
 
-    // Show the current tab, and add an "active" class to the link that opened the tab
-    document.getElementById(tabName).style.display = "block";
-    evt.currentTarget.className += " active";
-   }
-  </script>
-  {% block footer %}
-  {% endblock %}
- </footer>
+			<div class="legal">&copy; Copyright 2017 by Energiekollektiv</div>
+		</div>
+	</footer>-->
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="https://npmcdn.com/tether@1.2.4/dist/js/tether.min.js"></script>
+    <script src="/static/bootstrap/js/bootstrap.min.js"></script>
+  </body>
 </html>

@@ -1,6 +1,9 @@
 import json
+import multiprocessing as mp
 import multiprocessing.dummy as mpd
 import multiprocessing.pool as mpp
+import os
+import signal
 
 import flask
 import flask_login as fl
@@ -145,6 +148,7 @@ def edit_scenario():
                                  scenario_db_id=scenario_db_id,
                                  slider_lookup=get_config('gui_slider', {}),
                                  timeseries_available=get_config('timeseries_available', {}),
+                                 plot_tabs=get_config('plot_tabs', {}),
                                  jobs=sorted(app.results))
 
 @app.route('/graph_plot', methods=['GET'])
@@ -226,35 +230,53 @@ def main_menu():
     return flask.render_template('main_menu.html')
 
 @app.route('/jobs')
+@fl.login_required
 def jobs():
   return flask.render_template('jobs.html', jobs=sorted(app.results))
 
+@app.route('/kill/<job>', methods=['PUT'])
+@fl.login_required
+def kill(job):
+    if job in app.results:
+        d = app.results[job]
+        c = d["connection"]
+        try:
+            c.send("Stop!");
+            if d["connection"].poll():
+                pid = c.recv()
+                os.kill(pid, signal.SIGINT)
+        except BrokenPipeError as e:
+            # That's ok. It just means the worker has already stopped.
+            pass
+    return flask.jsonify({'jobs': jobs()})
+
 @app.route('/simulate', methods=['GET', 'PUT'])
+@fl.login_required
 def run_simulation():
     """
     """
 
     scenario = flask.request.get_json()
+    parent, child = mp.Pipe()
     result = app.workers.apply_async(mcbeth.wrapped_simulation,
-                                     args=[scenario])
-
+                                     args=(scenario, child))
     key = str(id(result))
 
-    app.results[key] = result
+    app.results[key] = {"result": result, "connection": parent}
 
-    return json.dumps({'success': True, 'job': key,
-                       'jobs': jobs()})
+    return flask.jsonify({'success': True, 'job': key,
+                          'jobs': jobs()})
 
 @app.route('/simulation/<job>')
+@fl.login_required
 def simulation(job):
     if not job in app.results:
         return "Unknown job."
-    elif not app.results[job].ready():
+    elif not app.results[job]["result"].ready():
         return ("Job running, but not finished yet. <br />" +
                 "Please come back later.")
     else:
-        result = app.results[job].get()
-        del app.results[job]
+        result = app.results[job]["result"].get()
         return result
 
 

@@ -1,0 +1,282 @@
+{% extends "base_layout.html" %}
+
+{% block head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src="https://cdn.plot.ly/plotly-1.23.1.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/wicket/1.3.2/wicket.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/wicket/1.3.2/wicket-leaflet.js"></script>
+{% endblock %}
+
+{% block header %}
+
+<div style="float:left; width:50%;">
+ Selected scenario: {{ scenario.get('name', 'NONE') }}
+</div>
+<div align="right", id="boxlink", style="float:left; width:25%;"
+     onclick="updateScenario(scenario)">
+ <a href="javascript:void(0)">Update scenario</a>
+</div>
+<div align="right", id="boxlink", style="float:right; width:25%;"
+     onclick="saveNewScenario(scenario)">
+ <a href="javascript:void(0)">Save New</a>
+</div>
+
+{% endblock %}
+
+{% block body %}
+
+<div style="float:left; width:35%;">
+
+<div>
+<h3>Select values</h3>
+ <table id="slider_table" style="width:50%">
+   <caption>Kiel</caption>
+  <tr>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td>{{_("Area Usage")}}</td>
+  </tr>
+</table>
+</div>
+
+<div>
+<form action="{{ url_for('show_scenarios') }}"
+      method=get>
+<input type=submit value="Go to scenario overview">
+</form>
+
+<button type="button" onclick="runSimulation(scenario)">Run Simulation</button>
+{% include 'jobs.html' %}
+</div>
+</div>
+
+
+<div style="float:right; width:65%;">
+ <div class="tab">
+  <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab1')" id="defaultOpen">Region Plot</a>
+  <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab2')">Old Timeseries Plot</a>
+  <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab3')">Heatmap Plot</a>
+  <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab4');updateResults('kiel_electricity')">Production</a>
+  <a href="javascript:void(0)" class="tablinks" onclick="openTab(event, 'Tab5')">Timeseries Plot</a>
+ </div>
+
+ <div id="Tab1" class="tabcontent">
+  <div id="region_plot"></div>
+ </div>
+
+ <div id="Tab2" class="tabcontent">
+  <div id="old_timeseries_plot" style="height 300px;"></div>
+  <button type="button" onclick="reorderTimeseries()">Reorder</button>
+ </div>
+
+
+ <div id="Tab3" class="tabcontent">
+  <div id="heatmap_plot"></div>
+ </div>
+
+ <div id="Tab4" class="tabcontent">
+  <div id="bar_plot", style="height 300px;"> </div>
+  <button type="button" onclick="updateResults('kiel_electricity')">Kiel</button>
+  <button type="button" onclick="updateResults('nms_electricity')">Neumünster</button>
+  <button type="button" onclick="updateResults('ploe_electricity')">Plön</button>
+  <button type="button" onclick="updateResults('rdeck_electricity')">Rendsburg Eck</button>
+  <button type="button" onclick="updateResults('kiel_heat')">Kiel Wärme</button>
+ </div>
+
+  <div id="Tab5" class="tabcontent">
+  <div id="timeseries_plot"></div>
+ </div>
+
+
+</div>
+
+{% endblock %}
+
+{% block footer %}
+<script src="static/plots.js"></script>
+
+<script type="text/javascript">
+function getTagValue(element, tag) {
+    return scenario.children_dict[element].tags[tag];
+}
+
+function getSequenceValue(element, sequence) {
+    return scenario.children_dict[element].sequences[sequence];
+}
+
+function prepareTimeseries(id) {
+    ts_args = {};
+    ts_args.name = getTagValue(id, 'label')
+    ts = getSequenceValue(id, lookup[id].profile);
+    ts_args.ts = ts.map(function(i) {
+        return i * parseFloat(getTagValue(id, lookup[id].value));
+    });
+    ts_args.color = lookup[id].color;
+    return ts_args;
+}
+
+
+function updateValue(slider_id, newValue) {
+    document.getElementById(slider_id + "_slider").value = newValue;
+    document.getElementById(slider_id + "_display").innerHTML = newValue;
+    document.getElementById(slider_id + "_area").innerHTML = newValue * 10;
+    var l = lookup[slider_id];
+    scenario.children_dict[slider_id].tags[l.value] = newValue;
+    makeTimeseriesPlot();
+    makeRegionPlot();
+    makeHeatmapPlot(layout_args={'title':'Heatplot Title'},
+                    ts=scenario.children_dict.kiel_demand_heat.sequences.load_profile);
+    makeSimpleTimeseriesPlot(layout_args={'title':'Simple Timeseries Title', 'div_id': 'timeseries_plot'},
+                             ts_args=prepareTimeseries('kiel_solar'));
+}
+
+function updateResults(hub_name) {
+    makeBarPlot(hub_name=hub_name);
+}
+
+// JQUERY TO START NEW MODEL RUN (Send json)
+function runSimulation(scenario) {
+        return $.ajax({
+            url: 'simulate',
+            type: 'put',
+            data: JSON.stringify(scenario),
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            success: function(data) {
+              $("#steve").replaceWith(data.jobs);
+            }
+        });
+    }
+
+
+// GET RESULTS FUNCTION FOR AGGREGATE RESULTS
+function getResults(scenario_db_id, hub_name, callback) {
+    return $.ajax({
+        url: 'API/results/aggregated',
+        type: 'get',
+        data : {scenario_id: scenario_db_id,
+                hub_name: hub_name}
+        })
+    .done(callback)
+    }
+
+function saveNewScenario(scenario) {
+    do {
+        var newScenarioName = prompt("New name", scenario['name']);
+        if (newScenarioName == null) {
+            return;
+        }
+    } while (newScenarioName == "");
+    scenario['name'] = newScenarioName;
+    var newScenarioDescription = prompt("New description", scenario['tags']['description']);
+    if (newScenarioDescription == null) {
+        return;
+    }
+    scenario['tags']['description'] = newScenarioDescription;
+    $.ajax({
+        url: 'API/element',
+        type: 'post',
+        data: JSON.stringify(scenario),
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        dataType: 'json',
+        success: function(data) {
+            alert("Saved successfully! Opening new scenario.");
+            // ALWAYS START A NEW SIMULATION IF THE THE SCENARIO IS SAVED
+            runSimulation(scenario);
+            window.location.replace('edit_scenario?id=' + data.scenario_db_id);
+        },
+        error: function() {
+            if (! confirm("Scenario name is already taken. Try again.")) {
+                return;
+            }
+            saveNewScenario(scenario);
+        }
+    });
+}
+
+function updateScenario(scenario) {
+    // Delete existing scenario
+    $.get('delete', {
+        id: scenario_db_id
+    });
+    // Update scenario children from dict which is manipulated by slider
+    scenario.children = Object.values(scenario.children_dict);
+    // Use element API to write to DB
+    $.ajax({
+        url: 'API/element',
+        type: 'post',
+        data: JSON.stringify(scenario),
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        dataType: 'json',
+        success: function(data) {
+            alert("Updated successfully! Opening updated scenario.");
+            // ALWAYS START A NEW SIMULATION IF THE THE SCENARIO IS SAVED
+            runSimulation(scenario);
+            window.location.replace('edit_scenario?id=' + data.scenario_db_id);
+        },
+        error: function() {
+            alert("Error. This should not have happened. Call somebody.");
+        }
+    });
+}
+
+function makeSlider(id, value, max) {
+    return "<input id='"+id+"_slider' type='range' min='0' step='5' value='"
+           +value+"' max='"+max+"' onchange="+'"'+"updateValue('"+id+"', this.value)"+'"'+"/>";
+}
+
+function makeSpan(id, value) {
+    return "<span id="+id+">"+value+"</span>"
+}
+
+function makeAllSlider() {
+    for (var element in lookup) {
+        var l = lookup[element];
+            $('#slider_table').append(
+                "<tr><td>"
+                +getTagValue(element, 'label')
+                +"</td><td>"
+                +makeSlider(element, getTagValue(element, l.value), getTagValue(element, l.max))
+                +"</td><td>"
+                +makeSpan(element+"_display", getTagValue(element, l.value))
+                +"</td><td>"
+                // TODO: How to deal with area?
+                +makeSpan(element+"_area", 0)
+                +"</td></tr>");
+    }
+}
+
+
+// Get the element with id="defaultOpen" and click on it
+document.getElementById("defaultOpen").click();
+
+var scenario_db_id = {{ scenario_db_id }};
+
+var scenario = {{ scenario | tojson }};
+
+var lookup = {{ slider_lookup | tojson }};
+
+var timeseries_available = {{ timeseries_available | tojson }};
+
+var timeseriesOrder = false;
+
+scenario.children_dict = {};
+scenario.children.forEach(function(data) {
+    scenario.children_dict[data.name] = data
+});
+
+makeAllSlider();
+
+for (var element in lookup) {
+    var l = lookup[element];
+    updateValue(element, getTagValue(element, l.value));
+}
+</script>
+{% endblock %}
