@@ -537,7 +537,9 @@ def results_to_db(scenario_name, results_dict):
             session.add(result)
             session.flush()
 
-def get_co2_results(scenario_identifier, multi_hub_name, by='id', aggregated=True):
+def get_flow_result(scenario_identifier, predecessor_name, successor_name,
+                    by='id'):
+
     with db_session() as session:
         if by == 'name':
           scenario = (session
@@ -549,22 +551,83 @@ def get_co2_results(scenario_identifier, multi_hub_name, by='id', aggregated=Tru
         else:
             scenario_id = scenario_identifier
 
-        # check if results exist, if so: delete from database
+            predecessor = (session
+                           .query(schema.Element)
+                           .filter(schema.Element.name.like(predecessor_name))
+                           .first())
+            successor = (session
+                         .query(schema.Element)
+                         .filter(schema.Element.name.like(successor_name))
+                         .first())
+            flow_result = (session
+                           .query(schema.ResultSequences)
+                           .filter_by(scenario_id=scenario_id,
+                                      predecessor_id=predecessor.id,
+                                      successor_id=successor.id)
+                       .first())
+            flow_result = flow_result.value
+
+    return flow_result
+
+def get_co2_results(scenario_identifier, multi_hub_name, by='id', aggregated=True):
+    """ CAUTION: Though this function tries to be kind of generic but was
+        developed for the city of KIEL. The co2-balance might therefore not be
+        transferable to other projects!!!
+    """
+    with db_session() as session:
+        if by == 'name':
+          scenario = (session
+              .query(schema.Element)
+              .filter(schema.Element.name.like(scenario_identifier))
+              .first())
+          scenario_id = scenario.id
+
+        else:
+            scenario_id = scenario_identifier
+
+
         scenario_results = (session
             .query(schema.ResultSequences)
             .filter_by(scenario_id=scenario_id)
             .all())
 
-        co2_dict = {'import': {},
-                    'export': {},
-                    'electricity': {},
-                    'heat': {}}
         if scenario_results:
+            # find hubs with close to name 'mult_hub'
+            hubs = session.query(schema.Element).filter(
+                        schema.Element.name.contains(multi_hub_name),
+                        schema.Element.type == 'hub').all()
+            # only se
+            electricity_hub = [h for h in hubs
+                               if get_tag_value(h.tags, 'sector') ==
+                                   'electricity'][0]
+
+            # get the hub results for the electrcity hub
+            hub_results = get_hub_results(scenario_identifier=scenario_id,
+                                          hub_name=electricity_hub.name,
+                                          by='id',
+                                          aggregated=False)
+
+            electricity_production = hub_results[electricity_hub.name]['production']
+            summed_production = [sum(p)
+                                 for p in zip(*electricity_production.values())]
+
+            co2_dict = {'import': {},
+                        'export': {},
+                        'electricity': {},
+                        'heat': {}}
+
             for r in scenario_results:
+                # if a flow is connected to the co2 bus, and its predecessor
+                # i.e. component is also connected to a multi hub of the name
+                # multi hub (r.predecessor.succesors equal to buses that
+                # the component is connected to)
                 if get_tag_value(r.successor.tags, tag_key='sector') == 'co2' \
                         and [ss.name for ss in r.predecessor.successors
                                      if multi_hub_name in ss.name]:
-
+                    # if its a flexible generator there is only one more output
+                    # which is either heat or electricity
+                    # (we skip slack component here because they are treated
+                    # differently below)
                     if r.predecessor.type == 'flexible_generator' \
                         and not get_tag_value(r.predecessor.tags, 'slack'):
                         # heat components
@@ -575,15 +638,44 @@ def get_co2_results(scenario_identifier, multi_hub_name, by='id', aggregated=Tru
                         if 'electricity' in [get_tag_value(ss.tags, 'sector')
                                             for ss in r.predecessor.successors]:
                             co2_dict['electricity'][get_label(r.predecessor)] = r.value
-                    # this is the same as above, only for slack, which is then
-                    # import
+
+                    # Now we look at flexible generators that are slacks
+                    # at the momonent only electricity slack are from interest
                     if r.predecessor.type == 'flexible_generator' \
                         and get_tag_value(r.predecessor.tags, 'slack'):
-                            # electricity slack
+                        # electricity slack
+                        # the net import is between two hubs the 'slack hub'
+                        # and the importing hub
+                        import_slack_hub = r.predecessor.predecessors[0]
+                        net_import = hub_results[electricity_hub.name]['import'][import_slack_hub.name]
+
+                        # the abs import is between the transformer and the
+                        # import hub
+
+                        import_slack_transformer = r.predecessor
+
+                        abs_import = get_flow_result(
+                                        scenario_identifier=scenario_id,
+                                        predecessor_name=import_slack_transformer.name,
+                                        successor_name=electricity_hub.name,
+                                        by='id')
+
+                        # calculate share and multiply with absolut co2-value
+                        import_share = []
+                        for i in range(len(net_import)):
+                            # avoid float division erro
+                            if abs_import[i] != 0:
+                                import_share.append(net_import[i] / abs_import[i] * r.value[i])
+                            else:
+                                import_share.append(0)
+
                         if 'electricity' in [get_tag_value(ss.tags, 'sector')
                                              for ss in r.predecessor.successors]:
-                            co2_dict['import'][get_label(r.predecessor)] = r.value
+                            co2_dict['import'][get_label(r.predecessor)] = import_share
 
+                    # combined flexbile generators have two other outputs than
+                    # co2 where the co2-emissions need to be assigned to
+                    # we weight by the energy efficiencies for heat and power
                     if r.predecessor.type == 'combined_flexible_generator':
                         total_efficiency = float(get_tag_value(r.predecessor.tags,
                                                          'thermal_efficiency')) \
@@ -597,20 +689,40 @@ def get_co2_results(scenario_identifier, multi_hub_name, by='id', aggregated=Tru
                                         get_tag_value(r.predecessor.tags,
                                                       'electrical_efficiency')) /
                                       total_efficiency)
-
+                        # weight with 'heat_share' and add to heat result
                         co2_dict['heat'][get_label(r.predecessor)] = [
                                                v * heat_share for v in r.value]
+                        # weight with 'el_share' and add to electricity result
                         co2_dict['electricity'][get_label(r.predecessor)] = [
                                                 v * el_share for v in r.value]
 
-                if r.successor.type == 'sink' \
-                        and get_tag_value(r.successor.tags, 'slack'):
-                        if 'electricity' in [get_tag_value(ss.tags, 'sector')
-                                             for ss in r.successor.predecessors]:
-                            co2_dict['export'][get_label(r.successor)] = r.value
+            # We also need to check the export slacks
+            # in the case of electricity we need to weight this with the
+            # average emission factor of the production at the bus
+            total_co2_production = [
+                sum(c) for c in zip(*co2_dict['electricity'].values())]
+            emission_factor = []
+            emission_export_absolut = []
+            for i in range(len(summed_production)):
+                emission_factor.append(total_co2_production[i] /
+                                            summed_production[i])
+
+                emission_export_absolut.append(
+                    emission_factor[i] *
+                        hub_results[electricity_hub.name]['export'][import_slack_hub.name][i])
+
+            co2_dict['export'][import_slack_hub.name] = emission_export_absolut
+
+            #import pdb; pdb.set_trace()
+            if aggregated == True:
+                for k,v in co2_dict.items():
+                    co2_dict[k] = sum([sum(c) for c in zip(*co2_dict[k].values())])
+                emission_factor = sum(emission_factor) / 8760
 
 
-            return co2_dict
+            return co2_dict, emission_factor
+
+
         else:
             return False
 
@@ -669,7 +781,8 @@ def get_hub_results(scenario_identifier, hub_name, by='id', aggregated=True):
             # add production and demand to dictionary
             for r in scenario_results:
                 if r.successor.name == hub_name:
-                    if r.predecessor.type not in ['transmission', 'sink']:
+                    if r.predecessor.type != 'transmission' \
+                        and not get_tag_value(r.predecessor.tags, 'slack'):
                         label = get_label(r.predecessor)
                         if (r.predecessor.type == 'hub' or
                             r.predecessor.type == 'source'):
