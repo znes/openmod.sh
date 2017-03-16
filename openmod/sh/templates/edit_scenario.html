@@ -342,8 +342,13 @@ function flowPlot(select_id, plot_tab_id) {
             keys.forEach(function (key) {
                 $(select_id).append("<option value='"+key+"'>"+key+"</option>");
             });
+
+        $(select_id).on('change', function() {
+            flow = $(this).val()
+            makeHeatmapPlot(layout_args={'div_id':'flow_results'}, ts=data[flow]);
+            });
         }
-    });
+   });
 }
 
 var scenario_db_id = {{ scenario_db_id }};
