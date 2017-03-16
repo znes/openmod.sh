@@ -599,7 +599,7 @@ def get_flow_results(scenario_identifier, by='id'):
                    .all())
 
         if flow_results:
-            flow_results = {f.predecessor.name+' -> '+f.successor.name: f.value
+            flow_results = {(f.predecessor.name, f.successor.name, f.type): f.value
                                 for f in flow_results}
             return flow_results
 

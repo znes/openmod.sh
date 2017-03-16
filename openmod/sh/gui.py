@@ -1,6 +1,5 @@
 from collections import OrderedDict as OD
 import json
-from io import StringIO
 import pandas as pd
 import multiprocessing as mp
 import multiprocessing.dummy as mpd
@@ -213,13 +212,11 @@ def download():
 
         if flow_dct:
             df = pd.DataFrame(flow_dct)
-            buffer = StringIO()
-            df.to_csv(buffer, encoding='utf-8')
-            buffer.seek(0)
+            resp = flask.make_response(df.to_csv(encoding='utf-8'))
+            resp.headers["Content-Disposition"] = "attachment; filename=simulation-results.csv"
+            resp.headers["Content-Type"] = "text/csv"
 
-            return flask.send_file(buffer,
-                                   attachment_filename="test.csv",
-                                   mimetype='text/csv')
+            return resp
         else:
             return "No results available, did you compute the result of the scenario?"
     else:
