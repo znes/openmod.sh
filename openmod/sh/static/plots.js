@@ -13,7 +13,6 @@ function makeEmissionBarPlot(multi_hub_name, layout_args) {
                             x_vals.push(key);
                             y_vals.push(value/1e6);
                     });
-                }
 
                 var layout =  {title: layout_args.title,
                         axis: {
@@ -60,7 +59,8 @@ function makeEmissionBarPlot(multi_hub_name, layout_args) {
                 var data = [heat, elec, impor, expor, total];
 
             Plotly.newPlot(layout_args.div_id, data, layout);
-          });
+          }
+        });
 
     }
 
@@ -288,7 +288,7 @@ function makeSimpleTimeseriesPlot(layout_args, ts) {
     data = [];
     d = {type: 'scatter', mode: 'lines', line: {width: 0}, fill: 'tozeroy',
          x: dates};
-    
+
     t = ts.pop();
     d.name = t.name;
     d.y = t.ts;

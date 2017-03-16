@@ -15,15 +15,16 @@
 			<th>Scenario Name</th>
 			<th>Show JSON - dataset</th>
 			<th>Download JSON - dataset</th>
+               <th>Download Results</th>
 			<th>Edit Scenaio</th>
 			<th>Show Graph</th>
 			<th>Delete</th>
 	    </tr>
 	  </thead>
 	  <tbody>
-	  
+
 	   {% for k,v in scenarios.items() %}
-	   
+
 	    <tr>
 	    	<td>{{ scenarios[k]['name'] }}</td>
 	    	<td>
@@ -35,9 +36,16 @@
 			   </form>
 		    </td>
 			<td>
-	      		<form action="{{ url_for('download_json') }}" method=get>
+	      		<form action="{{ url_for('download') }}" method=get>
 				<input type=submit value="Download" class="btn btn-primary">
 				<input type="hidden" name="id" value="{{k}}">
+				</form>
+	      	</td>
+                <td>
+	      		<form action="{{ url_for('download') }}" method=get>
+				<input type=submit value="Download" class="btn btn-primary">
+				<input type="hidden" name="id" value="{{k}}">
+                    <input type="hidden" name="results" value="true">
 				</form>
 	      	</td>
 			<td>
@@ -50,7 +58,7 @@
 				<form action="{{ url_for('plot_graph') }}" method=get>
 				<input type=submit value="Show" class="btn btn-primary">
 				<input type="hidden" name="id" value="{{k}}">
-				</form>		      
+				</form>
 	      	</td>
 	      	<td>
 				<form action="{{url_for('delete_scenario') }}" method=get onsubmit="return ConfirmDelete();">
@@ -59,9 +67,9 @@
 				</form>
 	      	</td>
 	    </tr>
-	    
+
 	    {% endfor %}
-	    
+
 	  </tbody>
 	</table>
 </div>

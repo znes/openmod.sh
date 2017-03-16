@@ -1,5 +1,6 @@
 from collections import OrderedDict as OD
 import json
+import pandas as pd
 import multiprocessing as mp
 import multiprocessing.dummy as mpd
 import multiprocessing.pool as mpp
@@ -191,7 +192,7 @@ def delete_scenario():
 
 @app.route('/download', methods=['GET'])
 @fl.login_required
-def download_json():
+def download():
     """
     """
     query_args = flask.request.args.to_dict()
@@ -205,11 +206,27 @@ def download_json():
                        'geom': 'true',
                        'hubs_explicitly':'true'})
 
-    data = dict(provide_element_api(query_args))
+    if "results" in query_args:
+        flow_dct = get_flow_results(scenario_identifier=query_args['id'], by='id')
 
-    return flask.Response(json.dumps(data, indent=2),
-               mimetype='application/json',
-               headers={'Content-Disposition':'attachment;filename=file.json'})
+        if flow_dct:
+            df = pd.DataFrame(flow_dct)
+            buffer = flask.StringIO()
+            df.to_csv(buffer, encoding='utf-8')
+            buffer.seek(0)
+
+            return flask.send_file(buffer,
+                                   attachment_filename="test.csv",
+                                   mimetype='text/csv')
+        else:
+            return "No results available, did you compute the result of the scenario?"
+    else:
+        data = dict(provide_element_api(query_args))
+
+        return flask.Response(json.dumps(data, indent=2),
+                              mimetype='application/json',
+                              headers={'Content-Disposition':'attachment;filename=file.json'})
+
 
 @app.route('/jobs')
 @fl.login_required
