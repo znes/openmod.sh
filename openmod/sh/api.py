@@ -761,7 +761,7 @@ def get_co2_results(scenario_identifier, multi_hub_name, by='id', aggregated=Tru
 
 
         else:
-            return False
+            return (False, False)
 
 def get_hub_results(scenario_identifier, hub_name, by='id', aggregated=True):
     """ Get the results from the dabase for a given scenario and a given hub.
