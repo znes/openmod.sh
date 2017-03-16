@@ -251,7 +251,7 @@ function makeStackedResultPlot(div, data, layout) {
         ]
     };
 
-    plotly_layout = {
+    var plotly_layout = {
         title: layout.title,
         xaxis: {
             rangeselector: selectorOptions,
@@ -262,14 +262,14 @@ function makeStackedResultPlot(div, data, layout) {
         }
     };
 
-    objects = []
+    var objects = []
     $.each(data, function(key, value) {
         $.each(value['production'], function(name, ts) {
             objects.push({'name': name, 'ts': ts})
         });
     });
 
-    traces = [];
+    var traces = [];
 
     d = {type: 'scatter', mode: 'lines', line: {width: 0}, fill: 'tozeroy',
          x: dates};
@@ -279,9 +279,9 @@ function makeStackedResultPlot(div, data, layout) {
     d.fillcolor = t.color;
 
     traces.push(d);
-
+    console.log(traces)
     base = t.ts;
-    for (var j = 1; i <= objects.lenght; j++) {
+    for (var j = 1; j <= objects.length-1; j++) {
         t = objects[j];
         d = {type: 'scatter', mode: 'lines', line: {width: 0}, fill: 'tonexty',
              x: dates};
@@ -295,7 +295,7 @@ function makeStackedResultPlot(div, data, layout) {
         //d.fillcolor = t.color;
         traces.push(d);
     };
-
+    console.log(traces)
     Plotly.newPlot(div, traces, plotly_layout);
 }
 
