@@ -1,70 +1,60 @@
-function makeEmissionBarPlot(multi_hub_name, layout_args) {
+function makeEmissionBarPlot(div, data, layout) {
 
-    result = getEmissionResults(scenario_db_id, multi_hub_name, function(data) {
-            console.log(data)
-            if (data == false) {
-                document.getElementById(layout_args.div_id).innerHTML = "No results in db";
-            }
-            else {
-                var x_vals = [];
-                var y_vals = [];
+    var x_vals = [];
+    var y_vals = [];
 
-                $.each(data, function(key, value) {
-                            x_vals.push(key);
-                            y_vals.push(value/1e6);
-                    });
-
-                var layout =  {title: layout_args.title,
-                        axis: {
-                            title: "Emission Sources"
-                        },
-                        yaxis: {
-                            title: "Emission in t"
-                        },
-                        hovermode: !1,
-                        barmode: 'stack'
-                };
-
-                var heat = {
-                    x: ["Production", "Export", "Total"],
-                    y: [data["heat"], 0, 0],
-                    name: "Heat",
-                    type: "bar"
-                }
-                var elec = {
-                    x: ["Production", "Export", "Total"],
-                    y: [data["electricity"], 0, 0],
-                    name: "Electricity",
-                    type: "bar"
-                }
-                var impor = {
-                    x: ["Production", "Export", "Total"],
-                    y: [data["import"], 0, 0],
-                    name: "Import",
-                    type: "bar"
-                }
-                var expor = {
-                    x: ["Production", "Export", "Total"],
-                    y: [0, data["export"], 0],
-                    name: "Export",
-                    type: "bar"
-                }
-                var total = {
-                    x: ["Production", "Export", "Total"],
-                    y: [0, 0, data["import"]+data["export"]+data["electricity"]+data["heat"]],
-                    name: "Total",
-                    type: "bar"
-                }
-
-                var data = [heat, elec, impor, expor, total];
-
-            Plotly.newPlot(layout_args.div_id, data, layout);
-          }
+    $.each(data, function(key, value) {
+                x_vals.push(key);
+                y_vals.push(value);
         });
 
+    var plotly_layout =  {
+            title: layout.title,
+            yaxis: {
+                title: "Emission in t"
+            },
+            hovermode: !1,
+            barmode: 'stack'
+    };
+
+    var heat = {
+        x: ["Production", "Export", "Total"],
+        y: [data["heat"], 0, 0],
+        name: "Heat",
+        type: "bar"
+    }
+    var elec = {
+        x: ["Production", "Export", "Total"],
+        y: [data["electricity"], 0, 0],
+        name: "Electricity",
+        type: "bar"
+    }
+    var impor = {
+        x: ["Production", "Export", "Total"],
+        y: [data["import"], 0, 0],
+        name: "Import",
+        type: "bar"
+    }
+    var expor = {
+        x: ["Production", "Export", "Total"],
+        y: [0, data["export"], 0],
+        name: "Export",
+        type: "bar"
+    }
+    var total = {
+        x: ["Production", "Export", "Total"],
+        y: [0, 0, data["import"]+data["export"]+data["electricity"]+data["heat"]],
+        name: "Total",
+        type: "bar"
     }
 
-function makeBarPlot(div, data, layout_args) {
+    var data = [heat, elec, impor, expor, total];
+
+    Plotly.newPlot(div, data, plotly_layout);
+}
+
+
+function makeBarPlot(div, data, layout) {
     var x_vals = [];
     var y_vals = [];
 
@@ -92,7 +82,7 @@ function makeBarPlot(div, data, layout_args) {
 	            y_vals.push(export_sum);
     });
 
-    var layout =  {title: layout_args.title,
+    var plotly_layout =  {title: layout.title,
             axis: {
                 title: 'Technologies'
             },
@@ -110,7 +100,7 @@ function makeBarPlot(div, data, layout_args) {
         type: 'bar'
     }];
 
-    Plotly.newPlot(div, data, layout);
+    Plotly.newPlot(div, data, plotly_layout);
 
 }
 

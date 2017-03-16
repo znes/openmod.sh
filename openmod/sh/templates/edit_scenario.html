@@ -97,8 +97,17 @@ function updateValue(slider_id, newValue) {
 
 
 function renderEmissionBarPlot(plot_id) {
-    makeEmissionBarPlot(multi_hub_name='kiel', layout_args={'title': 'CO2-Emissions in Kiel',
-                                                            'div_id': plot_id});
+
+    getEmissionResults(scenario_db_id, multi_hub_name='kiel', function(data) {
+        if (data == false) {
+            $("#"+plot_id).html("");
+            $("#"+plot_id).append("No results in db!");
+        }
+        else {
+            makeEmissionBarPlot(div=plot_id, data=data,
+                                layout={'title': 'CO2-Emissions in Kiel'});
+        }
+    });
 }
 
 function renderHubBarPlot(select_id, plot_id) {
@@ -131,7 +140,7 @@ function renderHubBarPlot(select_id, plot_id) {
                $("#"+plot_id).append("No results in db!");
             }
             else {
-                makeBarPlot(div=plot_id, data=data, layout_args={'title': nice_hub_name});
+                makeBarPlot(div=plot_id, data=data, layout={'title': nice_hub_name});
             }
         });
     });
