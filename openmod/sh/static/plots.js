@@ -85,6 +85,10 @@ function makeBarPlot(hub_name, layout_args) {
                         y_vals.push(production);
                         //console.log(comp_name, production);
                     });
+                    $.each(value['demand'], function(comp_name, demand) {
+                        x_vals.push(comp_name);
+                        y_vals.push(demand);
+                    });
                     $.each(value['import'], function(comp_name, impor) {
                         import_sum = import_sum + impor
                     });

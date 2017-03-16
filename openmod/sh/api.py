@@ -831,9 +831,11 @@ def get_hub_results(scenario_identifier, hub_name, by='id', aggregated=True):
                         label = get_label(r.successor)
                         if (r.successor.type == 'hub'
                                 or r.successor.type == 'sink'):
-                            hub_results[hub_name]['export'][label] = r.value
+                            hub_results[hub_name]['export'][label] = [
+                                                           -v for v in r.value]
                         else:
-                            hub_results[hub_name]['demand'][label] = r.value
+                            hub_results[hub_name]['demand'][label] = [
+                                                          - v for v in r.value]
 
             # fix storage: collect all storage keys from production and demand
             # and make them a set, substract demand from production and update
