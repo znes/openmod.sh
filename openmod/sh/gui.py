@@ -126,16 +126,6 @@ def upload_file():
 def export_dataset():
     return flask.render_template('export.html')
 
-@app.route('/id_editor')
-@fl.login_required
-def id_editor():
-    scenario_id = flask.request.args.get('id')
-    try:
-        flask.session["scenario"] = json.loads(scenario_id)
-    except:
-        pass
-    return flask.render_template('iD.html')
-
 @app.route('/edit_scenario', methods=['GET'])
 @fl.login_required
 def edit_scenario():
@@ -187,12 +177,6 @@ def show_scenarios():
                                  scenarios=scenarios,
                                  model=model)
 
-@app.route('/show_results', methods=['GET', 'POST'])
-@fl.login_required
-def show_results():
-    flask.flash('Processing results...')
-    return flask.render_template('show_results.html')
-
 @app.route('/delete', methods=['GET'])
 @fl.login_required
 def delete_scenario():
@@ -226,12 +210,6 @@ def download_json():
     return flask.Response(json.dumps(data, indent=2),
                mimetype='application/json',
                headers={'Content-Disposition':'attachment;filename=file.json'})
-
-
-@app.route('/main_menu')
-@fl.login_required
-def main_menu():
-    return flask.render_template('main_menu.html')
 
 @app.route('/jobs')
 @fl.login_required

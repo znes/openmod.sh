@@ -17,7 +17,6 @@
 			<th>Download JSON - dataset</th>
 			<th>Edit Scenaio</th>
 			<th>Show Graph</th>
-			<th>Open in iD</th>
 			<th>Delete</th>
 	    </tr>
 	  </thead>
@@ -52,12 +51,6 @@
 				<input type=submit value="Show" class="btn btn-primary">
 				<input type="hidden" name="id" value="{{k}}">
 				</form>		      
-	      	</td>
-	      	<td>
-				<form action="{{url_for('id_editor') }}" method=get>
-				<input type=submit value="Open" class="btn btn-primary">
-				<input type="hidden" name="id" value="{{k}}">
-				</form>
 	      	</td>
 	      	<td>
 				<form action="{{url_for('delete_scenario') }}" method=get onsubmit="return ConfirmDelete();">
