@@ -332,21 +332,21 @@ function updateStackList() {
     
 }
 
-function flowPlot(select_id, plot_tab_id) {
+function flowPlot(select_id, plot_id) {
     getFlowResults(scenario_db_id, function(data) {
         if (data == false) {
-            $(plot_tab_id).append("No results in db");
+            $("#"+plot_id).html("No results in db");
         }
         else {
             keys = Object.keys(data);
             keys.forEach(function (key) {
-                $(select_id).append("<option value='"+key+"'>"+key+"</option>");
+                $("#"+select_id).append("<option value='"+key+"'>"+key+"</option>");
             });
-
-        $(select_id).on('change', function() {
-            flow = $(this).val()
-            makeHeatmapPlot(layout_args={'div_id':'flow_results'}, ts=data[flow]);
-            });
+            $("#"+plot_id).html("");
+            $("#"+select_id).on('change', function() {
+                flow = $(this).val();
+                makeHeatmapPlot(layout_args={'div_id': plot_id}, ts=data[flow]);
+                });
         }
    });
 }
