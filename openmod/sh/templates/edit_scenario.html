@@ -152,8 +152,7 @@ function renderStackedResultPlot(select_id, plot_id) {
 
     getHubs(scenario_db_id, function(data) {
         if (data == false) {
-            $("#"+plot_id).html("");
-            $("#"+plot_id).append("No hubs founds!");
+            $("#"+plot_id).html("No hubs founds!");
         }
         else {
 
@@ -168,13 +167,12 @@ function renderStackedResultPlot(select_id, plot_id) {
     });
 
     $("#"+select_id).on('change', function() {
-        hub_name = $(this).val()
+        hub_name = $(this).val();
         nice_hub_name = $( "#"+select_id+" option:selected" ).text();
 
         getHubResults(scenario_db_id, hub_name, false, function(data) {
             if (data == false) {
-               $("#"+plot_id).html("");
-               $("#"+plot_id).append("No results in db!");
+               $("#"+plot_id).html("No results in db!");
             }
             else {
                 makeStackedResultPlot(div=plot_id, data=data,

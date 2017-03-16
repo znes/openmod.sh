@@ -241,7 +241,7 @@ function makeStackedResultPlot(div, data, layout) {
         return new Date(i * 3600 * 1000);
     });
 
-    selectorOptions = {
+    var selectorOptions = {
         buttons: [{
                 step: 'month',
                 stepmode: 'backward',
@@ -282,7 +282,6 @@ function makeStackedResultPlot(div, data, layout) {
     d.fillcolor = t.color;
 
     traces.push(d);
-    console.log(traces)
     base = t.ts;
     for (var j = 1; j <= objects.length-1; j++) {
         t = objects[j];
@@ -298,7 +297,6 @@ function makeStackedResultPlot(div, data, layout) {
         //d.fillcolor = t.color;
         traces.push(d);
     };
-    console.log(traces)
     Plotly.newPlot(div, traces, plotly_layout);
 }
 
