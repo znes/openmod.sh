@@ -123,8 +123,39 @@ function updateValue(slider_id, newValue) {
     }
     makeSimpleTimeseriesPlot(layout_args={'title':'Simple Stacked Timeseries Title', 'div_id': 'stacked_timeseries_plot'},
                              ts=timeSeriesData);
-    makeBarPlot(hub_name='kiel_electricity', layout_args={'div_id': 'hub_barplot'});
+
 }
+
+
+function renderEmissionBarPlot() {
+    makeEmissionBarPlot(multi_hub_name='kiel', layout_args={'title': 'CO2-Emissions in Kiel',
+                                                            'div_id': 'co2_barplot'});
+}
+
+function renderHubBarPlot(select_id) {
+    getHubs(scenario_db_id, function(data) {
+        if (data === false) {
+            $("#hub_barplot").append("No results in db");
+        }
+        else {
+            $.each(data, function(key, value) {
+                if ('name' in value) {
+                   $(select_id).append("<option value='"+value.name+"'>"+value.name+"</option>");
+                };
+            // make plot when rendered the first time
+            makeBarPlot($(select_id).val(), layout_args={'div_id':"hub_barplot",
+                                                         'name':$(select_id).val()});
+            });
+        }
+        $(select_id).on('change', function() {
+            hub_name = $(this).val()
+            makeBarPlot(hub_name, layout_args={'div_id':"hub_barplot",
+                                               'name':$(select_id).val()});
+        });
+    });
+}
+
+
 
 // JQUERY TO START NEW MODEL RUN (Send json)
 function runSimulation(scenario) {
@@ -161,6 +192,33 @@ function getFlowResults(scenario_db_id, callback) {
         })
     .done(callback)
     }
+
+function getEmissionResults(scenario_db_id, multi_hub_name, callback) {
+    return $.ajax({
+        url: 'API/co2_results',
+        type: 'get',
+        data : {scenario_id: scenario_db_id,
+                multi_hub_name: multi_hub_name}
+        })
+    .done(callback)
+    }
+
+function getHubs(scenario_db_id, callback) {
+ return $.ajax({
+        url: 'API/elements',
+        type: 'get',
+        data : {scenario_id: scenario_db_id,
+                type: "hub",
+                sequences: false,
+                predecessors: false,
+                successors: false,
+                parents: false,
+                geom: false,
+                children: false}
+        })
+    .done(callback)
+    }
+
 
 function saveNewScenario(scenario) {
     do {

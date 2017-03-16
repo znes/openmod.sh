@@ -13,7 +13,7 @@ from openmod.sh.api import (provide_element_api, json_to_db,
                            provide_elements_api, provide_sequence_api,
                            allowed_file, explicate_hubs, delete_element_from_db,
                            results_to_db, get_hub_results, create_transmission,
-                           get_flow_results)
+                           get_flow_results, get_co2_results)
 from openmod.sh.forms import ComputeForm
 from openmod.sh.visualization import make_graph_plot
 from openmod.sh.web import app
@@ -258,15 +258,26 @@ def simulation(job):
         return result
 
 
+@app.route('/API/co2_results')
+def provide_co2_results_api():
+    """
+    """
+    query_args = flask.request.args.to_dict()
+
+    co2_results, emission_factor = get_co2_results(scenario_identifier=query_args['scenario_id'],
+                                                   multi_hub_name=query_args['multi_hub_name'],
+                                                   by='id', aggregated=True)
+    return flask.jsonify(co2_results)
+
 @app.route('/API/results')
 def provide_flow_results_api():
     """
     """
     query_args = flask.request.args.to_dict()
-    
+
     # by scenario id
     flow_results = get_flow_results(query_args['scenario_id'])
-    
+
     return flask.jsonify(flow_results)
 
 
