@@ -8,12 +8,6 @@
 <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/wicket/1.3.2/wicket.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/wicket/1.3.2/wicket-leaflet.js"></script>
-<style>
-#timeseriesDataOrder { list-style-type: none; margin: 0; padding: 0;}
-#timeseriesDataOrder li { margin: 0 5px 5px 5px; padding: 5px; font-size: 1.2em; height: 1.5em; }
-html>body #timeseriesDataOrder li { height: 1.5em; line-height: 1.2em; }
-#timeseriesDataOrder li.placeholder { height: 1.5em; line-height: 1.2em; }
-</style>
 {% endblock %}
 
 {% block submenu %}
@@ -40,34 +34,19 @@ html>body #timeseriesDataOrder li { height: 1.5em; line-height: 1.2em; }
 {% block content %}
 <!-- interface -->
 <div class="row no-gutters tool">
-	<div class="col-4">
-		<header>
-			Parameter
-		</header>
-		<div class="toolbar">
-			<br />
-		</div>
-		<div class="body">
-			<form id="slider_form">
-			</form>
-		</div>
-	</div>
-	<div class="col">
-		<ul class="nav nav-tabs" id="plot_tab">
-			<li class="nav-item" onclick="alert('this could be a plotting function')">
-				<a class="nav-link active" data-toggle="tab" href="#region_plot_tab">Region Plot</a>
-			</li>
-		</ul>
-        <div class="tab-content" id="plot_tab_content">
-            <div class="tab-pane active" id="region_plot_tab" role="tabpanel">
-                <div class="toolbar">
-                    Here could be options for plotting (e.g. drop down menu, buttons...)<br />
-                </div>
-                <div id="region_plot"></div>
-            </div>
+    <div class="col-4">
+        <header>
+            Parameter
+        </header>
+        <div class="toolbar"><br/></div>
+        <div class="body">
+            <form id="slider_form"></form>
         </div>
-	</div>
-    <ul id='timeseriesDataOrder1'></ul>
+    </div>
+    <div class="col">
+        <ul class="nav nav-tabs" id="plot_tab"></ul>
+        <div class="tab-content" id="plot_tab_content"></div>
+    </div>
 </div>
 
 <script src="/static/jquery-ui.min.js"></script>
@@ -75,14 +54,14 @@ html>body #timeseriesDataOrder li { height: 1.5em; line-height: 1.2em; }
 <script src="static/plots.js"></script>
 
 <script type="text/javascript">
-function makeTab(id, label, options, content, onclick="") {
+function makeTab(id, label, options, content, onclick="", active="") {
     $('#plot_tab').append(
         '<li class="nav-item" onclick="'+onclick+'">'
-        +'<a class="nav-link" data-toggle="tab" href="#'+id+'_tab">'+label+'</a>'
+        +'<a class="nav-link '+active+'" data-toggle="tab" href="#'+id+'_tab">'+label+'</a>'
         +'</li>');
     $('#plot_tab_content').append(
-        '<div class="tab-pane" id="'+id+'_tab" role="tabpanel">'
-        +'<div class="toolbar">'+options+'</div>'
+        '<div class="tab-pane '+active+'" id="'+id+'_tab" role="tabpanel">'
+        +'<div class="toolbar">'+options+'</br></div>'
         +'<div id="'+id+'"></div>'
         +content
         +'</div>');
@@ -114,25 +93,15 @@ function updateValue(slider_id, newValue) {
     document.getElementById(slider_id + "_area").innerHTML = newValue * 10;
     var l = lookup[slider_id];
     scenario.children_dict[slider_id].tags[l.value] = newValue;
-    makeSimpleTimeseriesPlot(layout_args={'title':'Simple Timeseries Title', 'div_id': 'timeseries_plot'},
-                             ts=[prepareTimeseries(currentTimeseriesDataSimple[0])]);
-
-   var timeSeriesData = [];
-    for (var i = 0; i < currentTimeseriesDataMultiple.length; i++) {
-    	timeSeriesData.push(prepareTimeseries(currentTimeseriesDataMultiple[i]));
-    }
-    makeSimpleTimeseriesPlot(layout_args={'title':'Simple Stacked Timeseries Title', 'div_id': 'stacked_timeseries_plot'},
-                             ts=timeSeriesData);
-
 }
 
 
-function renderEmissionBarPlot() {
+function renderEmissionBarPlot(plot_id) {
     makeEmissionBarPlot(multi_hub_name='kiel', layout_args={'title': 'CO2-Emissions in Kiel',
-                                                            'div_id': 'co2_barplot'});
+                                                            'div_id': plot_id});
 }
 
-function renderHubBarPlot(select_id) {
+function renderHubBarPlot(select_id, plot_id) {
     getHubs(scenario_db_id, function(data) {
         if (data == false) {
             $("#hub_barplot").append("No results in db");
@@ -143,7 +112,7 @@ function renderHubBarPlot(select_id) {
                    $(select_id).append("<option value='"+value.name+"'>"+value.name+"</option>");
                 };
             // make plot when rendered the first time
-            makeBarPlot($(select_id).val(), layout_args={'div_id':"hub_barplot",
+            makeBarPlot($(select_id).val(), layout_args={'div_id':plot_id,
                                                          'name':$(select_id).val()});
             });
         }
@@ -313,83 +282,6 @@ function makeAllSlider() {
     }
 }
 
-function initSelectors() {
-    for (var i = timeseries_available.length - 1; i >= 0; i--) {
-        // Simple
-        if(currentTimeseriesDataSimple[0] == timeseries_available[i]) {
-            $("#timeseriesDataSimple").append("<option selected=\"selected\"  value=" + timeseries_available[i] + ">" + timeseries_available[i] + "</option>");
-        }
-        else {
-            $("#timeseriesDataSimple").append("<option  value=" + timeseries_available[i] + ">" + timeseries_available[i] + "</option>");
-        }
-
-
-        // Multiple
-        var selected = false;
-        for (var j = currentTimeseriesDataMultiple.length - 1; j >= 0; j--) {
-        	if(currentTimeseriesDataMultiple[j] == timeseries_available[i]) {
-        		selected = true;	
-        	}
-       	}
-       	if(selected) {
-            $("#timeseriesDataMultiple").append("<option selected=\"selected\" value=" + timeseries_available[i] + ">" + timeseries_available[i] + "</option>");
-        }
-        else {
-            $("#timeseriesDataMultiple").append("<option value=" + timeseries_available[i] + ">" + timeseries_available[i] + "</option>");
-        }
-    }
-    // Simple
-    $("#timeseriesDataSimple").change(function() {
-        $( "#timeseriesDataSimple option:selected" ).each(function() {
-            currentTimeseriesDataSimple[0] = $(this).text();
-        });
-        makeSimpleTimeseriesPlot(layout_args={'title':'Simple Timeseries Title', 'div_id': 'timeseries_plot'},
-                         ts=[prepareTimeseries(currentTimeseriesDataSimple[0])]);
-    });
-
-
-    // Multiple
-    $("#timeseriesDataMultiple").change(function() {
-		currentTimeseriesDataMultiple = [];
-
-        $( "#timeseriesDataMultiple option:selected" ).each(function() {
-            currentTimeseriesDataMultiple.push( $(this).text() );
-        });
-
-        var timeSeriesData = [];
-	    for (var i = 0; i < currentTimeseriesDataMultiple.length; i++) {
-	    	timeSeriesData.push(prepareTimeseries(currentTimeseriesDataMultiple[i]));
-	    }
-        makeSimpleTimeseriesPlot(layout_args={'title':'Simple Stacked Timeseries Title', 'div_id': 'stacked_timeseries_plot'},
-                             ts=timeSeriesData);
-
-        updateStackList();
-    });
-}
-
-function updateStackList() {
-	dragBox.html('');
-	for (var i = 0; i < currentTimeseriesDataMultiple.length; i++) {
-		dragBox.append("<li class='ui-state-default'  id='" + currentTimeseriesDataMultiple[i] + "'>" + currentTimeseriesDataMultiple[i] + "</li>");
-	}
-
-    //dragBox.disableSelection();
-	dragBox.sortable({
-    	placeholder: "ui-state-highlight",
-    	update: function() { 
-     		currentTimeseriesDataMultiple = dragBox.sortable("toArray");
-    		var timeSeriesData = [];
-		    for (var i = 0; i < currentTimeseriesDataMultiple.length; i++) {
-		    	timeSeriesData.push(prepareTimeseries(currentTimeseriesDataMultiple[i]));
-		    }
-
-		    makeSimpleTimeseriesPlot(layout_args={'title':'Simple Stacked Timeseries Title', 'div_id': 'stacked_timeseries_plot'},
-		                             ts=timeSeriesData);
-    	}
-    });
-    
-}
-
 function flowPlot(select_id, plot_id) {
     getFlowResults(scenario_db_id, function(data) {
         if (data == false) {
@@ -430,15 +322,8 @@ scenario.children.forEach(function(data) {
 makeAllSlider();
 
 plot_tabs.forEach(function(tab) {
-    makeTab(tab.id, tab.label, tab.options, tab.content, tab.onclick);
+    makeTab(tab.id, tab.label, tab.options, tab.content, tab.onclick, tab.active);
 });
-
-var dragBox = $("#timeseriesDataOrder");
-var currentTimeseriesDataSimple = [timeseries_available[0]];
-var currentTimeseriesDataMultiple = timeseries_available;
-
-initSelectors();
-updateStackList();
 
 for (var element in lookup) {
     var l = lookup[element];

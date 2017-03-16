@@ -22,9 +22,22 @@
     }
   },
   "timeseries_available": ["kiel_wind", "kiel_solar"],
-  "plot_tabs": [{"id": "timeseries_plot", "label": "Timeseries", "options": "<select id='timeseriesDataSimple'></select>", "content": ""},
-                {"id": "stacked_timeseries_plot", "label": "Stacked Timeseries", "options": "Here could be options and buttions", "content": "<select id='timeseriesDataMultiple' multiple></select><ul id='timeseriesDataOrder'></ul>"},
-                {"id": "hub_barplot", "label": "Hub Barplot", "options": "<select id='selectHub'></select>","content": "", "onclick": "renderHubBarPlot('#selectHub')"},
-                {"id": "co2_barplot", "label": "CO2 - Emissions", "options": "","content": "", "onclick": "renderEmissionBarPlot()"},
-                {"id": "flow_results", "label": "Result flows", "options": "<select id='selectFlow'></select>", "content": "", "onclick": "flowPlot('selectFlow', 'flow_results')"}]
+  "plot_tabs": [
+
+{"id": "input_overview", "label": "Input Overview", "options": "", "content": "", "onclick": "", "active": "active"},
+
+{"id": "input_timeseries", "label": "Input Timeseries", "options": "<select id='input_timeseries_select'></select>", "content": ""},
+
+{"id": "result_overview", "label": "Result Overview", "options": "", "content": "", "onclick": "", "active": ""},
+
+{"id": "result_hub", "label": "Result Hub", "options": "<select id='result_hub_select'></select>","content": "", "onclick": "renderHubBarPlot('#result_hub_select', 'result_hub')"},
+
+{"id": "result_timeseries", "label": "Result Timeseries", "options": "<select id='result_timeseries_select'></select>", "content": "", "onclick": "flowPlot('result_timeseries_select', 'result_timeseries')"},
+
+{"id": "result_stacked", "label": "Result Stacked", "options": "<select id='result_stacked_select'</select>", "content": ""},
+
+{"id": "result_co2", "label": "Result CO2", "options": "","content": "", "onclick": "renderEmissionBarPlot('result_co2')"},
+
+{"id": "result_summary", "label": "Result Summary", "options": "", "content": "", "onclick": "", "active": ""}
+]
 }
