@@ -104,18 +104,21 @@ function makeBarPlot(div, data, layout) {
 
 }
 
-function makeHeatmapPlot(layout_args, ts) {
-    var data = []
+function makeHeatmapPlot(div, data, layout) {
+
+    var ts = data.ts;
+
+    var ts_matrix = []
 
     for (var i = 0; i < 24; i++) {
-        data[i] = []
+        ts_matrix[i] = []
         for (var j = 0; j < 365; j++) {
-            data[i].push(ts[j * 24 + i])
+            ts_matrix[i].push(ts[j * 24 + i])
         }
     }
 
-    var layout = {
-        title: layout_args['title'],
+    var plotly_layout = {
+        title: layout.title,
         axis: {
             title: 'Day of the year'
         },
@@ -124,12 +127,12 @@ function makeHeatmapPlot(layout_args, ts) {
         }
     };
 
-    var data = [{
-        z: data,
+    var plotly_data = [{
+        z: ts_matrix,
         type: 'heatmap'
     }];
 
-    Plotly.newPlot(layout_args.div_id, data, layout);
+    Plotly.newPlot(div, plotly_data, plotly_layout);
 }
 
 
@@ -395,4 +398,98 @@ function makeRegionPlot() {
             lineCap: 'butt'
         }).addTo(map);
     });
+}
+
+
+function makeResultTimeseriesPlot(div, data, layout) {
+
+    var that_ts = data.ts;
+
+    // TODO: make dates accoring to scenario.tags.year
+
+    var dates = Array.apply(null, Array(that_ts.length)).map(function(_, i) {
+        return new Date(i * 3600 * 1000);
+    });
+
+    var selectorOptions = {
+        buttons: [{
+                step: 'month',
+                stepmode: 'backward',
+                count: 1,
+                label: '1m'
+            },
+            {
+                step: 'all'
+            }
+        ]
+    };
+    var layout_plotly = {
+        xaxis: {
+            rangeselector: selectorOptions,
+            rangeslider: {}
+        },
+        yaxis: {
+            fixedrange: true
+        }
+    };
+    layout_plotly.title = layout.title;
+
+
+    var data_plotly = {type: 'scatter', mode: 'lines', line: {width: 0}, fill: 'tozeroy',
+         x: dates};
+    
+    data_plotly.name = data.name;
+    data_plotly.y = that_ts;
+    data_plotly.fillcolor = data.color;
+
+    data_plotly = [data_plotly];
+
+    Plotly.newPlot(div, data_plotly, layout_plotly);
+}
+
+function makeOrderedResultTimeseriesPlot(div, data, layout) {
+
+    var this_ts = data.ts;
+    // TODO: make dates accoring to scenario.tags.year
+    this_ts = this_ts.sort(function(a, b) {
+        return b - a
+    });
+    var dates = Array.apply(null, Array(this_ts.length)).map(function(_, i) {
+        return i + 1;
+    });
+
+    var selectorOptions = {
+        buttons: [{
+                step: 'month',
+                stepmode: 'backward',
+                count: 1,
+                label: '1m'
+            },
+            {
+                step: 'all'
+            }
+        ]
+    };
+    var layout_plotly = {
+        xaxis: {
+            rangeselector: selectorOptions,
+            rangeslider: {}
+        },
+        yaxis: {
+            fixedrange: true
+        }
+    };
+    layout_plotly.title = layout.title;
+
+
+    var data_plotly = {type: 'scatter', mode: 'lines', line: {width: 0}, fill: 'tozeroy',
+         x: dates};
+    
+    data_plotly.name = data.name;
+    data_plotly.y = this_ts;
+    data_plotly.fillcolor = data.color;
+
+    data_plotly = [data_plotly];
+
+    Plotly.newPlot(div, data_plotly, layout_plotly);
 }

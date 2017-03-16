@@ -342,23 +342,61 @@ function makeAllSlider() {
     }
 }
 
-function flowPlot(select_id, plot_id) {
+function renderResultFlowPlot(select_flow_id, select_type_id, plot_id) {
     getFlowResults(scenario_db_id, function(data) {
+        $("#"+select_type_id).html("");
+        ['chronological', 'duration', 'heatmap'].forEach( function (x) {
+            $("#"+select_type_id).append("<option value='"+x+"'>"+x+"</option>");
+        });
         if (data == false) {
             $("#"+plot_id).html("No results in db");
         }
         else {
-            keys = Object.keys(data);
-            keys.forEach(function (key) {
-                $("#"+select_id).append("<option value='"+key+"'>"+key+"</option>");
-            });
             $("#"+plot_id).html("");
-            $("#"+select_id).on('change', function() {
-                flow = $(this).val();
-                makeHeatmapPlot(layout_args={'div_id': plot_id}, ts=data[flow]);
+            $('#'+plot_id)[0].outerHTML = '<div id="'+plot_id+'"></div>'
+            var keys = Object.keys(data);
+            $("#"+select_flow_id).html("");
+            keys.forEach(function (key) {
+                $("#"+select_flow_id).append("<option value='"+key+"'>"+key+"</option>");
+            });
+            var edge = $("#"+select_flow_id).val();
+            var ts = data[edge];
+            var type = $("#"+select_type_id).val();
+            renderResultFlowSubPlot(plot_id, edge, type, ts);
+            $("#"+select_flow_id).on('change', function() {
+                var edge = $(this).val();
+                var ts = data[edge];
+                var type = $("#"+select_type_id).val();
+                $('#'+plot_id).html("");
+                $('#'+plot_id)[0].outerHTML = '<div id="'+plot_id+'"></div>'
+                renderResultFlowSubPlot(plot_id, edge, type, ts);
+                });
+            $("#"+select_type_id).on('change', function() {
+                var type = $(this).val();
+                var edge = $("#"+select_flow_id).val();
+                var ts = data[edge];
+                $('#'+plot_id).html("");
+                $('#'+plot_id)[0].outerHTML = '<div id="'+plot_id+'"></div>'
+                renderResultFlowSubPlot(plot_id, edge, type, ts);
                 });
         }
    });
+}
+
+function renderResultFlowSubPlot(plot_id, edge, type, this_ts) {
+    if (type == "chronological") {
+        makeResultTimeseriesPlot(plot_id,
+                                 {"name": edge, "color": "purple", "ts": this_ts},
+                                 {"title": edge});
+    } else if (type == "duration") {
+        makeOrderedResultTimeseriesPlot(plot_id,
+                                        {"name": edge, "color": "black", "ts": this_ts},
+                                        {"title": edge});
+    } else if (type == "heatmap") {
+        makeHeatmapPlot(plot_id,
+                     {"ts": this_ts},
+                     {"title": edge});
+    }
 }
 
 var scenario_db_id = {{ scenario_db_id }};
@@ -372,8 +410,6 @@ var timeseries_available = {{ timeseries_available | tojson }};
 var hubs = {{ hubs | tojson }};
 
 var plot_tabs = {{ plot_tabs | tojson }};
-
-var timeseriesOrder = false;
 
 
 scenario.children_dict = {};
