@@ -228,6 +228,78 @@ function makeTimeseriesPlot() {
     }
 }
 
+function makeStackedResultPlot(div, data, layout) {
+    // layout_args: Object with title, div_id
+    // ts: Array ot ts Object with name, ts, color
+    // first element in ts is highest in stack
+
+    // TODO: make dates accoring to scenario.tags.year
+    dates = Array.apply(null, Array(8760)).map(function(_, i) {
+        return new Date(i * 3600 * 1000);
+    });
+
+    selectorOptions = {
+        buttons: [{
+                step: 'month',
+                stepmode: 'backward',
+                count: 1,
+                label: '1m'
+            },
+            {
+                step: 'all'
+            }
+        ]
+    };
+
+    plotly_layout = {
+        title: layout.title,
+        xaxis: {
+            rangeselector: selectorOptions,
+            rangeslider: {}
+        },
+        yaxis: {
+            fixedrange: true
+        }
+    };
+
+    objects = []
+    $.each(data, function(key, value) {
+        $.each(value['production'], function(name, ts) {
+            objects.push({'name': name, 'ts': ts})
+        });
+    });
+
+    traces = [];
+
+    d = {type: 'scatter', mode: 'lines', line: {width: 0}, fill: 'tozeroy',
+         x: dates};
+    t = objects[0];
+    d.name = t.name;
+    d.y = t.ts;
+    d.fillcolor = t.color;
+
+    traces.push(d);
+
+    base = t.ts;
+    for (var j = 1; i <= objects.lenght; j++) {
+        t = objects[j];
+        d = {type: 'scatter', mode: 'lines', line: {width: 0}, fill: 'tonexty',
+             x: dates};
+        d.name = t.name;
+        base_plus = []
+        for (var i = 0; i < base.length; i++) {
+            base_plus.push(base[i] + t.ts[i]);
+        }
+        d.y = base_plus;
+        base = base_plus;
+        //d.fillcolor = t.color;
+        traces.push(d);
+    };
+
+    Plotly.newPlot(div, traces, plotly_layout);
+}
+
+
 function makeSimpleTimeseriesPlot(layout_args, ts) {
     // layout_args: Object with title, div_id
     // ts: Array ot ts Object with name, ts, color

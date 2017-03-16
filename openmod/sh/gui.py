@@ -289,7 +289,7 @@ def provide_co2_results_api():
                                                    by='id', aggregated=True)
     return flask.jsonify(co2_results)
 
-@app.route('/API/results')
+@app.route('/API/flow_results')
 def provide_flow_results_api():
     """
     """
@@ -301,22 +301,24 @@ def provide_flow_results_api():
     return flask.jsonify(flow_results)
 
 
-@app.route('/API/results/aggregated')
+@app.route('/API/hub_results')
 def provide_results_api():
     """
     """
     query_args = flask.request.args.to_dict()
 
-    if 'hub_name' in query_args:
+    if query_args.get('aggregated','') == 'true':
         hub_results = get_hub_results(query_args['scenario_id'],
                                       hub_name=query_args['hub_name'],
                                       by='id',
                                       aggregated=True)
         return flask.jsonify(hub_results)
-
-    if 'sector' in query_args:
-        # TODO : implement sector results
-        return False
+    if query_args.get('aggregated', '') == 'false':
+        hub_results = get_hub_results(query_args['scenario_id'],
+                                      hub_name=query_args['hub_name'],
+                                      by='id',
+                                      aggregated=False)
+        return flask.jsonify(hub_results)
 
 
 

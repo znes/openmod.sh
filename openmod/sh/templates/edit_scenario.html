@@ -133,7 +133,7 @@ function renderHubBarPlot(select_id, plot_id) {
     $("#"+select_id).on('change', function() {
         hub_name = $(this).val()
         nice_hub_name = $( "#"+select_id+" option:selected" ).text();
-        result = getResults(scenario_db_id, hub_name, function(data) {
+        result = getHubResults(scenario_db_id, hub_name, true, function(data) {
 
             if (data == false) {
                $("#"+plot_id).html("");
@@ -141,6 +141,44 @@ function renderHubBarPlot(select_id, plot_id) {
             }
             else {
                 makeBarPlot(div=plot_id, data=data, layout={'title': nice_hub_name});
+            }
+        });
+    });
+}
+
+
+function renderStackedResultPlot(select_id, plot_id) {
+    $("#"+select_id).html("");
+
+    getHubs(scenario_db_id, function(data) {
+        if (data == false) {
+            $("#"+plot_id).html("");
+            $("#"+plot_id).append("No hubs founds!");
+        }
+        else {
+
+            $.each(data, function(key, value) {
+                if ('name' in value) {
+                   if (value.name in hubs) {
+                       $("#"+select_id).append("<option value='"+value.name+"'>"+hubs[value.name]+"</option>");
+                   }
+                };
+            });
+        }
+    });
+
+    $("#"+select_id).on('change', function() {
+        hub_name = $(this).val()
+        nice_hub_name = $( "#"+select_id+" option:selected" ).text();
+
+        getHubResults(scenario_db_id, hub_name, false, function(data) {
+            if (data == false) {
+               $("#"+plot_id).html("");
+               $("#"+plot_id).append("No results in db!");
+            }
+            else {
+                makeStackedResultPlot(div=plot_id, data=data,
+                                      layout={'title': nice_hub_name});
             }
         });
     });
@@ -163,19 +201,21 @@ function runSimulation(scenario) {
 
 
 // GET RESULTS FUNCTION FOR AGGREGATE RESULTS
-function getResults(scenario_db_id, hub_name, callback) {
+function getHubResults(scenario_db_id, hub_name, aggregated, callback) {
     return $.ajax({
-        url: 'API/results/aggregated',
+        url: 'API/hub_results',
         type: 'get',
         data : {scenario_id: scenario_db_id,
-                hub_name: hub_name}
+                hub_name: hub_name,
+                aggregated: aggregated}
         })
     .done(callback)
     }
 
+
 function getFlowResults(scenario_db_id, callback) {
     return $.ajax({
-        url: 'API/results',
+        url: 'API/flow_results',
         type: 'get',
         data : {scenario_id: scenario_db_id}
         })
