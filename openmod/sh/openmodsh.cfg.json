@@ -26,10 +26,17 @@
     {"id": "input_overview", "label": "Input Overview", "options": "", "content": "", "onclick": "", "active": "active"},
     {"id": "input_timeseries", "label": "Input Timeseries", "options": "<select id='input_timeseries_select'></select>", "content": ""},
     {"id": "result_overview", "label": "Result Overview", "options": "", "content": "", "onclick": "", "active": ""},
-    {"id": "result_hub", "label": "Result Hub", "options": "<select id='result_hub_select'></select>","content": "", "onclick": "renderHubBarPlot('#result_hub_select', 'result_hub')"},
+    {"id": "result_hub", "label": "Result Hub", "options": "<select id='result_hub_select'></select>","content": "", "onclick": "renderHubBarPlot('result_hub_select', 'result_hub')"},
     {"id": "result_timeseries", "label": "Result Timeseries", "options": "<select id='result_timeseries_select'></select>", "content": "", "onclick": "flowPlot('result_timeseries_select', 'result_timeseries')"},
     {"id": "result_stacked", "label": "Result Stacked", "options": "<select id='result_stacked_select'</select>", "content": ""},
     {"id": "result_co2", "label": "Result CO2", "options": "","content": "", "onclick": "renderEmissionBarPlot('result_co2')"},
     {"id": "result_summary", "label": "Result Summary", "options": "", "content": "", "onclick": "", "active": ""}
-  ]
+  ],
+
+   "hubs": {
+        "kiel_electricity": "Kiel Strom",
+        "kiel_heat": "Kiel Wärme",
+        "nms_electricity": "Neumünster",
+        "ploe_electricity": "Plön",
+        "rdeck_electricity": "Rendsburg-Eckernförde"}
 }

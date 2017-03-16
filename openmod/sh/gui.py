@@ -1,5 +1,6 @@
 from collections import OrderedDict as OD
 import json
+from io import StringIO
 import pandas as pd
 import multiprocessing as mp
 import multiprocessing.dummy as mpd
@@ -140,6 +141,7 @@ def edit_scenario():
                                  scenario=scenario,
                                  scenario_db_id=scenario_db_id,
                                  slider_lookup=get_config('gui_slider', {}),
+                                 hubs=get_config('hubs', {}),
                                  timeseries_available=get_config(
                                      'timeseries_available',
                                      {}),
@@ -211,7 +213,7 @@ def download():
 
         if flow_dct:
             df = pd.DataFrame(flow_dct)
-            buffer = flask.StringIO()
+            buffer = StringIO()
             df.to_csv(buffer, encoding='utf-8')
             buffer.seek(0)
 

@@ -64,68 +64,54 @@ function makeEmissionBarPlot(multi_hub_name, layout_args) {
 
     }
 
-function makeBarPlot(hub_name, layout_args) {
+function makeBarPlot(div, data, layout_args) {
+    var x_vals = [];
+    var y_vals = [];
 
-    result = getResults(scenario_db_id, hub_name, function(data) {
+    var import_sum = 0;
+    var export_sum = 0;
 
-            if (data == false) {
-                document.getElementById(layout_args.div_id).innerHTML = 'No results in db';
-            }
-            else {
-                var x_vals = [];
-                var y_vals = [];
-
-		var import_sum = 0;
-		var export_sum = 0;
-
-                $.each(data, function(key, value) {
-                    //console.log(key, value);
-                    $.each(value['production'], function(comp_name, production) {
-                        x_vals.push(comp_name);
-                        y_vals.push(production);
-                        //console.log(comp_name, production);
-                    });
-                    $.each(value['demand'], function(comp_name, demand) {
-                        x_vals.push(comp_name);
-                        y_vals.push(demand);
-                    });
-                    $.each(value['import'], function(comp_name, impor) {
-                        import_sum = import_sum + impor
-                    });
+    $.each(data, function(key, value) {
+        $.each(value['production'], function(comp_name, production) {
+            x_vals.push(comp_name);
+            y_vals.push(production);
+        });
+        $.each(value['demand'], function(comp_name, demand) {
+            x_vals.push(comp_name);
+            y_vals.push(demand);
+        });
+        $.each(value['import'], function(comp_name, impor) {
+            import_sum = import_sum + impor
+        });
 		    x_vals.push('Import');
 	            y_vals.push(import_sum);
 		    $.each(value['export'], function(comp_name, expor) {
-                        export_sum = export_sum + expor
-                    });
+            export_sum = export_sum + expor
+        });
 		    x_vals.push('Export');
 	            y_vals.push(export_sum);
-
-
-
-                });
-
-                var layout =  {title: 'Summed electricity ' + layout_args.name,
-                        axis: {
-                            title: 'Technologies'
-                        },
-                        yaxis: {
-                            title: 'Production in MWh'
-                        },
-                        margin: {
-                            b : 160
-                        }
-                };
-                var data = [{
-                    x: x_vals,
-                    y: y_vals,
-                    type: 'bar'
-                }
-            ];
-
-            Plotly.newPlot(layout_args.div_id, data, layout);
-          }
-
     });
+
+    var layout =  {title: layout_args.title,
+            axis: {
+                title: 'Technologies'
+            },
+            yaxis: {
+                title: 'Production in MWh'
+            },
+            margin: {
+                b : 160
+            }
+    };
+
+    var data = [{
+        x: x_vals,
+        y: y_vals,
+        type: 'bar'
+    }];
+
+    Plotly.newPlot(div, data, layout);
+
 }
 
 function makeHeatmapPlot(layout_args, ts) {

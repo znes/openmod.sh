@@ -102,24 +102,37 @@ function renderEmissionBarPlot(plot_id) {
 }
 
 function renderHubBarPlot(select_id, plot_id) {
+    $("#"+select_id).html("");
+
     getHubs(scenario_db_id, function(data) {
         if (data == false) {
-            $("#hub_barplot").append("No results in db");
+            $("#"+plot_id).html("");
+            $("#"+plot_id).append("No hubs founds!");
         }
         else {
+
             $.each(data, function(key, value) {
                 if ('name' in value) {
-                   $(select_id).append("<option value='"+value.name+"'>"+value.name+"</option>");
+                   if (value.name in hubs) {
+                       $("#"+select_id).append("<option value='"+value.name+"'>"+hubs[value.name]+"</option>");
+                   }
                 };
-            // make plot when rendered the first time
-            makeBarPlot($(select_id).val(), layout_args={'div_id':plot_id,
-                                                         'name':$(select_id).val()});
             });
         }
-        $(select_id).on('change', function() {
-            hub_name = $(this).val()
-            makeBarPlot(hub_name, layout_args={'div_id': plot_id,
-                                               'name':$(select_id).val()});
+    });
+
+    $("#"+select_id).on('change', function() {
+        hub_name = $(this).val()
+        nice_hub_name = $( "#"+select_id+" option:selected" ).text();
+        result = getResults(scenario_db_id, hub_name, function(data) {
+
+            if (data == false) {
+               $("#"+plot_id).html("");
+               $("#"+plot_id).append("No results in db!");
+            }
+            else {
+                makeBarPlot(div=plot_id, data=data, layout_args={'title': nice_hub_name});
+            }
         });
     });
 }
@@ -308,6 +321,8 @@ var scenario = {{ scenario | tojson }};
 var lookup = {{ slider_lookup | tojson }};
 
 var timeseries_available = {{ timeseries_available | tojson }};
+
+var hubs = {{ hubs | tojson }};
 
 var plot_tabs = {{ plot_tabs | tojson }};
 
