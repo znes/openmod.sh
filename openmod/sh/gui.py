@@ -144,8 +144,7 @@ def edit_scenario():
                                  timeseries_available=get_config(
                                      'timeseries_available',
                                      {}),
-                                 plot_tabs=get_config('plot_tabs', {}),
-                                 jobs=app.results)
+                                 plot_tabs=get_config('plot_tabs', {}))
 
 @app.route('/graph_plot', methods=['GET'])
 @fl.login_required
@@ -227,17 +226,22 @@ def download():
                               headers={'Content-Disposition':'attachment;filename=file.json'})
 
 
-@app.route('/jobs')
+@app.route('/widgets/jobs')
 @fl.login_required
-def jobs():
-  return flask.render_template('jobs.html', jobs=app.results)
+def jobs_widget():
+  return flask.render_template('widgets/jobs.html', jobs=app.results)
+
+@app.route('/pages/jobs')
+@fl.login_required
+def jobs_page():
+  return flask.render_template('pages/jobs.html', jobs=app.results)
 
 @app.route('/kill/<job>', methods=['PUT'])
 @fl.login_required
 def kill(job):
     if job in app.results:
         app.results[job].cancel()
-    return flask.jsonify({'jobs': jobs()})
+    return flask.jsonify({'jobs': jobs_widget()})
 
 @app.route('/simulate', methods=['GET', 'PUT'])
 @fl.login_required
@@ -254,7 +258,7 @@ def run_simulation():
     app.results[job.key()] = job
 
     return flask.jsonify({'success': True, 'job': job.key(),
-                          'jobs': jobs()})
+                          'jobs': jobs_widget()})
 
 @app.route('/simulation/<job>')
 @fl.login_required
