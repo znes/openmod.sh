@@ -118,7 +118,7 @@ function renderHubBarPlot(select_id, plot_id) {
         }
         $(select_id).on('change', function() {
             hub_name = $(this).val()
-            makeBarPlot(hub_name, layout_args={'div_id':"hub_barplot",
+            makeBarPlot(hub_name, layout_args={'div_id': plot_id,
                                                'name':$(select_id).val()});
         });
     });
