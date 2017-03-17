@@ -179,25 +179,31 @@ function makeStackedResultPlot(div, data, layout) {
     var traces = [];
 
     d = {type: 'scatter', mode: 'lines', line: {width: 0}, fill: 'tozeroy',
-         x: dates};
+         x: dates, hoverinfo: "x+text+name"};
     t = objects[0];
     d.name = t.name;
     d.y = t.ts;
-    d.fillcolor = t.color;
+    var text = [];
+    t.ts.forEach(function(x) {text.push(String(x))});
+    d.text = text;
+    //d.fillcolor = t.color;
 
     traces.push(d);
     base = t.ts;
     for (var j = 1; j <= objects.length-1; j++) {
         t = objects[j];
         d = {type: 'scatter', mode: 'lines', line: {width: 0}, fill: 'tonexty',
-             x: dates};
+             x: dates, hoverinfo: "x+text+name"};
         d.name = t.name;
-        base_plus = []
+        base_plus = [];
         for (var i = 0; i < base.length; i++) {
             base_plus.push(base[i] + t.ts[i]);
         }
         d.y = base_plus;
         base = base_plus;
+        var text = [];
+        t.ts.forEach(function(x) {text.push(String(x))});
+        d.text = text;
         //d.fillcolor = t.color;
         traces.push(d);
     };
