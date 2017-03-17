@@ -298,7 +298,8 @@ def provide_flow_results_api():
     # by scenario id
     flow_results = get_flow_results(query_args['scenario_id'])
 
-    flow_results = {k[0]+' -> '+k[1]: v for k,v in flow_results.items()}
+    if flow_results:
+        flow_results = {k[0]+' -> '+k[1]: v for k,v in flow_results.items()}
 
     return flask.jsonify(flow_results)
 
