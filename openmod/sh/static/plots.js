@@ -446,12 +446,10 @@ function makeResultTimeseriesPlot(div, data, layout) {
 }
 
 function makeOrderedResultTimeseriesPlot(div, data, layout) {
-
-    var this_ts = data.ts;
+    console.log(data);
+    var this_ts = data.ts_ordered;
     // TODO: make dates accoring to scenario.tags.year
-    this_ts = this_ts.sort(function(a, b) {
-        return b - a
-    });
+
     var dates = Array.apply(null, Array(this_ts.length)).map(function(_, i) {
         return i + 1;
     });
