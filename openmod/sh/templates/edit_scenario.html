@@ -192,7 +192,9 @@ function runSimulation(scenario) {
             data: JSON.stringify(scenario),
             contentType: 'application/json; charset=utf-8',
             dataType: 'json',
-            success: function(data) {}
+            success: function(data) {
+                alert("The simulation runs in the background."
+                      +" See Jobs for an overview of running simmulation.");}
         });
     }
 
@@ -270,8 +272,6 @@ function saveNewScenario(scenario) {
         dataType: 'json',
         success: function(data) {
             alert("Saved successfully! Opening new scenario.");
-            // ALWAYS START A NEW SIMULATION IF THE THE SCENARIO IS SAVED
-            runSimulation(scenario);
             window.location.replace('edit_scenario?id=' + data.scenario_db_id);
         },
         error: function() {
@@ -301,8 +301,6 @@ function updateScenario(scenario) {
         dataType: 'json',
         success: function(data) {
             alert("Updated successfully! Opening updated scenario.");
-            // ALWAYS START A NEW SIMULATION IF THE THE SCENARIO IS SAVED
-            runSimulation(scenario);
             window.location.replace('edit_scenario?id=' + data.scenario_db_id);
         },
         error: function() {
