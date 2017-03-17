@@ -36,8 +36,8 @@
 					<li class="nav-item">
 						<a class="nav-link" href="scenario_overview">Scenario Overview</a>
 					</li>
-					<li class="nav-item">
-						<a class="nav-link" href="import">Import</a>
+					<li class="nav-item" onclick="openImportModal()">
+						<a class="nav-link" href="javascript:void(0)">Import</a>
 					</li>
 					<li class="nav-item">
 						<a class="nav-link" href="jobs">Jobs</a>
@@ -71,6 +71,32 @@
 			</ul>
 		</div>  		
   	</nav>
+
+		<!-- Import Modal -->
+        <div class="modal fade" id="importModal" tabindex="-1" role="dialog" aria-labelledby="importModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="importModalLabel">Import a scenario</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                You can import scenarios only in the openmod.sh specific JSON-format.
+                <!-- TODO: Fine tune to handle success error response and ask for alternative scenario name -->
+                <form action="import" method=post enctype=multipart/form-data>
+                  <input type=file name=file><br>
+                  <input type=submit value=Upload>
+                </form>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
 
 	{% block content %}
 	{% endblock %}
@@ -179,5 +205,12 @@
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="https://npmcdn.com/tether@1.2.4/dist/js/tether.min.js"></script>
     <script src="/static/bootstrap/js/bootstrap.min.js"></script>
+
+<script type="text/javascript">
+function openImportModal() {
+    $('#importModal').modal();
+}
+</script>
+
   </body>
 </html>

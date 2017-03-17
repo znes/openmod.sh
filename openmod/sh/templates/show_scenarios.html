@@ -78,7 +78,7 @@
 </div>
 
 
-<!-- Modal -->
+<!-- Welcone Modal -->
 <div class="modal fade" id="welcomeModal" tabindex="-1" role="dialog" aria-labelledby="welcomeModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
@@ -104,7 +104,7 @@
 <script src="/static/bootstrap/js/bootstrap.min.js"></script>
 
 <script type="text/javascript">
-
+// open welcome modal when coming from login root redirect
 if (document.referrer.split("/").pop() == "login?next=%2F") {
     $('#welcomeModal').modal();
 }

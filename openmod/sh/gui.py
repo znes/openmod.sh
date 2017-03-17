@@ -82,44 +82,45 @@ def provide_sequence_api_route():
     return "Provide at least id as query parameter."
 
 
-@app.route('/import', methods=['GET', 'POST'])
+@app.route('/import', methods=['POST'])
 @fl.login_required
 def upload_file():
-    if flask.request.method == 'POST':
-        # if a json file is posted, try to write it to db
-        json_dict = flask.request.get_json()
+    # if a json file is posted, try to write it to db
+    json_dict = flask.request.get_json()
 
-        if json_dict:
-            val = json_to_db(json_dict)
-            if val:
-                return json.dumps({'success':True});
-            else:
-                return json.dumps({'success':False})
-        # if no json file is posted we assum that its a file
-        # check if the post request has the file part
-        if 'file' not in flask.request.files:
-            flask.flash('No file part')
-            return flask.redirect(flask.request.url)
-        file = flask.request.files['file']
-        # if user does not select file, browser also
-        # submit a empty part without filename
-        if file.filename == '':
-            flask.flash('No selected file')
-            return flask.redirect(flask.request.url)
-        if file and allowed_file(file.filename):
-            #filename = secure_filename(file.filename)
-            json_file = json.loads(str(file.read(), 'utf-8'))
-            if (json_file.get('api_parameters', {})
-                         .get('query', {})
-                         .get('hubs_explicitly') == 'false'):
-                json_file = create_transmission(json_file)
-                json_file = explicate_hubs(json_file)
+    if json_dict:
+        val = json_to_db(json_dict)
+        if val:
+            return json.dumps({'success':True});
+        else:
+            return json.dumps({'success':False})
+    # if no json file is posted we assum that its a file
+    # check if the post request has the file part
+    if 'file' not in flask.request.files:
+        flask.flash('No file part')
+        return flask.redirect(flask.request.url)
+    file = flask.request.files['file']
+    # if user does not select file, browser also
+    # submit a empty part without filename
+    if file.filename == '':
+        flask.flash('No selected file')
+        return flask.redirect(flask.request.url)
+    if file and allowed_file(file.filename):
+        #filename = secure_filename(file.filename)
+        json_file = json.loads(str(file.read(), 'utf-8'))
+        if (json_file.get('api_parameters', {})
+                     .get('query', {})
+                     .get('hubs_explicitly') == 'false'):
+            json_file = create_transmission(json_file)
+            json_file = explicate_hubs(json_file)
 
-            db_response = json_to_db(json_file)
-            return flask.render_template('imported_successfully.html',
-                                         val=db_response['success'],
-                                         scenario=json_file)
-    return flask.render_template('import.html')
+        db_response = json_to_db(json_file)
+        status=409
+        if db_response['success']:
+            status=201
+        response = flask.Response(json.dumps(db_response),
+                                  status=status, mimetype='application/json')
+        return response
 
 
 @app.route('/export')
