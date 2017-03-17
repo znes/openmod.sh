@@ -53,6 +53,12 @@
 
 <script src="static/plots.js"></script>
 
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script src="https://npmcdn.com/tether@1.2.4/dist/js/tether.min.js"></script>
+<script src="/static/bootstrap/js/bootstrap.min.js"></script>
+<script src="static/helper.js"></script>
+
 <script type="text/javascript">
 function makeTab(id, label, options, content, onclick="", active="") {
     $('#plot_tab').append(
@@ -420,5 +426,7 @@ for (var element in lookup) {
     var l = lookup[element];
     updateValue(element, getTagValue(element, l.value));
 }
+
+alertModal("this is the new alert modal. you can use it with alertModal(message) or alertModal(message, title). before you have to import script src=static/helper.js script", "NEW FEATURE");
 </script>
 {% endblock %}
