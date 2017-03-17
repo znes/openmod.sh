@@ -351,7 +351,6 @@ function renderResultFlowPlot(select_flow_id, select_type_id, plot_id) {
         }
         else {
             $("#"+plot_id).html("");
-            $('#'+plot_id)[0].outerHTML = '<div id="'+plot_id+'"></div>'
             var keys = Object.keys(data);
             $("#"+select_flow_id).html("");
             keys.forEach(function (key) {
@@ -364,44 +363,34 @@ function renderResultFlowPlot(select_flow_id, select_type_id, plot_id) {
             $("#"+select_flow_id).on('change', function() {
                 var edge = $(this).val();
                 var ts = data[edge];
-                var ts_ordered = data[edge];
-                var ts_ordered = ts_ordered.sort(function(a, b) {
-                        return b - a
-                    });
                 var type = $("#"+select_type_id).val();
-                $('#'+plot_id).html("");
-                $('#'+plot_id)[0].outerHTML = '<div id="'+plot_id+'"></div>'
-                renderResultFlowSubPlot(plot_id, edge, type, ts, ts_ordered);
+                renderResultFlowSubPlot(plot_id, edge, type, ts);
                 });
             $("#"+select_type_id).on('change', function() {
                 var type = $(this).val();
                 var edge = $("#"+select_flow_id).val();
                 var ts = data[edge];
-                var ts_ordered = data[edge];
-                var ts_ordered = ts_ordered.sort(function(a, b) {
-                        return b - a
-                    });
-                $('#'+plot_id).html("");
-                $('#'+plot_id)[0].outerHTML = '<div id="'+plot_id+'"></div>'
-                renderResultFlowSubPlot(plot_id, edge, type, ts, ts_ordered);
+                renderResultFlowSubPlot(plot_id, edge, type, ts);
                 });
         }
    });
 }
 
-function renderResultFlowSubPlot(plot_id, edge, type, ts, ts_ordered) {
+function renderResultFlowSubPlot(plot_id, edge, type, ts) {
     if (type == "chronological") {
         makeResultTimeseriesPlot(plot_id,
-                                 {"name": edge, "color": "purple", "ts": ts},
+                                 {"name": edge, "color": "black", "ts": ts,
+                                  "start_date": scenario.tags.year+"-01-01",
+                                  "timestep": 3600},
                                  {"title": edge});
     } else if (type == "duration") {
         makeOrderedResultTimeseriesPlot(plot_id,
-                                        {"name": edge, "color": "black", "ts_ordered": ts_ordered},
-                                        {"title": edge});
+                                        {"name": edge, "color": "black", "ts": ts},
+                                        {"title": "Duration curve of "+edge});
     } else if (type == "heatmap") {
         makeHeatmapPlot(plot_id,
                      {"ts": ts},
-                     {"title": edge});
+                     {"title": "Heatmap of "+edge});
     }
 }
 

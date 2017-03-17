@@ -401,12 +401,12 @@ function makeRegionPlot() {
 
 function makeResultTimeseriesPlot(div, data, layout) {
 
-    var that_ts = data.ts;
+    var ts = data.ts;
+    var date = new Date(data.start_date);
+    var timestep = data.timestep; //in seconds
 
-    // TODO: make dates accoring to scenario.tags.year
-
-    var dates = Array.apply(null, Array(that_ts.length)).map(function(_, i) {
-        return new Date(i * 3600 * 1000);
+    var dates = Array.apply(null, Array(ts.length)).map(function(_, i) {
+        return new Date(Date.parse(date) + ((i-1)*timestep*1000));
     });
 
     var selectorOptions = {
@@ -437,7 +437,7 @@ function makeResultTimeseriesPlot(div, data, layout) {
          x: dates};
     
     data_plotly.name = data.name;
-    data_plotly.y = that_ts;
+    data_plotly.y = ts;
     data_plotly.fillcolor = data.color;
 
     data_plotly = [data_plotly];
@@ -446,11 +446,12 @@ function makeResultTimeseriesPlot(div, data, layout) {
 }
 
 function makeOrderedResultTimeseriesPlot(div, data, layout) {
-    console.log(data);
-    var this_ts = data.ts_ordered;
-    // TODO: make dates accoring to scenario.tags.year
+    var ts_ordered = JSON.parse(JSON.stringify(data.ts));
+    var ts_ordered = ts_ordered.sort(function(a, b) {
+            return b - a
+        });
 
-    var dates = Array.apply(null, Array(this_ts.length)).map(function(_, i) {
+    var dates = Array.apply(null, Array(ts_ordered.length)).map(function(_, i) {
         return i + 1;
     });
 
@@ -482,7 +483,7 @@ function makeOrderedResultTimeseriesPlot(div, data, layout) {
          x: dates};
     
     data_plotly.name = data.name;
-    data_plotly.y = this_ts;
+    data_plotly.y = ts_ordered;
     data_plotly.fillcolor = data.color;
 
     data_plotly = [data_plotly];
