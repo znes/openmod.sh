@@ -427,10 +427,15 @@ def results_to_db(scenario_name, results_dict):
                     .query(schema.Element)
                     .filter(schema.Element.name.like(target.label))
                     .first())
+                flow_type = 'no_hub_type'
+                if getattr(source, 'type', '') == 'hub':
+                    flow_type = getattr(source, 'sector', 'no_pre_sector')
+                if getattr(target, 'type', '') == 'hub':
+                    flow_type = getattr(target, 'sector', 'nu_suc_sector')
                 result = schema.ResultSequences(scenario=scenario,
                                                 predecessor=predecessor,
                                                 successor=successor,
-                                                type='result',
+                                                type=flow_type,
                                                 value=seq)
 
                 session.add(result)
@@ -531,7 +536,7 @@ def results_to_db(scenario_name, results_dict):
             result = schema.ResultSequences(scenario=scenario,
                                             predecessor=edge[0],
                                             successor=edge[1],
-                                            type='result',
+                                            type='electricity',
                                             value=seq)
 
             session.add(result)
