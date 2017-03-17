@@ -375,6 +375,8 @@ def delete_element_from_db(element_identifier, by='id'):
 
         session.delete(element)
 
+    return True
+
 
 def provide_sequence_api(query_args):
     """

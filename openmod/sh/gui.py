@@ -185,10 +185,14 @@ def delete_scenario():
     """
     query_args = flask.request.args.to_dict()
 
-    delete_element_from_db(element_identifier=query_args['id'],
-                           by='id')
+    db_response = delete_element_from_db(element_identifier=query_args['id'],
+                                         by='id')
 
-    return flask.render_template('deleted_successfully.html')
+    status=500
+    if db_response:
+        status=204
+    return flask.Response(json.dumps(db_response),
+                          status=status, mimetype='application/json')
 
 @app.route('/download', methods=['GET'])
 @fl.login_required
