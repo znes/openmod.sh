@@ -231,7 +231,7 @@ def download():
 def jobs_widget():
   return flask.render_template('widgets/jobs.html', jobs=app.results)
 
-@app.route('/pages/jobs')
+@app.route('/jobs')
 @fl.login_required
 def jobs_page():
   return flask.render_template('pages/jobs.html', jobs=app.results)
