@@ -24,7 +24,7 @@
   "timeseries_available": ["kiel_wind", "kiel_solar"],
   "plot_tabs": [
     {"id": "input_overview", "label": "Input Overview", "options": "", "content": "", "onclick": "", "active": "active"},
-    {"id": "input_timeseries", "label": "Input Timeseries", "options": "<select id='input_timeseries_select'></select>", "content": ""},
+    {"id": "input_timeseries", "label": "Input Timeseries", "options": "<select id='input_timeseries_select_ts'></select><select id='input_timeseries_select_type'></select>", "content": "", "onclick": "renderInputTimeseries('input_timeseries_select_ts', 'input_timeseries_select_type', 'input_timeseries')"},
     {"id": "result_overview", "label": "Result Overview", "options": "", "content": "", "onclick": "", "active": ""},
     {"id": "result_hub", "label": "Result Hub", "options": "<select id='result_hub_select'></select>","content": "", "onclick": "renderHubBarPlot('result_hub_select', 'result_hub')"},
     {"id": "result_timeseries", "label": "Result Timeseries", "options": "<select id='result_timeseries_select_flow'></select><select id='result_timeseries_select_type'></select>", "content": "", "onclick": "renderResultFlowPlot('result_timeseries_select_flow', 'result_timeseries_select_type', 'result_timeseries')"},

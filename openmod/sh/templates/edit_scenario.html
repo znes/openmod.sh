@@ -370,6 +370,7 @@ function renderResultFlowPlot(select_flow_id, select_type_id, plot_id) {
                 var type = $("#"+select_type_id).val();
                 renderResultFlowSubPlot(plot_id, edge, type, ts);
                 });
+            // THIS IS NECESSARY FOR REORDERING ETC.
             $("#"+select_type_id).on('change', function() {
                 var type = $(this).val();
                 var edge = $("#"+select_flow_id).val();
@@ -397,6 +398,45 @@ function renderResultFlowSubPlot(plot_id, edge, type, ts) {
                      {"title": "Heatmap of "+edge});
     }
 }
+
+function renderInputTimeseries(select_ts_id, select_type_id, plot_id) {
+        $("#"+select_type_id).html("");
+        ['chronological', 'duration', 'heatmap'].forEach( function (x) {
+            $("#"+select_type_id).append("<option value='"+x+"'>"+x+"</option>");
+        });
+        var keys = Object.keys(lookup);
+
+        $("#"+select_ts_id).html("");
+        keys.forEach(function (key) {
+            if (timeseries_available.indexOf(key) > -1) {
+                $("#"+select_ts_id).append("<option value='"+key+"'>"+getTagValue(key, 'label')+"</option>");
+            }
+        });
+
+        var edge = $("#"+select_ts_id).val();
+        var ts_obj = prepareTimeseries(edge);
+        var type = $("#"+select_type_id).val();
+        renderResultFlowSubPlot(plot_id, edge, type, ts_obj.ts);
+
+        $("#"+select_ts_id).on('change', function() {
+                var edge = $(this).val();
+                var ts_obj = prepareTimeseries(edge);
+                var type = $("#"+select_type_id).val();
+                renderResultFlowSubPlot(plot_id, edge, type, ts_obj.ts);
+                });
+        $("#"+select_type_id).on('change', function() {
+                var type = $(this).val();
+                var edge = $("#"+select_ts_id).val();
+                var ts_obj = prepareTimeseries(edge);
+                renderResultFlowSubPlot(plot_id, edge, type, ts_obj.ts);
+                });
+}
+
+
+
+
+
+
 
 var scenario_db_id = {{ scenario_db_id }};
 
