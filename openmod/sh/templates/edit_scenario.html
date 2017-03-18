@@ -73,6 +73,16 @@ function makeTab(id, label, options, content, onclick="", active="") {
         +'</div>');
 }
 
+function tracePrecessors(id, level=one) {
+
+    ps_obj = {};
+    ps_obj.one = scenario.children_dict[id].predecessors;
+    ps_obj.two = scenario.children_dict[ps_obj.one].predecessors;
+    ps_obj.three = scenario.children_dict[ps_obj.two].predecessors;
+
+    return ps_obj.level;
+}
+
 function getTagValue(element, tag) {
     return scenario.children_dict[element].tags[tag];
 }
@@ -83,35 +93,59 @@ function getSequenceValue(element, sequence) {
 
 function prepareTimeseries(id) {
     ts_args = {};
-    ts_args.name = getTagValue(id, 'label')
-    ts = getSequenceValue(id, lookup[id].profile);
-    ts_args.ts = ts.map(function(i) {
-        return i * parseFloat(getTagValue(id, lookup[id].value));
-    });
-    ts_args.color = lookup[id].color;
+
+    // If id is in the  hub_keys, the timeseries is the resdiual load
+    var hub_keys = Object.keys(hubs);
+    if (hub_keys.indexOf(id) > -1) {
+        ts_args.name = hubs[id];
+        ts_args.ts = getResidualLoad(id);
+    }
+    // otherwise we assume it to be a sequence of the element with the id
+    else {
+        ts_args.name = getTagValue(id, 'label');
+        ts = getSequenceValue(id, lookup[id].profile);
+        ts_args.ts = ts.map(function(i) {
+            return i * parseFloat(getTagValue(id, lookup[id].value));
+        });
+
+        // GET THE COLORS DEPENDING ON THE ELEMENT TYPE
+        if (scenario.children_dict[id].type == 'volatile_generator') {
+            color_select = getTagValue(id, 'fuel_type');
+            ts_args.color = global_colors[color_select];
+            console.log(ts_args)
+        }
+        else if (scenario.children_dict[id].type == 'flexible_generator' ||
+            scenario.children_dict[id].type == 'combined_flexible_generator') {
+
+            color_select = getTagValue(tracePredecessors(id, level='three'), 'commodity_type')
+            ts_args.color = global_colors[color_select];
+        }
+        else {
+            ts_args.color = 'black';
+        }
+    }
+
     return ts_args;
 }
 
 function absoluteTimeseries(id, profile_type, multiplier) {
     seq = getSequenceValue(id, profile_type);
-    console.log(profile_type)
-    console.log(id)
     ts = seq.map(function(i) {
         return i * parseFloat(getTagValue(id, multiplier));
     });
-    return ts
+    return ts;
 }
 
 function addArrays(arrays) {
-    var total_sum = []
+    var total_sum = [];
     for  (var t = 0; t < arrays[0].length; t++) {
-        var sum_per_t = 0
+        var sum_per_t = 0;
         for (var j=0; j < arrays.length; j++) {
-            sum_per_t = sum_per_t + arrays[j][t]
+            sum_per_t = sum_per_t + arrays[j][t];
         }
-    total_sum.push(sum_per_t)
+    total_sum.push(sum_per_t);
     }
-    return total_sum
+    return total_sum;
 }
 
 function updateValue(slider_id, newValue) {
@@ -208,7 +242,6 @@ function renderStackedResultPlot(select_id, plot_id) {
         });
     });
 }
-
 
 
 // JQUERY TO START NEW MODEL RUN (Send json)
@@ -434,6 +467,12 @@ function renderInputTimeseries(select_ts_id, select_type_id, plot_id) {
             }
         });
 
+        var hub_keys = Object.keys(hubs)
+        hub_keys.forEach(function (key) {
+            $("#"+select_ts_id).append("<option value='"+key+"'>"+hubs[key]+"</option>");
+        });
+
+
         var edge = $("#"+select_ts_id).val();
         var ts_obj = prepareTimeseries(edge);
         var type = $("#"+select_type_id).val();
@@ -457,37 +496,35 @@ function renderInputTimeseries(select_ts_id, select_type_id, plot_id) {
 function getResidualLoad(hub_name) {
     var arrays = []
 
-    var predecessors = scenario.children_dict[hub_name].predecessors
-    var successors = scenario.children_dict[hub_name].successors
+    var predecessors = scenario.children_dict[hub_name].predecessors;
+    var successors = scenario.children_dict[hub_name].successors;
 
     for (var i = 0; i < successors.length; i++) {
-        var type = scenario.children_dict[successors[i]].type
+        var type = scenario.children_dict[successors[i]].type;
         if (type == 'demand') {
             var demand_ts = absoluteTimeseries(successors[i],
                                               'load_profile',
-                                              'amount')
-            arrays.push(demand_ts)
+                                              'amount');
+            arrays.push(demand_ts);
         }
     }
     for (var i = 0; i < predecessors.length; i++) {
-        var type = scenario.children_dict[predecessors[i]].type
+        var type = scenario.children_dict[predecessors[i]].type;
         if (type == 'volatile_generator') {
             var renewable_ts = absoluteTimeseries(predecessors[i],
                                                   'generator_profile',
-                                                  'installed_power')
+                                                  'installed_power');
             var negative_renewable_ts = renewable_ts.map(function(i) {
                                                             return i * -1;
                                                         });
-            arrays.push(negative_renewable_ts)
+            arrays.push(negative_renewable_ts);
         }
     }
 
-    residual_load = addArrays(arrays)
+    residual_load = addArrays(arrays);
 
-    return {hub_name: residual_load}
+    return residual_load;
 }
-
-
 
 
 var scenario_db_id = {{ scenario_db_id }};
@@ -502,10 +539,12 @@ var hubs = {{ hubs | tojson }};
 
 var plot_tabs = {{ plot_tabs | tojson }};
 
+var global_colors = {{ global_colors | tojson }}
 
 scenario.children_dict = {};
+
 scenario.children.forEach(function(data) {
-    scenario.children_dict[data.name] = data
+    scenario.children_dict[data.name] = data;
 });
 
 makeAllSlider();

@@ -33,10 +33,18 @@
     {"id": "result_summary", "label": "Result Summary", "options": "", "content": "", "onclick": "", "active": ""}
   ],
 
-   "hubs": {
+    "hubs": {
         "kiel_electricity": "Kiel Strom",
         "kiel_heat": "Kiel Wärme",
         "nms_electricity": "Neumünster",
         "ploe_electricity": "Plön",
-        "rdeck_electricity": "Rendsburg-Eckernförde"}
+        "rdeck_electricity": "Rendsburg-Eckernförde"},
+    "global_colors": {
+        "solar": "orange",
+        "wind": "darkblue",
+        "gas": "grey",
+        "coal": "darkgrey",
+        "waste": "darkred",
+        "biomass": "darkgreen"}
 }
+

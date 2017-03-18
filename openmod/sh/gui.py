@@ -141,6 +141,7 @@ def edit_scenario():
                                  scenario=scenario,
                                  scenario_db_id=scenario_db_id,
                                  slider_lookup=get_config('gui_slider', {}),
+                                 global_colors=get_config('global_colors', {}),
                                  hubs=get_config('hubs', {}),
                                  timeseries_available=get_config(
                                      'timeseries_available',
