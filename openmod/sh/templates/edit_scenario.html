@@ -92,6 +92,27 @@ function prepareTimeseries(id) {
     return ts_args;
 }
 
+function absoluteTimeseries(id, profile_type, multiplier) {
+    seq = getSequenceValue(id, profile_type);
+    console.log(profile_type)
+    console.log(id)
+    ts = seq.map(function(i) {
+        return i * parseFloat(getTagValue(id, multiplier));
+    });
+    return ts
+}
+
+function addArrays(arrays) {
+    var total_sum = []
+    for  (var t = 0; t < arrays[0].length; t++) {
+        var sum_per_t = 0
+        for (var j=0; j < arrays.length; j++) {
+            sum_per_t = sum_per_t + arrays[j][t]
+        }
+    total_sum.push(sum_per_t)
+    }
+    return total_sum
+}
 
 function updateValue(slider_id, newValue) {
     document.getElementById(slider_id + "_slider").value = newValue;
@@ -433,7 +454,38 @@ function renderInputTimeseries(select_ts_id, select_type_id, plot_id) {
 }
 
 
+function getResidualLoad(hub_name) {
+    var arrays = []
 
+    var predecessors = scenario.children_dict[hub_name].predecessors
+    var successors = scenario.children_dict[hub_name].successors
+
+    for (var i = 0; i < successors.length; i++) {
+        var type = scenario.children_dict[successors[i]].type
+        if (type == 'demand') {
+            var demand_ts = absoluteTimeseries(successors[i],
+                                              'load_profile',
+                                              'amount')
+            arrays.push(demand_ts)
+        }
+    }
+    for (var i = 0; i < predecessors.length; i++) {
+        var type = scenario.children_dict[predecessors[i]].type
+        if (type == 'volatile_generator') {
+            var renewable_ts = absoluteTimeseries(predecessors[i],
+                                                  'generator_profile',
+                                                  'installed_power')
+            var negative_renewable_ts = renewable_ts.map(function(i) {
+                                                            return i * -1;
+                                                        });
+            arrays.push(negative_renewable_ts)
+        }
+    }
+
+    residual_load = addArrays(arrays)
+
+    return {hub_name: residual_load}
+}
 
 
 
