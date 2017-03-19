@@ -93,6 +93,15 @@ function tracePredecessors(id, level='one') {
     return ps_obj[level];
 }
 
+function getLabel(element) {
+    if (getTagValue(element, 'label') == undefined) {
+        label = element;
+    }
+    else {
+        label = getTagValue(element, 'label');
+    }
+    return label;
+}
 function getTagValue(element, tag) {
     return scenario.children_dict[element].tags[tag];
 }

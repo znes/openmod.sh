@@ -63,11 +63,11 @@ function makeBarPlot(div, data, layout) {
 
     $.each(data, function(key, value) {
         $.each(value['production'], function(comp_name, production) {
-            x_vals.push(comp_name);
+            x_vals.push(getLabel(comp_name));
             y_vals.push(production);
         });
         $.each(value['demand'], function(comp_name, demand) {
-            x_vals.push(comp_name);
+            x_vals.push(getLabel(comp_name));
             y_vals.push(demand);
         });
         $.each(value['import'], function(comp_name, impor) {
