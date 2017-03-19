@@ -827,7 +827,7 @@ def get_hub_results(scenario_identifier, hub_name, by='id', aggregated=True):
                 if r.successor.name == hub_name:
                     if r.predecessor.type != 'transmission' \
                         and not get_tag_value(r.predecessor.tags, 'slack'):
-                        label = get_label(r.predecessor)
+                        label = r.predecessor.name
                         if (r.predecessor.type == 'hub' or
                             r.predecessor.type == 'source'):
                             hub_results[hub_name]['import'][label] = r.value
@@ -835,7 +835,7 @@ def get_hub_results(scenario_identifier, hub_name, by='id', aggregated=True):
                             hub_results[hub_name]['production'][label] = r.value
                 if r.predecessor.name == hub_name:
                     if r.successor.type not in ['transmission', 'source']:
-                        label = get_label(r.successor)
+                        label = r.successor.name
                         if (r.successor.type == 'hub'
                                 or r.successor.type == 'sink'):
                             hub_results[hub_name]['export'][label] = [

@@ -146,6 +146,32 @@ function prepareTimeseries(id) {
     return ts_obj;
 }
 
+function getColors(element_names) {
+    var colors = {}
+
+    element_names.forEach(function(name) {
+        if (scenario.children_dict[name].type == 'volatile_generator') {
+            colors[name] = global_colors[getTagValue(name, 'fuel_type')]
+        }
+        else if (scenario.children_dict[name].type == 'flexible_generator' ||
+            scenario.children_dict[name].type == 'combined_flexible_generator') {
+
+            // check for P2H Units
+            if (getTagValue(tracePredecessors(name, level='one'), 'sector') == 'electricity') {
+                colors[name] = global_colors['electricity'];
+            }
+            else {
+                color_select = getTagValue(tracePredecessors(name, level='two'), 'commodity_type');
+                colors[name] = global_colors[color_select];
+            }
+        }
+    })
+
+    return colors;
+}
+
+
+
 function absoluteTimeseries(id, profile_type, multiplier) {
     seq = getSequenceValue(id, profile_type);
     ts = seq.map(function(i) {
@@ -257,6 +283,7 @@ function renderStackedResultPlot(select_id, plot_id) {
                $("#"+plot_id).html(alertModal("No production for selected hub!"));
             }
             else {
+                data.colors = getColors(Object.keys(data[hub_name].production));
                 makeStackedResultPlot(div=plot_id, data=data,
                                       layout={'title': nice_hub_name});
             }
