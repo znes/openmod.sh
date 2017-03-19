@@ -102,6 +102,7 @@ function getLabel(element) {
     }
     return label;
 }
+
 function getTagValue(element, tag) {
     return scenario.children_dict[element].tags[tag];
 }
@@ -123,8 +124,8 @@ function prepareTimeseries(id) {
     // otherwise we assume it to be a sequence of the element with the id
     else {
         ts_obj.name = id;
-        colors = getColors([id]);
-        ts_obj.color = colors[id];
+        coloring = getColors([id]);
+        ts_obj.color = coloring[id].color;
         ts = getSequenceValue(id, lookup[id].profile);
         ts_obj.ts = ts.map(function(i) {
                 return i * parseFloat(getTagValue(id, lookup[id].value));
@@ -135,30 +136,36 @@ function prepareTimeseries(id) {
 }
 
 function getColors(element_names) {
-    var colors = {}
+    var coloring = {};
 
     element_names.forEach(function(name) {
-        if (scenario.children_dict[name].type == 'volatile_generator') {
-            colors[name] = global_colors[getTagValue(name, 'fuel_type')]
+        coloring[name] = {};
+        if (scenario.children_dict[name].type == 'demand') {
+            sector = getTagValue(tracePredecessors(name, level='one'), 'sector');
+            coloring[name].color = global_colors[sector];
         }
-        else if (scenario.children_dict[name].type == 'flexible_generator' ||
+        if (scenario.children_dict[name].type == 'volatile_generator') {
+            coloring[name].color = global_colors[getTagValue(name, 'fuel_type')]
+        }
+        if (scenario.children_dict[name].type == 'combined_flexible_transformer') {
+                coloring[name].opacity = 0.5;
+        }
+
+        if (scenario.children_dict[name].type == 'flexible_generator' ||
             scenario.children_dict[name].type == 'combined_flexible_generator') {
 
             // check for P2H Units
             if (getTagValue(tracePredecessors(name, level='one'), 'sector') == 'electricity') {
-                colors[name] = global_colors['electricity'];
+                coloring[name].color = global_colors['electricity'];
             }
             else {
                 color_select = getTagValue(tracePredecessors(name, level='two'), 'commodity_type');
-                colors[name] = global_colors[color_select];
+                coloring[name].color = global_colors[color_select];
             }
         }
-    })
-
-    return colors;
+    });
+    return coloring;
 }
-
-
 
 function absoluteTimeseries(id, profile_type, multiplier) {
     seq = getSequenceValue(id, profile_type);
@@ -271,7 +278,7 @@ function renderStackedResultPlot(select_id, plot_id) {
                $("#"+plot_id).html(alertModal("No production for selected hub!"));
             }
             else {
-                data.colors = getColors(Object.keys(data[hub_name].production));
+                data.coloring = getColors(Object.keys(data[hub_name].production));
                 makeStackedResultPlot(div=plot_id, data=data,
                                       layout={'title': nice_hub_name});
             }
@@ -475,8 +482,8 @@ function renderTimeseriesSubPlot(plot_id, type, ts_obj) {
     if (type == "chronological") {
         makeTimeseriesPlot(plot_id,
                            data={"name": ts_obj.name,
-                                 "color": ts_obj.color,
                                  "ts": ts_obj.ts,
+                                 "color": ts_obj.color,
                                  "start_date": scenario.tags.year+"-01-01",
                                  "timestep": 3600},
                            layout={"title": ts_obj.name});
