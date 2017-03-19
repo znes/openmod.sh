@@ -246,7 +246,7 @@ function makeRegionPlot() {
 }
 
 
-function makeResultTimeseriesPlot(div, data, layout) {
+function makeTimeseriesPlot(div, data, layout) {
 
     var ts = data.ts;
     var date = new Date(data.start_date);
@@ -282,7 +282,7 @@ function makeResultTimeseriesPlot(div, data, layout) {
 
     var data_plotly = {type: 'scatter', mode: 'lines', line: {width: 0}, fill: 'tozeroy',
          x: dates};
-    
+
     data_plotly.name = data.name;
     data_plotly.y = ts;
     data_plotly.fillcolor = data.color;
@@ -292,7 +292,7 @@ function makeResultTimeseriesPlot(div, data, layout) {
     Plotly.newPlot(div, data_plotly, layout_plotly);
 }
 
-function makeOrderedResultTimeseriesPlot(div, data, layout) {
+function makeOrderedTimeseriesPlot(div, data, layout) {
     var ts_ordered = JSON.parse(JSON.stringify(data.ts));
     var ts_ordered = ts_ordered.sort(function(a, b) {
             return b - a
@@ -328,7 +328,7 @@ function makeOrderedResultTimeseriesPlot(div, data, layout) {
 
     var data_plotly = {type: 'scatter', mode: 'lines', line: {width: 0}, fill: 'tozeroy',
          x: dates};
-    
+
     data_plotly.name = data.name;
     data_plotly.y = ts_ordered;
     data_plotly.fillcolor = data.color;

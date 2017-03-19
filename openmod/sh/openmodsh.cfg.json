@@ -42,9 +42,12 @@
     "global_colors": {
         "solar": "orange",
         "wind": "darkblue",
+        "water": "skyblue",
         "gas": "grey",
         "coal": "darkgrey",
         "waste": "darkred",
-        "biomass": "darkgreen"}
+        "biomass": "darkgreen",
+        "electricity": "#438277",
+        "heat": "darkred"}
 }
 
