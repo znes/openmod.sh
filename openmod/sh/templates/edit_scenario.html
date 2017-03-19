@@ -187,12 +187,27 @@ function addArrays(arrays) {
     return total_sum;
 }
 
+// WORKS ONLY FOR VOLATILE GENERATORS AT THE MOMENT!
+function getAreaUsage(element_name) {
+    var area_select = getTagValue(element_name, 'fuel_type');
+
+    if (area_select == undefined) {
+        var area_usage = null;
+    }
+    else {
+        var area_usage = getTagValue('area_factors', area_select) *
+            parseFloat(getTagValue(element_name, 'installed_power'));
+    }
+    return area_usage;
+}
+
 function updateValue(slider_id, newValue) {
     document.getElementById(slider_id + "_slider").value = newValue;
     document.getElementById(slider_id + "_display").innerHTML = newValue;
-    document.getElementById(slider_id + "_area").innerHTML = newValue * 10;
     var l = lookup[slider_id];
     scenario.children_dict[slider_id].tags[l.value] = newValue;
+
+    document.getElementById(slider_id + "_area").innerHTML = getAreaUsage(slider_id)
 }
 
 
@@ -603,6 +618,8 @@ for (var element in lookup) {
     updateValue(element, getTagValue(element, l.value));
 }
 
-alertModal("this is the new alert modal. you can use it with alertModal(message) or alertModal(message, title). before you have to import script src=static/helper.js script", "NEW FEATURE");
+//alertModal("this is the new alert modal. you can use it with alertModal(message) or alertModal(message, title). before you have to import script src=static/helper.js script", "NEW FEATURE");
+alertModal("Here you can use the slider to edit your scenario. Make sure that you click 'Run Simulation' to compute results",
+           "Edit your scenarios!");
 </script>
 {% endblock %}
