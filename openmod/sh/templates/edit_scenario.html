@@ -253,6 +253,9 @@ function renderStackedResultPlot(select_id, plot_id) {
             if (data == false) {
                $("#"+plot_id).html("No results in db!");
             }
+            else if (jQuery.isEmptyObject(data[hub_name].production)) {
+               $("#"+plot_id).html(alertModal("No production for selected hub!"));
+            }
             else {
                 makeStackedResultPlot(div=plot_id, data=data,
                                       layout={'title': nice_hub_name});
