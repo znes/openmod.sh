@@ -47,6 +47,8 @@
         "waste": "darkred",
         "biomass": "darkgreen",
         "electricity": "#438277",
-        "heat": "darkred"}
+        "heat": "darkred",
+        "import": "red",
+        "export": "green"}
 }
 

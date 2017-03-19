@@ -21,31 +21,36 @@ function makeEmissionBarPlot(div, data, layout) {
         x: ["Production", "Export", "Total"],
         y: [data["heat"], 0, 0],
         name: "Heat",
-        type: "bar"
+        type: "bar",
+        marker: {color: global_colors["heat"]}
     }
     var elec = {
         x: ["Production", "Export", "Total"],
         y: [data["electricity"], 0, 0],
         name: "Electricity",
-        type: "bar"
+        type: "bar",
+        marker: {color: global_colors["electricity"]}
     }
     var impor = {
         x: ["Production", "Export", "Total"],
         y: [data["import"], 0, 0],
         name: "Import",
-        type: "bar"
+        type: "bar",
+        marker: {color: global_colors["import"]}
     }
     var expor = {
         x: ["Production", "Export", "Total"],
         y: [0, data["export"], 0],
         name: "Export",
-        type: "bar"
+        type: "bar",
+        marker: {color: global_colors["export"]}
     }
     var total = {
         x: ["Production", "Export", "Total"],
         y: [0, 0, data["import"]+data["export"]+data["electricity"]+data["heat"]],
         name: "Total",
-        type: "bar"
+        type: "bar",
+        marker: {color: "black"}
     }
 
     var data = [heat, elec, impor, expor, total];

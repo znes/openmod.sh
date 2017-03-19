@@ -122,34 +122,13 @@ function prepareTimeseries(id) {
     }
     // otherwise we assume it to be a sequence of the element with the id
     else {
-        ts_obj.name = getTagValue(id, 'label');
-
-        // GET THE COLORS DEPENDING ON THE ELEMENT TYPE
-        if (scenario.children_dict[id].type == 'volatile_generator') {
-            color_select = getTagValue(id, 'fuel_type');
-            ts_obj.color = global_colors[color_select];
-
-            ts = getSequenceValue(id, lookup[id].profile);
-            ts_obj.ts = ts.map(function(i) {
-                    return i * parseFloat(getTagValue(id, lookup[id].value));
-                });
-        }
-        else if (scenario.children_dict[id].type == 'flexible_generator' ||
-            scenario.children_dict[id].type == 'combined_flexible_generator') {
-            color_select = getTagValue(tracePredecessors(id, level='two'), 'commodity_type');
-            ts_obj.color = global_colors[color_select];
-        }
-        else if (scenario.children_dict[id].type == 'demand') {
-            color_select = getTagValue(tracePredecessors(id, level='one'), 'sector');
-            ts_obj.color = global_colors[color_select];
-            ts = getSequenceValue(id, lookup[id].profile);
-            ts_obj.ts = ts.map(function(i) {
-                    return i * parseFloat(getTagValue(id, lookup[id].value));
-                });
-        }
-        else {
-            ts_obj.color = 'black';
-        }
+        ts_obj.name = id;
+        colors = getColors([id]);
+        ts_obj.color = colors[id];
+        ts = getSequenceValue(id, lookup[id].profile);
+        ts_obj.ts = ts.map(function(i) {
+                return i * parseFloat(getTagValue(id, lookup[id].value));
+        });
     }
 
     return ts_obj;
@@ -440,7 +419,7 @@ function makeAllSlider() {
         var l = lookup[element];
         $('#slider_form').append(
             '<div class="form-group row">'
-                +'<label for="'+element+'" class="col-5 col-form-label">'+getTagValue(element, 'label')+'</label>'
+                +'<label for="'+element+'" class="col-5 col-form-label">'+getLabel(element)+'</label>'
                 +'<div class="col">'
                     +makeSlider(element, getTagValue(element, l.value), getTagValue(element, l.max))
                 +'</div>'
@@ -522,7 +501,7 @@ function renderInputTimeseries(select_ts_id, select_type_id, plot_id) {
         $("#"+select_ts_id).html("");
         keys.forEach(function (key) {
             if (timeseries_available.indexOf(key) > -1) {
-                $("#"+select_ts_id).append("<option value='"+key+"'>"+getTagValue(key, 'label')+"</option>");
+                $("#"+select_ts_id).append("<option value='"+key+"'>"+getLabel(key)+"</option>");
             }
         });
 
