@@ -17,7 +17,7 @@ from openmod.sh.api import (provide_element_api, json_to_db,
                            get_flow_results, get_co2_results)
 from openmod.sh.forms import ComputeForm
 from openmod.sh.visualization import make_graph_plot
-from openmod.sh.web import app
+from openmod.sh.web import app, csrf
 from openmod.sh import mcbeth
 from openmod.sh.config import get_config
 
@@ -81,46 +81,29 @@ def provide_sequence_api_route():
         return flask.jsonify(json)
     return "Provide at least id as query parameter."
 
-
-@app.route('/import', methods=['POST'])
+# TODO: should we really excempt csrf for this route?
+@csrf.exempt
+@app.route('/import', methods=['GET', 'POST'])
 @fl.login_required
 def upload_file():
-    # if a json file is posted, try to write it to db
-    json_dict = flask.request.get_json()
+    file = flask.request.files['scenariofile']
+    scenario_dct = json.loads(str(file.read(), 'utf-8'))
+    if flask.request.form['new_scenario_name'] != '':
+        scenario_dct['name'] = flask.request.form['new_scenario_name']
+    if (scenario_dct.get('api_parameters', {})
+                    .get('query', {})
+                    .get('hubs_explicitly') == 'false'):
+        scenario_dct = create_transmission(json_file)
+        scenario_dct = explicate_hubs(json_file)
 
-    if json_dict:
-        val = json_to_db(json_dict)
-        if val:
-            return json.dumps({'success':True});
-        else:
-            return json.dumps({'success':False})
-    # if no json file is posted we assum that its a file
-    # check if the post request has the file part
-    if 'file' not in flask.request.files:
-        flask.flash('No file part')
-        return flask.redirect(flask.request.url)
-    file = flask.request.files['file']
-    # if user does not select file, browser also
-    # submit a empty part without filename
-    if file.filename == '':
-        flask.flash('No selected file')
-        return flask.redirect(flask.request.url)
-    if file and allowed_file(file.filename):
-        #filename = secure_filename(file.filename)
-        json_file = json.loads(str(file.read(), 'utf-8'))
-        if (json_file.get('api_parameters', {})
-                     .get('query', {})
-                     .get('hubs_explicitly') == 'false'):
-            json_file = create_transmission(json_file)
-            json_file = explicate_hubs(json_file)
-
-        db_response = json_to_db(json_file)
-        status=409
-        if db_response['success']:
-            status=201
-        response = flask.Response(json.dumps(db_response),
-                                  status=status, mimetype='application/json')
-        return response
+    db_response = json_to_db(scenario_dct)
+    status=409
+    if db_response['success']:
+        status=200
+    db_response['scenario_name'] = scenario_dct['name']
+    response = flask.Response(json.dumps(db_response),
+                              status=status, mimetype='application/json')
+    return response
 
 
 @app.route('/export')
