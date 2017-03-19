@@ -73,14 +73,24 @@ function makeTab(id, label, options, content, onclick="", active="") {
         +'</div>');
 }
 
-function tracePrecessors(id, level=one) {
+function tracePredecessors(id, level='one') {
 
     ps_obj = {};
-    ps_obj.one = scenario.children_dict[id].predecessors;
-    ps_obj.two = scenario.children_dict[ps_obj.one].predecessors;
-    ps_obj.three = scenario.children_dict[ps_obj.two].predecessors;
 
-    return ps_obj.level;
+    if (level == 'one') {
+        ps_obj.one = scenario.children_dict[id].predecessors;
+    }
+    if (level == 'two') {
+        ps_obj.one = scenario.children_dict[id].predecessors;
+        ps_obj.two = scenario.children_dict[ps_obj.one].predecessors;
+    }
+    if (level == 'three') {
+        ps_obj.one = scenario.children_dict[id].predecessors;
+        ps_obj.two = scenario.children_dict[ps_obj.one].predecessors;
+        ps_obj.three = scenario.children_dict[ps_obj.two].predecessors;
+    }
+
+    return ps_obj[level];
 }
 
 function getTagValue(element, tag) {
@@ -117,12 +127,16 @@ function prepareTimeseries(id) {
         }
         else if (scenario.children_dict[id].type == 'flexible_generator' ||
             scenario.children_dict[id].type == 'combined_flexible_generator') {
-            color_select = getTagValue(tracePredecessors(id, level='three'), 'commodity_type');
+            color_select = getTagValue(tracePredecessors(id, level='two'), 'commodity_type');
             ts_obj.color = global_colors[color_select];
         }
         else if (scenario.children_dict[id].type == 'demand') {
             color_select = getTagValue(tracePredecessors(id, level='one'), 'sector');
             ts_obj.color = global_colors[color_select];
+            ts = getSequenceValue(id, lookup[id].profile);
+            ts_obj.ts = ts.map(function(i) {
+                    return i * parseFloat(getTagValue(id, lookup[id].value));
+                });
         }
         else {
             ts_obj.color = 'black';

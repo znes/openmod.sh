@@ -7,9 +7,7 @@
       "pos": [
         54.3,
         10.1
-      ],
-      "color": "orange"
-    },
+      ]},
     "kiel_wind": {
       "value": "installed_power",
       "max": "potential_power",
@@ -17,11 +15,12 @@
       "pos": [
         54.3,
         10.15
-      ],
-      "color": "darkblue"
-    }
+      ]},
+    "kiel_demand_electricity": {
+      "value": "amount",
+      "profile": "load_profile"}
   },
-  "timeseries_available": ["kiel_wind", "kiel_solar"],
+  "timeseries_available": ["kiel_wind", "kiel_solar", "kiel_demand_electricity"],
   "plot_tabs": [
     {"id": "input_overview", "label": "Input Overview", "options": "", "content": "", "onclick": "", "active": "active"},
     {"id": "input_timeseries", "label": "Input Timeseries", "options": "<select id='input_timeseries_select_ts'></select><select id='input_timeseries_select_type'></select>", "content": "", "onclick": "renderInputTimeseries('input_timeseries_select_ts', 'input_timeseries_select_type', 'input_timeseries')"},
