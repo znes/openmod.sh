@@ -220,9 +220,9 @@ function makeStackedResultPlot(div, data, layout) {
     Plotly.newPlot(div, traces, plotly_layout);
 }
 
-function makeRegionPlot() {
-    region_plot.outerHTML = '<div id="region_plot" style="width: 700px; height: 450px; position: relative;"></div>';
-    var map = new L.Map('region_plot');
+function makeRegionPlot(plot_id) {
+    document.getElementById(plot_id).outerHTML = '<div id="'+plot_id+'" style="width: 700px; height: 450px; position: relative;"></div>';
+    var map = new L.Map(plot_id);
     // create the tile layer with correct attribution
     var osmUrl = 'http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png';
     var osmAttrib = 'Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
@@ -242,19 +242,24 @@ function makeRegionPlot() {
         var polygon = wicket.toObject();
         map.addLayer(polygon);
     });
-    var bars = ['kiel_solar', 'kiel_wind'];
-    bars.forEach(function(b) {
-        var l = lookup[b];
-        barBottom = l.pos;
-        barTop = [l.pos[0] + scenario.children_dict[b].tags[l.value] / 100.0, l.pos[1]];
-        var line = L.polyline([barBottom, barTop], {
-            color: l.color,
-            weight: 10,
-            lineCap: 'butt'
-        }).addTo(map);
-    });
+    return map;
 }
 
+function addBarToRegionPlot(map, x, y, value, color) {
+    var line = L.polyline([[x, y], [x+value, y]],
+                          {color: color,
+                          weight: 10,
+                          lineCap: 'butt'});
+    line.addTo(map);
+}
+
+function addGridToRegionPlot(map, pos, height, width) {
+    var x = pos[0];
+    var y = pos[1];
+    var bounds = [[x-0.5*height, y-0.5*width], [x+0.5*height, y+0.5*width]];
+    L.rectangle(bounds, {color: "black", weight: 1}).addTo(map);
+    return bounds;
+}
 
 function makeTimeseriesPlot(div, data, layout) {
 

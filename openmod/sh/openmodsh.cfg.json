@@ -3,26 +3,20 @@
     "kiel_solar": {
       "value": "installed_power",
       "max": "potential_power",
-      "profile": "generator_profile",
-      "pos": [
-        54.3,
-        10.1
-      ]},
+      "profile": "generator_profile"
+    },
     "kiel_wind": {
       "value": "installed_power",
       "max": "potential_power",
-      "profile": "generator_profile",
-      "pos": [
-        54.3,
-        10.15
-      ]},
+      "profile": "generator_profile"
+    },
     "kiel_demand_electricity": {
       "value": "amount",
       "profile": "load_profile"}
   },
   "timeseries_available": ["kiel_wind", "kiel_solar", "kiel_demand_electricity"],
   "plot_tabs": [
-    {"id": "input_overview", "label": "Input Overview", "options": "", "content": "", "onclick": "", "active": "active"},
+    {"id": "input_overview", "label": "Input Overview", "options": "", "content": "", "onclick": "input_overview_map = renderInputOverview('input_overview');", "active": "active"},
     {"id": "input_timeseries", "label": "Input Timeseries", "options": "<select id='input_timeseries_select_ts'></select><select id='input_timeseries_select_type'></select>", "content": "", "onclick": "renderInputTimeseries('input_timeseries_select_ts', 'input_timeseries_select_type', 'input_timeseries')"},
     {"id": "result_overview", "label": "Result Overview", "options": "", "content": "", "onclick": "", "active": ""},
     {"id": "result_hub", "label": "Result Hub", "options": "<select id='result_hub_select'></select>","content": "", "onclick": "renderHubBarPlot('result_hub_select', 'result_hub')"},
@@ -49,6 +43,24 @@
         "electricity": "#438277",
         "heat": "darkred",
         "import": "red",
-        "export": "green"}
+        "export": "green"},
+    "region_bar_plot": {
+        "kiel": {
+            "pos": [54.3, 10.1],
+            "values": ["kiel_solar", "kiel_wind"]
+        },
+        "rdeck": {
+            "pos": [54.3, 9.7],
+            "values": []
+        },
+        "nms": {
+            "pos": [54.1, 9.97],
+            "values": []
+        },
+        "ploe": {
+            "pos": [54.3, 10.5],
+            "values": []
+        }
+    }
 }
 

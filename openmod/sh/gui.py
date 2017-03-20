@@ -126,6 +126,7 @@ def edit_scenario():
                                  slider_lookup=get_config('gui_slider', {}),
                                  global_colors=get_config('global_colors', {}),
                                  hubs=get_config('hubs', {}),
+                                 region_bar_plot=get_config('region_bar_plot', {}),
                                  timeseries_available=get_config(
                                      'timeseries_available',
                                      {}),
