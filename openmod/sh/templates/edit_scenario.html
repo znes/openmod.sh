@@ -89,14 +89,12 @@ function makeIndividualBiomethanSilder() {
                 +'<span id="biomethan_area_usage"></span>'
             +'</div>'
         +'</div>');
-    new_value = $("#biomethan_slider").val();
+    new_value = 100 - ((parseFloat(getTagValue('gas_commodity', 'emission_factor')) / 0.225)  * 100);
     $('#biomethan_value').html(new_value.toString());
 }
 
 function updateBiomethanValue(value) {
     new_value =  $("#biomethan_slider").val();
-    emission_factor_new = 0.225 * (1 - (new_value / 100));
-    scenario.children_dict["gas_commodity"].tags["emission_factor"] = emission_factor_new;
     $('#biomethan_value').html(new_value.toString());
 }
 
@@ -407,6 +405,11 @@ function saveNewScenario(scenario) {
     if (newScenarioDescription == null) {
         return;
     }
+    // INDIVIDUAL FOR BIOMETHAN SLIDER DIRTY HACK
+    new_value =  $("#biomethan_slider").val();
+    emission_factor_new = 0.225 * (1 - (new_value / 100));
+    scenario.children_dict["gas_commodity"].tags["emission_factor"] = emission_factor_new;
+    // END OF DIRTY HACK
     scenario['tags']['description'] = newScenarioDescription;
     $.ajax({
         url: 'API/element',
@@ -436,6 +439,11 @@ function updateScenario(scenario) {
         id: scenario_db_id
     });
     // Update scenario children from dict which is manipulated by slider
+    // INDIVIDUAL FOR BIOMETHAN SLIDER DIRTY HACK
+    new_value =  $("#biomethan_slider").val();
+    emission_factor_new = 0.225 * (1 - (new_value / 100));
+    scenario.children_dict["gas_commodity"].tags["emission_factor"] = emission_factor_new;
+    // END OF DIRTY HACK
     scenario.children = Object.values(scenario.children_dict);
     // Use element API to write to DB
     $.ajax({
