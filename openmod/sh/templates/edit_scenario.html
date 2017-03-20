@@ -77,6 +77,30 @@ function makeTab(id, label, options, content, onclick="", active="") {
         +'</div>');
 }
 
+function makeIndividualBiomethanSilder() {
+    $('#slider_form').append(
+        '<div class="form-group row">'
+            +'<label for="'+element+'" class="col-5 col-form-label">Biomethan Anteil</label>'
+            +'<div class="col">'
+                +'<input id="biomethan_slider" class="form-control" type="range" min="0" step="1" value="0" max="100" onchange="updateBiomethanValue(this.value);"/>'
+            +'</div>'
+                +'<span id="biomethan_value"></span>'
+            +'<div class="col-1">'
+                +'<span id="biomethan_area_usage"></span>'
+            +'</div>'
+        +'</div>');
+    new_value = $("#biomethan_slider").val();
+    $('#biomethan_value').html(new_value.toString());
+}
+
+function updateBiomethanValue(value) {
+    new_value =  $("#biomethan_slider").val();
+    emission_factor_new = 0.225 * (1 - (new_value / 100));
+    scenario.children_dict["gas_commodity"].tags["emission_factor"] = emission_factor_new;
+    $('#biomethan_value').html(new_value.toString());
+}
+
+
 function tracePredecessors(id, level='one') {
 
     ps_obj = {};
@@ -442,7 +466,7 @@ function makeSpan(id, value) {
     return "<span id="+id+">"+value+"</span>"
 }
 
-function makeAllSlider() {
+function makeAllAutomaticSlider() {
     for (var element in lookup) {
         var l = lookup[element];
         $('#slider_form').append(
@@ -626,7 +650,8 @@ scenario.children.forEach(function(data) {
     scenario.children_dict[data.name] = data;
 });
 
-makeAllSlider();
+makeAllAutomaticSlider();
+makeIndividualBiomethanSilder();
 
 plot_tabs.forEach(function(tab) {
     makeTab(tab.id, tab.label, tab.options, tab.content, tab.onclick, tab.active);
