@@ -127,12 +127,11 @@ function deleteScenario(scenarioId) {
     }
 }
 
-test = confirmModal("test", "header", function(x){});
-console.log("this should be online printing when modal is closed or oked and then the test value should be accodingly true or false");
-console.log("but test resilts in: " + test);
+test = confirmModal("test", "header", function(x){
+	console.log("this should be online printing when modal is closed or oked and then the test value should be accodingly true or false");
+	console.log("but test resilts in: " + test);
+});
 
-//this should be working as well without having to define a callback function
-test2 = confirmModal("this");
 </script>
 {% endblock %}
 

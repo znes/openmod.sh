@@ -1,4 +1,4 @@
-function alertModal(message, header = "") {
+function alertModal(message, header = "", callback=function(){}) {
     $('#alertModal').remove();
     $(document.body).append(
         '<div class="modal fade" id="alertModal" tabindex="-1" role="dialog" aria-labelledby="alertModalLabel" aria-hidden="true">' +
@@ -19,10 +19,13 @@ function alertModal(message, header = "") {
         '    </div>' +
         '  </div>' +
         '</div>');
-    $('#alertModal').modal();
+    $('#alertModal').modal().show();
+    $('#confirmModal').on('hide.bs.modal', function(e) {
+        callback();
+    });
 }
 
-function confirmModal(message, header = "", callback) {
+function confirmModal(message, header = "", callback=function(){}) {
     $('#confirmModal').remove();
     $(document.body).append(
         '<div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-labelledby="confirmModalLabel" aria-hidden="true">' +
@@ -55,7 +58,7 @@ function confirmModal(message, header = "", callback) {
     });
 }
 
-function promptModal(message, header = "", callback) {
+function promptModal(message, header = "", callback=function(){}) {
     $('#promptModal').remove();
     $(document.body).append(
         '<div class="modal fade" id="promptModal" tabindex="-1" role="dialog" aria-labelledby="confirmModalLabel" aria-hidden="true">' +
