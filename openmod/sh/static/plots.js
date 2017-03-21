@@ -277,6 +277,17 @@ function addGridToRegionPlot(map, pos, height, width) {
     return bounds;
 }
 
+function addArrowToRegionPlot(map, pos0, pos1, length=1, value=1) {
+    var polyline = L.polyline([pos0, pos1]).addTo(map);
+    var decorator = L.polylineDecorator(polyline, {
+        patterns: [{repeat: 40,
+                    symbol: L.Symbol.arrowHead({pixelSize: 40,
+                                                polygon: false,
+                                                pathOptions: {stroke: true}})
+                   }]
+        }).addTo(map);
+}
+
 function makeTimeseriesPlot(div, data, layout) {
 
     var ts = data.ts;

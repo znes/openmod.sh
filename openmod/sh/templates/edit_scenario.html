@@ -8,6 +8,7 @@
 <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/wicket/1.3.2/wicket.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/wicket/1.3.2/wicket-leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-polylinedecorator/1.1.0/leaflet.polylineDecorator.min.js"></script>
 {% endblock %}
 
 {% block submenu %}
@@ -597,9 +598,9 @@ function renderInputTimeseries(select_ts_id, select_type_id, plot_id) {
 
 
 function renderInputOverview(plot_id) {
-    map = makeRegionPlot(plot_id);
+    var input_overview_map = makeRegionPlot(plot_id);
     Object.values(region_bar_plot).forEach(function(region) {
-        var bound = addGridToRegionPlot(map, region.pos, 0.15, 0.3);
+        var bound = addGridToRegionPlot(input_overview_map, region.pos, 0.15, 0.3);
         var number_of_values = region.values.length;
         var left_lower = bound[0];
         var width = bound[1][1]-bound[0][1];
@@ -609,10 +610,30 @@ function renderInputOverview(plot_id) {
             var l = lookup[bar];
             var value = scenario.children_dict[bar].tags[l.value];
             var size_factor = 10;
-            addBarToRegionPlot(map, left_lower[0], left_lower[1]+dwidth*(i+1), value/size_factor, bar+": "+value+" MW", getColors([bar])[bar].color);
+            addBarToRegionPlot(input_overview_map, left_lower[0], left_lower[1]+dwidth*(i+1), value/size_factor, bar+": "+value+" MW", getColors([bar])[bar].color);
         }
     });
-    return map;
+}
+
+function renderResultOverview(plot_id) {
+    var result_overview_map = makeRegionPlot(plot_id);
+    addArrowToRegionPlot(result_overview_map, region_bar_plot.kiel.pos, region_bar_plot.nms.pos);
+    Object.values(region_bar_plot).forEach(function(region) {
+        var bound = addGridToRegionPlot(result_overview_map, region.pos, 0.15, 0.3);
+/*
+        var number_of_values = region.values.length;
+        var left_lower = bound[0];
+        var width = bound[1][1]-bound[0][1];
+        var dwidth = width/(number_of_values+1);
+        for(var i=0; i<number_of_values; i++) {
+            var bar = region.values[i];
+            var l = lookup[bar];
+            var value = scenario.children_dict[bar].tags[l.value];
+            var size_factor = 10;
+            addBarToRegionPlot(result_overview_map, left_lower[0], left_lower[1]+dwidth*(i+1), value/size_factor, bar+": "+value+" MW", getColors([bar])[bar].color);
+        }
+*/
+    });
 }
 
 function getResidualLoad(hub_name) {
@@ -715,8 +736,6 @@ for (var element in lookup) {
     var l = lookup[element];
     updateValue(element, getTagValue(element, l.value));
 }
-
-input_overview_map = renderInputOverview('input_overview');
 
 alertModal("Here you can use the slider to edit your scenario. Make sure that you click 'Run Simulation' to compute results",
            "Edit your scenarios!");
