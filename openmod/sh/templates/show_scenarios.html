@@ -103,11 +103,15 @@
 <script src="https://npmcdn.com/tether@1.2.4/dist/js/tether.min.js"></script>
 <script src="/static/bootstrap/js/bootstrap.min.js"></script>
 
+<script src="/static/helper.js"></script>
+
 <script type="text/javascript">
 // open welcome modal when coming from login root redirect
+/*
 if (document.referrer.split("/").pop() == "login?next=%2F") {
     $('#welcomeModal').modal();
 }
+*/
 
 function deleteScenario(scenarioId) {
     var x = confirm("Are you sure you want to delete?");
@@ -123,6 +127,12 @@ function deleteScenario(scenarioId) {
     }
 }
 
+test = confirmModal("test", "header", function(x){});
+console.log("this should be online printing when modal is closed or oked and then the test value should be accodingly true or false");
+console.log("but test resilts in: " + test);
+
+//this should be working as well without having to define a callback function
+test2 = confirmModal("this");
 </script>
 {% endblock %}
 
