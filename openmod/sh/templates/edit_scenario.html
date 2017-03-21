@@ -475,24 +475,29 @@ function makeSpan(id, value) {
 }
 
 function makeAllAutomaticSlider() {
-    for (var element in lookup) {
-        var l = lookup[element];
-        $('#slider_form').append(
-            '<div class="form-group row">'
-                +'<label for="'+element+'" class="col-5 col-form-label">'+getLabel(element)+'</label>'
-                +'<div class="col">'
-                    +makeSlider(element, getTagValue(element, l.value), getTagValue(element, l.max))
-                +'</div>'
-			    +'<div class="col-1">'
-                    +makeSpan(element+"_display", getTagValue(element, l.value))
-                +'</div>'
-			    +'<div class="col-1">'
-                    // TODO: How to deal with area?
-                   +makeSpan(element+"_area", 0)
-                +"</div>"
-            +"</div>");
-    }
+    $.each(region_bar_plot, function(key, value) {
+       $('#slider_form').append("<div><b>"+key+"</b></div>");
+        $.each(value.values, function(index)  {
+            var element  = value.values[index];
+            var l = lookup[element];
+            $('#slider_form').append(
+                '<div class="form-group row">'
+                    +'<label for="'+element+'" class="col-5 col-form-label">'+getLabel(element)+'</label>'
+                    +'<div class="col">'
+                        +makeSlider(element, getTagValue(element, l.value), getTagValue(element, l.max))
+                    +'</div>'
+    			    +'<div class="col-1">'
+                        +makeSpan(element+"_display", getTagValue(element, l.value))
+                    +'</div>'
+    			    +'<div class="col-1">'
+                        // TODO: How to deal with area?
+                       +makeSpan(element+"_area", 0)
+                    +"</div>"
+                +"</div>");
+        });
+    });
 }
+
 
 function renderResultFlowPlot(select_flow_id, select_type_id, plot_id) {
     getFlowResults(scenario_db_id, function(data) {

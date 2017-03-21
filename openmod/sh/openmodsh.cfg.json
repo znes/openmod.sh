@@ -9,12 +9,9 @@
       "value": "installed_power",
       "max": "potential_power",
       "profile": "generator_profile"
-    },
-    "kiel_demand_electricity": {
-      "value": "amount",
-      "profile": "load_profile"}
+    }
   },
-  "timeseries_available": ["kiel_wind", "kiel_solar", "kiel_demand_electricity"],
+  "timeseries_available": ["kiel_wind", "kiel_solar"],
   "plot_tabs": [
     {"id": "input_overview", "label": "Input Overview", "options": "", "content": "", "onclick": "input_overview_map = renderInputOverview('input_overview');", "active": "active"},
     {"id": "input_timeseries", "label": "Input Timeseries", "options": "<select id='input_timeseries_select_ts'></select><select id='input_timeseries_select_type'></select>", "content": "", "onclick": "renderInputTimeseries('input_timeseries_select_ts', 'input_timeseries_select_type', 'input_timeseries')"},
@@ -45,22 +42,9 @@
         "import": "red",
         "export": "green"},
     "region_bar_plot": {
-        "kiel": {
+        "Region Kiel": {
             "pos": [54.3, 10.1],
             "values": ["kiel_solar", "kiel_wind"]
-        },
-        "rdeck": {
-            "pos": [54.3, 9.7],
-            "values": []
-        },
-        "nms": {
-            "pos": [54.1, 9.97],
-            "values": []
-        },
-        "ploe": {
-            "pos": [54.3, 10.5],
-            "values": []
         }
     }
 }
-
