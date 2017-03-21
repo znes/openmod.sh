@@ -245,11 +245,27 @@ function makeRegionPlot(plot_id) {
     return map;
 }
 
-function addBarToRegionPlot(map, x, y, value, color) {
+function addBarToRegionPlot(map, x, y, value, label, color) {
     var line = L.polyline([[x, y], [x+value, y]],
                           {color: color,
                           weight: 10,
+                          opacity: 0.8,
                           lineCap: 'butt'});
+    line.bindTooltip(label);
+    line.on('mouseover', function(e) {
+        var layer = e.target;
+        layer.setStyle({
+            opacity: 1,
+            weight: 11
+        });
+    });
+    line.on('mouseout', function(e) {
+        var layer = e.target;
+        layer.setStyle({
+            opacity: 0.8,
+            weight: 10
+        });
+    });
     line.addTo(map);
 }
 
@@ -257,7 +273,7 @@ function addGridToRegionPlot(map, pos, height, width) {
     var x = pos[0];
     var y = pos[1];
     var bounds = [[x-0.5*height, y-0.5*width], [x+0.5*height, y+0.5*width]];
-    L.rectangle(bounds, {color: "black", weight: 1}).addTo(map);
+    L.rectangle(bounds, {color: "gray", weight: 1}).addTo(map);
     return bounds;
 }
 
