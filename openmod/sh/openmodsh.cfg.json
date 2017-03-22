@@ -45,6 +45,18 @@
         "Region Kiel": {
             "pos": [54.3, 10.1],
             "values": ["kiel_solar", "kiel_wind"]
+        },
+        "Region RD": {
+            "pos": [54.3, 9.7],
+            "values": []
+        },
+        "Region NMS": {
+            "pos": [54.1, 9.97],
+            "values": []
+        },
+        "Region PLÖ": {
+            "pos": [54.3, 10.5],
+            "values": []
         }
     }
 }

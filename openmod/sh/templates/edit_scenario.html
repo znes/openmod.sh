@@ -617,7 +617,7 @@ function renderInputOverview(plot_id) {
 
 function renderResultOverview(plot_id) {
     var result_overview_map = makeRegionPlot(plot_id);
-    addArrowToRegionPlot(result_overview_map, region_bar_plot.kiel.pos, region_bar_plot.nms.pos);
+    addArrowToRegionPlot(result_overview_map, region_bar_plot['Region Kiel'].pos, region_bar_plot['Region NMS'].pos);
     Object.values(region_bar_plot).forEach(function(region) {
         var bound = addGridToRegionPlot(result_overview_map, region.pos, 0.15, 0.3);
 /*
