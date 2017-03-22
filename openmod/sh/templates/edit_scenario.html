@@ -150,7 +150,7 @@ function prepareTimeseries(id) {
     }
     // otherwise we assume it to be a sequence of the element with the id
     else {
-        ts_obj.name = id;
+        ts_obj.name = getLabel(id);
         coloring = getColors([id]);
         ts_obj.color = coloring[id].color;
         if (scenario.children_dict[id].type == 'demand') {
