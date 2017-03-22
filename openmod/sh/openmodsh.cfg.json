@@ -43,19 +43,23 @@
         "export": "green"},
     "region_bar_plot": {
         "Region Kiel": {
+            "hub": "kiel_elecricity",
             "pos": [54.3, 10.1],
             "values": ["kiel_solar", "kiel_wind"]
         },
         "Region RD": {
-            "pos": [54.3, 9.7],
+            "hub": "rdeck_electricity",
+            "pos": [54.5, 9.75],
             "values": []
         },
         "Region NMS": {
-            "pos": [54.1, 9.97],
+            "hub": "nms_electricity",
+            "pos": [54.05, 9.97],
             "values": []
         },
         "Region PLÖ": {
-            "pos": [54.3, 10.5],
+            "hub": "ploe_electricity",
+            "pos": [54.35, 10.6],
             "values": []
         }
     }
