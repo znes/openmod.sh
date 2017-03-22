@@ -2,6 +2,14 @@
 <div id="{{ container_id }}">
 <script type="text/javascript">
 
+function update(container_id){
+  $.ajax({
+    url: '/widgets/jobs',
+    type: 'get',
+    success: updatecallback(container_id)
+  });
+};
+
 function updatecallback(container_id){
   return function (jobs) { $(container_id).replaceWith(jobs); };
 };
@@ -30,6 +38,7 @@ function update_job_list(job, container_id) {
   </li>
   {% endfor %}
 </ul>
+<button onclick="update('#{{container_id}}')">Update</button>
 {% else %}
 <p> No Jobs. </p>
 {% endif %}
