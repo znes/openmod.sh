@@ -106,12 +106,11 @@
 <script src="/static/helper.js"></script>
 
 <script type="text/javascript">
+
 // open welcome modal when coming from login root redirect
-/*
 if (document.referrer.split("/").pop() == "login?next=%2F") {
     $('#welcomeModal').modal();
 }
-*/
 
 function deleteScenario(scenarioId) {
     var x = confirm("Are you sure you want to delete?");
@@ -126,11 +125,6 @@ function deleteScenario(scenarioId) {
         return;
     }
 }
-
-test = confirmModal("test", "header", function(x){
-	console.log("this should be online printing when modal is closed or oked and then the test value should be accodingly true or false");
-	console.log("but test resilts in: " + test);
-});
 
 </script>
 {% endblock %}
