@@ -15,7 +15,6 @@ function updatecallback(container_id){
 };
 
 function update_job_list(job, container_id) {
-  console.log('Kill clicked.');
   $.ajax({
     url: '/kill/' + job,
     type: 'put',
@@ -24,6 +23,7 @@ function update_job_list(job, container_id) {
     }
   });
 };
+
 </script>
 {% if jobs %}
 <p>Queued/Running Simulations:</p>
