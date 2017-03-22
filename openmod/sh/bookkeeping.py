@@ -74,6 +74,9 @@ class Job():
             # That's ok. It just means the worker has already stopped.
             pass
 
+    def dead(self):
+        return (not self.status() in ["Queued.", "Running."])
+
 
 class InMemorySession(dict, SM):
     def __init__(self, sid, *args, **kwargs):
