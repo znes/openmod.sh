@@ -278,12 +278,24 @@ function addGridToRegionPlot(map, pos, height, width) {
 }
 
 function addArrowToRegionPlot(map, pos0, pos1, length=1, value=1) {
+    var vector = [];
+    for (var i=0; i<pos0.length; i++) {
+        vector.push(pos1[i]-pos0[i]);
+    }
+    var start_point = [];
+    for (var i=0; i<pos0.length; i++) {
+        start_point.push(pos0[i]+0.515*vector[i]);
+    }
+    var end_point = [];
+    for (var i=0; i<pos0.length; i++) {
+        end_point.push(start_point[i]+0.12*vector[i]);
+    }
     var arrow_color = "red";
-    var polyline = L.polyline([pos0, pos1], {color: arrow_color}).addTo(map);
+    var polyline = L.polyline([start_point, end_point], {color: arrow_color}).addTo(map);
     var decorator = L.polylineDecorator(polyline, {
         patterns: [{repeat: 0,
-                    offset: '60%',
-                    symbol: L.Symbol.arrowHead({pixelSize: 40,
+                    offset: '100%',
+                    symbol: L.Symbol.arrowHead({pixelSize: 20,
                                                 polygon: false,
                                                 pathOptions: {stroke: true,
                                                               color: arrow_color}})
