@@ -542,7 +542,7 @@ function makeSpan(id, value) {
 
 function makeAllAutomaticSlider() {
     $.each(region_bar_plot, function(key, value) {
-       $('#slider_form').append("<div><b>"+key+"</b></div>");
+       $('#slider_form').append("<div><b>"+region_bar_plot[key]['label']+"</b></div>");
         $.each(value.values, function(index)  {
             var element  = value.values[index];
             var l = lookup[element];
