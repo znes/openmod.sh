@@ -372,7 +372,7 @@ function addGridToRegionPlot(map, pos, height, width) {
     return bounds;
 }
 
-function addArrowToRegionPlot(map, pos0, pos1, length=1, value=1) {
+function addArrowToRegionPlot(map, pos0, pos1, value, label, pixel) {
     var vector = [];
     for (var i=0; i<pos0.length; i++) {
         vector.push(pos1[i]-pos0[i]);
@@ -386,16 +386,39 @@ function addArrowToRegionPlot(map, pos0, pos1, length=1, value=1) {
         end_point.push(start_point[i]+0.12*vector[i]);
     }
     var arrow_color = "red";
-    var polyline = L.polyline([start_point, end_point], {color: arrow_color}).addTo(map);
+    var pixel_line = 4;
+    var pixel_decorator = (pixel_line+pixel+1)*2;
+    var polyline = L.polyline([start_point, end_point],
+                              {color: arrow_color,
+                               lineCap: 'butt',
+                               opacity: 0.8,
+                               weight: pixel_line}).addTo(map);
     var decorator = L.polylineDecorator(polyline, {
         patterns: [{repeat: 0,
                     offset: '100%',
-                    symbol: L.Symbol.arrowHead({pixelSize: 20,
-                                                polygon: false,
+                    symbol: L.Symbol.arrowHead({pixelSize: pixel_decorator,
+                                                polygon: true,
                                                 pathOptions: {stroke: true,
-                                                              color: arrow_color}})
+                                                              color: arrow_color,
+                                                              fillOpacity: 0.8,
+                                                              weight: 3}})
                    }]
         }).addTo(map);
+    decorator.bindTooltip(label);
+    decorator.on('mouseover', function(e) {
+        var layer = e.target;
+        layer.setStyle({
+            opacity: 1,
+            weight: 6
+        });
+    });
+    decorator.on('mouseout', function(e) {
+        var layer = e.target;
+        layer.setStyle({
+            opacity: 0.8,
+            weight: 3
+        });
+    });
 }
 
 function makeTimeseriesPlot(div, data, layout) {
