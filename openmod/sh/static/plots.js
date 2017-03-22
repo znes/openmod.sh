@@ -220,6 +220,101 @@ function makeStackedResultPlot(div, data, layout) {
     Plotly.newPlot(div, traces, plotly_layout);
 }
 
+function makeStackedInputPlot(div, data, layout) {
+    // layout_args: Object with title, div_id
+    // ts: Array ot ts Object with name, ts, color
+    // first element in ts is highest in stack
+
+    // TODO: make dates accoring to scenario.tags.year
+    dates = Array.apply(null, Array(8760)).map(function(_, i) {
+        return new Date(i * 3600 * 1000);
+    });
+
+    var selectorOptions = {
+        buttons: [{
+                step: 'month',
+                stepmode: 'backward',
+                count: 1,
+                label: '1m'
+            },
+            {
+                step: 'all'
+            }
+        ]
+    };
+
+    var plotly_layout = {
+        title: layout.title,
+        xaxis: {
+            rangeselector: selectorOptions,
+            rangeslider: {}
+        },
+        yaxis: {
+            fixedrange: true
+        }
+    };
+
+    var objects = [];
+    var demand_objects = [];
+
+    $.each(data, function(key, value) {
+        $.each(value['production'], function(name, ts) {
+            objects.push({'name': name, 'ts': ts})
+        });
+        $.each(value['demand'], function(name, ts) {
+            demand_objects.push({'name': name, 'ts': ts})
+        });
+    });
+
+    var traces = [];
+    // WE ONLY SELECT THE FIRST OBJECT OF DEMAND; AS WE ASSUME THAT THERE IS ONLY
+    // AT THE MOMENT
+    demand = {type: 'scatter', mode: 'lines', x: dates, hoverinfo: "x+text+name"};
+    demand.name = getLabel(demand_objects[0].name)
+    demand.marker = {"color": data.coloring[demand_objects[0].name].color}
+    demand.y = demand_objects[0].ts
+    traces.push(demand)
+
+    d = {type: 'scatter', mode: 'lines', line: {width: 0}, fill: 'tozeroy',
+         x: dates, hoverinfo: "x+text+name"};
+    t = objects[0];
+    d.name = getLabel(t.name);
+    d.marker = {"color": data.coloring[t.name].color}
+    d.opacity = data.coloring[t.name].opacity
+
+    d.y = t.ts;
+    var text = [];
+    t.ts.forEach(function(x) {text.push(String(x))});
+    d.text = text;
+    //d.fillcolor = t.color;
+
+    traces.push(d);
+    base = t.ts;
+    for (var j = 1; j <= objects.length-1; j++) {
+        t = objects[j];
+        d = {type: 'scatter', mode: 'lines', line: {width: 0}, fill: 'tonexty',
+             x: dates, hoverinfo: "x+text+name"};
+        d.name = getLabel(t.name);
+        d.marker = {"color": data.coloring[t.name].color}
+        d.opacity = data.coloring[t.name].opacity
+        base_plus = [];
+        for (var i = 0; i < base.length; i++) {
+            base_plus.push(base[i] + t.ts[i]);
+        }
+        d.y = base_plus;
+        base = base_plus;
+        var text = [];
+        t.ts.forEach(function(x) {text.push(String(x))});
+        d.text = text;
+        //d.fillcolor = t.color;
+        traces.push(d);
+    };
+    Plotly.newPlot(div, traces, plotly_layout);
+}
+
+
+
+
 function makeRegionPlot(plot_id) {
     document.getElementById(plot_id).outerHTML = '<div id="'+plot_id+'" style="width: 700px; height: 450px; position: relative;"></div>';
     var map = new L.Map(plot_id);

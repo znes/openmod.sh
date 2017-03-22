@@ -153,10 +153,18 @@ function prepareTimeseries(id) {
         ts_obj.name = id;
         coloring = getColors([id]);
         ts_obj.color = coloring[id].color;
-        ts = getSequenceValue(id, lookup[id].profile);
-        ts_obj.ts = ts.map(function(i) {
-                return i * parseFloat(getTagValue(id, lookup[id].value));
-        });
+        if (scenario.children_dict[id].type == 'demand') {
+            ts = getSequenceValue(id, 'load_profile');
+            ts_obj.ts = ts.map(function(i) {
+                return i * parseFloat(getTagValue(id, 'amount'));
+            });
+        }
+        else {
+            ts = getSequenceValue(id, 'generator_profile');
+            ts_obj.ts = ts.map(function(i) {
+                return i * parseFloat(getTagValue(id, 'installed_power'));
+            });
+        }
     }
 
     return ts_obj;
@@ -297,7 +305,6 @@ function renderStackedResultPlot(select_id, plot_id) {
             $("#"+plot_id).html("No hubs founds!");
         }
         else {
-
             $.each(data, function(key, value) {
                 if ('name' in value) {
                    if (value.name in hubs) {
@@ -328,6 +335,64 @@ function renderStackedResultPlot(select_id, plot_id) {
     });
 }
 
+function renderStackedInputPlot(select_id, plot_id) {
+    $("#"+select_id).html("");
+
+    getHubs(scenario_db_id, function(data) {
+        if (data == false) {
+            $("#"+plot_id).html("No hubs founds!");
+        }
+        else {
+            $.each(data, function(key, value) {
+                if ('name' in value) {
+                   if (value.name in hubs) {
+                       $("#"+select_id).append("<option value='"+value.name+"'>"+hubs[value.name]+"</option>");
+                   }
+                };
+            });
+        }
+    });
+
+    $("#"+select_id).on('change', function() {
+        $("#"+plot_id).html("");
+        hub_name = $(this).val();
+        var data = {};
+        data[hub_name] = {'production':{}, 'demand':{}};
+
+        var elements = [];
+        var predecessors = scenario.children_dict[hub_name].predecessors;
+        var slider_input_names = Object.keys(lookup);
+
+        for (var i in predecessors) {
+            if (scenario.children_dict[predecessors[i]].type == 'volatile_generator') {
+                elements.push(predecessors[i]);
+            }
+        }
+
+        for (var i = 0; i < elements.length; i++) {
+            var ts_obj = prepareTimeseries(elements[i]);
+            data[hub_name]['production'][elements[i]] = ts_obj.ts;
+        }
+        // GET THE DEMAND
+        var successors = scenario.children_dict[hub_name].successors;
+        for (var i in successors) {
+            if (scenario.children_dict[successors[i]].type == 'demand') {
+                ts_obj = prepareTimeseries(successors[i]);
+                data[hub_name]['demand'][successors[i]] = ts_obj.ts;
+                elements.push(successors[i]);
+            }
+        }
+        console.log(data);
+        if ($.isEmptyObject(data[hub_name]['production']) ||
+            $.isEmptyObject(data[hub_name]['demand'])) {
+            $("#"+plot_id).html("No data to render!");
+        }
+        else {
+            data.coloring = getColors(elements);
+            makeStackedInputPlot(plot_id, data, layout={'title': 'Stacked Input'});
+            }
+        });
+}
 
 // JQUERY TO START NEW MODEL RUN (Send json)
 function runSimulation(scenario) {
