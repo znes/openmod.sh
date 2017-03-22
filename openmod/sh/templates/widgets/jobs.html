@@ -1,13 +1,18 @@
 {% set container_id = container_id | default('steve') %}
 <div id="{{ container_id }}">
 <script type="text/javascript">
+
+function updatecallback(container_id){
+  return function (jobs) { $(container_id).replaceWith(jobs); };
+};
+
 function update_job_list(job, container_id) {
   console.log('Kill clicked.');
   $.ajax({
     url: '/kill/' + job,
     type: 'put',
-    success: function(data) {
-      $(container_id).replaceWith(data.jobs);
+    success: function (data) {
+      return (updatecallback(container_id))(data.jobs);
     }
   });
 };
