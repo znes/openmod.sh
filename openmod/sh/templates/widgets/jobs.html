@@ -14,6 +14,16 @@ function updatecallback(container_id){
   return function (jobs) { $(container_id).replaceWith(jobs); };
 };
 
+function remove_dead_jobs(container_id){
+  $.ajax({
+    url: '/remove/dead',
+    type: 'put',
+    success: function (data) {
+      return (updatecallback(container_id))(data.jobs);
+    }
+  });
+};
+
 function update_job_list(job, container_id) {
   $.ajax({
     url: '/kill/' + job,
@@ -39,6 +49,9 @@ function update_job_list(job, container_id) {
   {% endfor %}
 </ul>
 <button onclick="update('#{{container_id}}')">Update</button>
+<button onclick="remove_dead_jobs('#{{container_id}}')">
+  Remove Dead Jobs
+</button>
 {% else %}
 <p> No Jobs. </p>
 {% endif %}

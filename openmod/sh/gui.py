@@ -233,6 +233,19 @@ def kill(job):
         app.results[job].cancel()
     return flask.jsonify({'jobs': jobs_widget()})
 
+@app.route('/remove/<job>', methods=['PUT'])
+@fl.login_required
+def remove(job):
+    if job in app.results:
+        if not app.results[job].dead():
+            app.results[job].cancel()
+        del app.results[job]
+        return flask.jsonify({'jobs': jobs_widget()})
+    if job == "dead":
+        for job in [j for j in app.results if app.results[j].dead()]:
+            del app.results[job]
+    return flask.jsonify({'jobs': jobs_widget()})
+
 @app.route('/simulate', methods=['GET', 'PUT'])
 @fl.login_required
 def run_simulation():
