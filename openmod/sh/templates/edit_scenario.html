@@ -134,6 +134,10 @@ function getTagValue(element, tag) {
     return scenario.children_dict[element].tags[tag];
 }
 
+function roundTagValue(element, tag) {
+    scenario.children_dict[element].tags[tag] = String(parseFloat(scenario.children_dict[element].tags[tag]).toFixed(1));
+}
+
 function getSequenceValue(element, sequence) {
     return scenario.children_dict[element].sequences[sequence];
 }
@@ -630,7 +634,7 @@ function updateScenario(scenario) {
 }
 
 function makeSlider(id, value, max) {
-    return "<input id='"+id+"_slider' class='form-control' type='range' min='0' step='1' value='"
+    return "<input id='"+id+"_slider' class='form-control' type='range' min='0' step='0.1' value='"
            +value+"' max='"+max+"' onchange="+'"'+"updateValue('"+id+"', this.value)"+'"'+"/>";
 }
 
@@ -647,6 +651,8 @@ function makeAllAutomaticSlider() {
             var element  = value.values[index];
             var l = lookup[element];
             if (getTagValue(element, l.value) != "null") {
+                roundTagValue(element, l.value);
+                roundTagValue(element, l.max);
                 $('#slider_form').append(
                     '<div class="form-group row">'
                         +'<label for="'+element+'" class="col-5 col-form-label">'+getLabel(element)+'</label>'
