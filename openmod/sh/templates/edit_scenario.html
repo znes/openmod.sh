@@ -22,11 +22,11 @@
 </li>
 
 <li class="nav-item" onclick="updateScenario(scenario)">
-<a class="nav-link" href="javascript:void(0)">Update scenario</a>
+<a class="nav-link" href="javascript:void(0)">Save changes</a>
 </li>
 
 <li class="nav-item" onclick="callSaveScenarioPrompt(scenario)" >
-<a class="nav-link" href="javascript:void(0)">Save New</a>
+<a class="nav-link" href="javascript:void(0)">Save as new scenario</a>
 </li>
 
 <li class="nav-item" onclick="runSimulation(scenario)">
@@ -503,6 +503,7 @@ function renderStackedInputSubPlot(hub_name, plot_id) {
 
 // JQUERY TO START NEW MODEL RUN (Send json)
 function runSimulation(scenario) {
+    if (!slider_changed) {
         return $.ajax({
             url: 'simulate',
             type: 'put',
@@ -510,10 +511,14 @@ function runSimulation(scenario) {
             contentType: 'application/json; charset=utf-8',
             dataType: 'json',
             success: function(data) {
-                alert("The simulation runs in the background."
-                      +" See Jobs for an overview of running simmulation.");}
+                setResultExists();
+                alertModal("The simulation runs in the background."
+                           +" See Jobs for an overview of running simmulation.");}
         });
+    } else {
+        alertModal("There are unsaved changes. You have to save them before you can run a simulation.", "Unsaved changes");
     }
+}
 
 
 
@@ -646,7 +651,7 @@ function updateScenario(scenario) {
         dataType: 'json',
         success: function(data) {
             resetSliderChange();
-            alert("Updated successfully! Opening updated scenario.");
+            alertModal("Updated successfully! Opening updated scenario.");
             window.location.replace('edit_scenario?id=' + data.scenario_db_id);
         },
         error: function() {
@@ -907,7 +912,6 @@ function setSliderChangeInfo() {
 }
 
 function resetSliderChange() {
-    setResultExists();
     slider_changed = false;
     setSliderChangeInfo();
 }
@@ -922,11 +926,14 @@ function checkIfResultExists(scenario_db_id, callback) {
 }
 
 
-function setResultExists() {
+function setResultExists(once=false) {
     checkIfResultExists(scenario_db_id, function(data) {
+        console.log("checking if results exist");
         if (data == false) {
             result_exists = false;
-            window.setTimeout(setResultExists, 10000);
+            if (!once) {
+                window.setTimeout(setResultExists, 10000);
+            }
         } else {
             result_exists = true;
             updateDisabledPlotTabs();
@@ -979,7 +986,7 @@ alertModal("Here you can use the slider to edit your scenario. Make sure that yo
 
 var slider_changed = false;
 var result_exists = false;
-setResultExists();
+setResultExists(once=true);
 updateDisabledPlotTabs();
 
 // this is the main function which is executed when slider values change
