@@ -673,6 +673,8 @@ function makeSpan(id, value) {
     return "<span id="+id+">"+value+"</span>"
 }
 
+var max_bar=0;
+
 function makeAllAutomaticSlider() {
     $.each(region_bar_plot, function(key, value) {
        if (region_bar_plot[key]["values"].length > 0) {
@@ -684,11 +686,15 @@ function makeAllAutomaticSlider() {
             if (getTagValue(element, l.value) != "null") {
                 roundTagValue(element, l.value);
                 roundTagValue(element, l.max);
+                var slider_max = 2*parseFloat(getTagValue(element, l.max));
+                if (slider_max > max_bar) {
+                    max_bar = slider_max;
+                }
                 $('#slider_form').append(
                     '<div class="form-group row">'
                         +'<label for="'+element+'" class="col-4 col-form-label">'+getLabel(element)+'</label>'
                         +'<div class="col">'
-                            +makeSlider(element, getTagValue(element, l.value), getTagValue(element, l.max))
+                            +makeSlider(element, getTagValue(element, l.value), slider_max)
                         +'</div>'
         			    +'<div class="col-2">'
                             +makeSpan(element+"_display", getTagValue(element, l.value))
@@ -805,7 +811,6 @@ function renderInputTimeseries(select_ts_id, select_type_id, plot_id) {
 function renderInputOverview(plot_id) {
     var input_overview_map = makeRegionPlot(plot_id);
     Object.values(region_bar_plot).forEach(function(region) {
-        console.log(region);
         var bound = addGridToRegionPlot(input_overview_map, region.pos, 0.15, 0.3);
         var number_of_values = region.values.length;
         var left_lower = bound[0];
@@ -813,10 +818,9 @@ function renderInputOverview(plot_id) {
         var dwidth = width/(number_of_values+1);
         for(var i=0; i<number_of_values; i++) {
             var bar = region.values[i];
-            console.log(bar);
             var l = lookup[bar];
             var value = scenario.children_dict[bar].tags[l.value];
-            var size_factor = 10;
+            var size_factor = max_bar*8;
             addBarToRegionPlot(input_overview_map, left_lower[0], left_lower[1]+dwidth*(i+1), value/size_factor, bar+": "+value+" MW", getColors([bar])[bar].color);
         }
     });
