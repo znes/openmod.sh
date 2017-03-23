@@ -121,7 +121,18 @@ def get_elements(query_parameters, session):
     if 'type' in query_parameters.keys():
         query = query.filter(schema.Element.type.like(query_parameters['type']))
     elements = query.all()
-    return elements
+
+    # HACKISCH FIX TO SUBSET only elements of a specified scenario
+    # should be moved maybe somewhere else and implemented directly inside the
+    # query...but no time right now
+    if 'scenario_id' in query_parameters:
+        scenario_subset_elements = [e for e in elements
+                                    if query_parameters['scenario_id']
+                                        in [str(p.id) for p in e.parents]]
+        return scenario_subset_elements
+
+    else:
+        return elements
 
 def create_element_from_json(json):
     tags = dict_to_tags(json.get('tags', {}))
