@@ -63,7 +63,7 @@
     {"id": "result_timeseries", "label": "Result Timeseries", "options": "<select id='result_timeseries_select_flow'></select><select id='result_timeseries_select_type'></select>", "content": "", "onclick": "renderResultFlowPlot('result_timeseries_select_flow', 'result_timeseries_select_type', 'result_timeseries')"},
     {"id": "result_stacked", "label": "Result Stacked", "options": "<select id='result_stacked_select'></select>", "content": "", "onclick": "renderStackedResultPlot('result_stacked_select', 'result_stacked')"},
     {"id": "result_co2", "label": "Result CO2", "options": "","content": "", "onclick": "renderEmissionBarPlot('result_co2')"},
-    {"id": "result_summary", "label": "Result Summary", "options": "", "content": "", "onclick": "", "active": ""}
+    {"id": "result_summary", "label": "Result Summary", "options": "", "content": "", "onclick": "renderResultSummary('result_summary');", "active": ""}
   ],
 
     "hubs": {

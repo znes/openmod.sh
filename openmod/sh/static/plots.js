@@ -1,13 +1,4 @@
 function makeEmissionBarPlot(div, data, layout) {
-
-    var x_vals = [];
-    var y_vals = [];
-
-    $.each(data, function(key, value) {
-                x_vals.push(key);
-                y_vals.push(value);
-        });
-
     var plotly_layout =  {
             title: layout.title,
             yaxis: {
