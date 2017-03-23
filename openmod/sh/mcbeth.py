@@ -27,7 +27,13 @@ def _float(obj, attr):
     attributes.
     """
 
-    if obj['tags'].get(attr)  in ['null', '+inf']:
+    if obj['tags'].get(attr)  == 'null':
+        if attr == 'max_fullloadhours':
+            obj['tags'][attr] = None
+        else:
+            obj['tags'][attr] = 0
+
+    if obj['tags'].get(attr) == '+inf':
         obj['tags'][attr] = None
 
     defaults = {'installed_energy': 0,
