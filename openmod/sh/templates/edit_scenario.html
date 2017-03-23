@@ -928,20 +928,15 @@ function setResultExists() {
             result_exists = false;
             window.setTimeout(setResultExists, 10000);
         } else {
-            updateDisabledPlotTabs();
             result_exists = true;
+            updateDisabledPlotTabs();
         }
     });
 }
 
-<<<<<<< HEAD
-;
-=======
 function updateDisabledPlotTabs() {
     $("#plot_tab li a:contains('Result')").toggleClass("disabled", !result_exists);
 }
-
->>>>>>> features/tab-update
 
 var scenario_db_id = {{ scenario_db_id }};
 
@@ -984,11 +979,14 @@ alertModal("Here you can use the slider to edit your scenario. Make sure that yo
 
 var slider_changed = false;
 var result_exists = false;
+setResultExists();
+updateDisabledPlotTabs();
 
 // this is the main function which is executed when slider values change
 $('#slider_form').change(function () {
     slider_changed = true;
     result_exists = false;
+    updateDisabledPlotTabs();
     setSliderChangeInfo();
     input_overview_map = renderInputOverview('input_overview');
 
@@ -1007,12 +1005,10 @@ $('#slider_form').change(function () {
 
 });
 
-setResultExists();
+
 
 var flow_results = false;
 getFlowResults(scenario_db_id, function(x) {flow_results=x;});
-
-updateDisabledPlotTabs();
 
 </script>
 {% endblock %}
