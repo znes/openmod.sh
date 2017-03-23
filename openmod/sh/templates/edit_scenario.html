@@ -820,7 +820,7 @@ function renderInputOverview(plot_id) {
             var bar = region.values[i];
             var l = lookup[bar];
             var value = scenario.children_dict[bar].tags[l.value];
-            var size_factor = max_bar*8;
+            var size_factor = max_bar*4;
             addBarToRegionPlot(input_overview_map, left_lower[0], left_lower[1]+dwidth*(i+1), value/size_factor, bar+": "+value+" MW", getColors([bar])[bar].color);
         }
     });
@@ -830,57 +830,53 @@ function renderResultOverview(plot_id) {
     if (!flow_results) {
         getFlowResults(scenario_db_id, function(x) {flow_results=x;});
     }
-    if (flow_results) {
-        $('#'+plot_id).html("");
-        var result_overview_map = makeRegionPlot(plot_id);
-        var positions = {};
-        Object.keys(region_bar_plot).forEach(function(key) {
-            positions[key] = region_bar_plot[key].pos;
-        });
-        var number_of_positions = Object.values(positions).length;
-        var arrows = {};
-        var max = 0;
-        Object.keys(positions).forEach(function(k) {
-            arrows[k] = {}
-            Object.keys(positions).forEach(function(l) {
-                if (k !== l) {
-                    var value = flow_results[k+' -> '+l].reduce(function(a, b) {return a+b;});
-                    arrows[k][l] = value;
-                    if (value > max) {
-                        max = value;
-                    }
+    $('#'+plot_id).html("");
+    var result_overview_map = makeRegionPlot(plot_id);
+    var positions = {};
+    Object.keys(region_bar_plot).forEach(function(key) {
+        positions[key] = region_bar_plot[key].pos;
+    });
+    var number_of_positions = Object.values(positions).length;
+    var arrows = {};
+    var max = 0;
+    Object.keys(positions).forEach(function(k) {
+        arrows[k] = {}
+        Object.keys(positions).forEach(function(l) {
+            if (k !== l) {
+                var value = flow_results[k+' -> '+l].reduce(function(a, b) {return a+b;});
+                arrows[k][l] = value;
+                if (value > max) {
+                    max = value;
                 }
-            });
-        });
-        var pixel_add = 10;
-        Object.keys(arrows).forEach(function(k) {
-            Object.keys(arrows[k]).forEach(function(l) {
-                var value = arrows[k][l];
-                addArrowToRegionPlot(result_overview_map, positions[k], positions[l],
-                                     value,
-                                     k+' -> '+l+': '+value/1000+' GWh',
-                                     value/max*pixel_add);
-            });
-        });
-        Object.values(region_bar_plot).forEach(function(region) {
-            var bound = addGridToRegionPlot(result_overview_map, region.pos, 0.15, 0.3);
-/*
-            var number_of_values = region.values.length;
-            var left_lower = bound[0];
-            var width = bound[1][1]-bound[0][1];
-            var dwidth = width/(number_of_values+1);
-            for(var i=0; i<number_of_values; i++) {
-                var bar = region.values[i];
-                var l = lookup[bar];
-                var value = scenario.children_dict[bar].tags[l.value];
-                var size_factor = 10;
-                addBarToRegionPlot(result_overview_map, left_lower[0], left_lower[1]+dwidth*(i+1), value/size_factor, bar+": "+value+" MW", getColors([bar])[bar].color);
             }
+        });
+    });
+    var pixel_add = 10;
+    Object.keys(arrows).forEach(function(k) {
+        Object.keys(arrows[k]).forEach(function(l) {
+            var value = arrows[k][l];
+            addArrowToRegionPlot(result_overview_map, positions[k], positions[l],
+                                 value,
+                                 k+' -> '+l+': '+value/1000+' GWh',
+                                 value/max*pixel_add);
+        });
+    });
+    Object.values(region_bar_plot).forEach(function(region) {
+        var bound = addGridToRegionPlot(result_overview_map, region.pos, 0.15, 0.3);
+/*
+        var number_of_values = region.values.length;
+        var left_lower = bound[0];
+        var width = bound[1][1]-bound[0][1];
+        var dwidth = width/(number_of_values+1);
+        for(var i=0; i<number_of_values; i++) {
+            var bar = region.values[i];
+            var l = lookup[bar];
+            var value = scenario.children_dict[bar].tags[l.value];
+            var size_factor = 10;
+            addBarToRegionPlot(result_overview_map, left_lower[0], left_lower[1]+dwidth*(i+1), value/size_factor, bar+": "+value+" MW", getColors([bar])[bar].color);
+        }
 */
     });
-    } else {
-        $('#'+plot_id).html("No results in db.");
-    }
 }
 
 function getResidualLoad(hub_name) {
@@ -1008,7 +1004,7 @@ $('#slider_form').change(function () {
     result_exists = false;
     updateDisabledPlotTabs();
     setSliderChangeInfo();
-    input_overview_map = renderInputOverview('input_overview');
+    renderInputOverview('input_overview');
 
     // RERENDER INPUT TIMESERIES PLOT
     if ($('.nav li a.active')[0]['hash'] == "#input_timeseries_tab") {
@@ -1029,6 +1025,8 @@ $('#slider_form').change(function () {
 
 var flow_results = false;
 getFlowResults(scenario_db_id, function(x) {flow_results=x;});
+
+renderInputOverview('input_overview');
 
 </script>
 {% endblock %}
