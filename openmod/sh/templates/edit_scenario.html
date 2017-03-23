@@ -542,24 +542,28 @@ function makeSpan(id, value) {
 
 function makeAllAutomaticSlider() {
     $.each(region_bar_plot, function(key, value) {
-       $('#slider_form').append("<div><b>"+region_bar_plot[key]['label']+"</b></div>");
+       if (region_bar_plot[key]["values"].length > 0) {
+           $('#slider_form').append("<div><b>"+region_bar_plot[key]['label']+"</b></div>");
+       }
         $.each(value.values, function(index)  {
             var element  = value.values[index];
             var l = lookup[element];
-            $('#slider_form').append(
-                '<div class="form-group row">'
-                    +'<label for="'+element+'" class="col-5 col-form-label">'+getLabel(element)+'</label>'
-                    +'<div class="col">'
-                        +makeSlider(element, getTagValue(element, l.value), getTagValue(element, l.max))
-                    +'</div>'
-    			    +'<div class="col-1">'
-                        +makeSpan(element+"_display", getTagValue(element, l.value))
-                    +'</div>'
-    			    +'<div class="col-1">'
-                        // TODO: How to deal with area?
-                       +makeSpan(element+"_area", 0)
-                    +"</div>"
-                +"</div>");
+            if (getTagValue(element, l.value) != "null") {
+                $('#slider_form').append(
+                    '<div class="form-group row">'
+                        +'<label for="'+element+'" class="col-5 col-form-label">'+getLabel(element)+'</label>'
+                        +'<div class="col">'
+                            +makeSlider(element, getTagValue(element, l.value), getTagValue(element, l.max))
+                        +'</div>'
+        			    +'<div class="col-1">'
+                            +makeSpan(element+"_display", getTagValue(element, l.value))
+                        +'</div>'
+        			    +'<div class="col-1">'
+                            // TODO: How to deal with area?
+                           +makeSpan(element+"_area", 0)
+                        +"</div>"
+                    +"</div>");
+            }
         });
     });
 }
@@ -835,7 +839,9 @@ plot_tabs.forEach(function(tab) {
 
 for (var element in lookup) {
     var l = lookup[element];
-    updateValue(element, getTagValue(element, l.value));
+    if (getTagValue(element, l.value) != "null") {
+        updateValue(element, getTagValue(element, l.value));
+    }
 }
 
 alertModal("Here you can use the slider to edit your scenario. Make sure that you click 'Run Simulation' to compute results",
