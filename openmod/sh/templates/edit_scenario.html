@@ -446,42 +446,50 @@ function renderStackedInputPlot(select_id, plot_id) {
     $("#"+select_id).on('change', function() {
         $("#"+plot_id).html("");
         hub_name = $(this).val();
-        var data = {};
-        data[hub_name] = {'production':{}, 'demand':{}};
 
-        var elements = [];
-        var predecessors = scenario.children_dict[hub_name].predecessors;
-        var slider_input_names = Object.keys(lookup);
+        renderStackedInputSubPlot(hub_name, plot_id);
 
-        for (var i in predecessors) {
-            if (scenario.children_dict[predecessors[i]].type == 'volatile_generator') {
-                elements.push(predecessors[i]);
-            }
-        }
-
-        for (var i = 0; i < elements.length; i++) {
-            var ts_obj = prepareTimeseries(elements[i]);
-            data[hub_name]['production'][elements[i]] = ts_obj.ts;
-        }
-        // GET THE DEMAND
-        var successors = scenario.children_dict[hub_name].successors;
-        for (var i in successors) {
-            if (scenario.children_dict[successors[i]].type == 'demand') {
-                ts_obj = prepareTimeseries(successors[i]);
-                data[hub_name]['demand'][successors[i]] = ts_obj.ts;
-                elements.push(successors[i]);
-            }
-        }
-        console.log(data);
-        if ($.isEmptyObject(data[hub_name]['production']) ||
-            $.isEmptyObject(data[hub_name]['demand'])) {
-            $("#"+plot_id).html("No data to render!");
-        }
-        else {
-            data.coloring = getColors(elements);
-            makeStackedInputPlot(plot_id, data, layout={'title': 'Stacked Input'});
-            }
         });
+}
+
+
+function renderStackedInputSubPlot(hub_name, plot_id) {
+
+    var data = {};
+    data[hub_name] = {'production':{}, 'demand':{}};
+
+    var elements = [];
+    var predecessors = scenario.children_dict[hub_name].predecessors;
+    var slider_input_names = Object.keys(lookup);
+
+    for (var i in predecessors) {
+        if (scenario.children_dict[predecessors[i]].type == 'volatile_generator') {
+            elements.push(predecessors[i]);
+        }
+    }
+
+    for (var i = 0; i < elements.length; i++) {
+        var ts_obj = prepareTimeseries(elements[i]);
+        data[hub_name]['production'][elements[i]] = ts_obj.ts;
+    }
+    // GET THE DEMAND
+    var successors = scenario.children_dict[hub_name].successors;
+    for (var i in successors) {
+        if (scenario.children_dict[successors[i]].type == 'demand') {
+            ts_obj = prepareTimeseries(successors[i]);
+            data[hub_name]['demand'][successors[i]] = ts_obj.ts;
+            elements.push(successors[i]);
+        }
+    }
+    if ($.isEmptyObject(data[hub_name]['production']) ||
+        $.isEmptyObject(data[hub_name]['demand'])) {
+        $("#"+plot_id).html("No data to render!");
+    }
+    else {
+        data.coloring = getColors(elements);
+        makeStackedInputPlot(plot_id, data, layout={'title': 'Stacked Input'});
+        }
+
 }
 
 // JQUERY TO START NEW MODEL RUN (Send json)
@@ -737,6 +745,7 @@ function renderInputTimeseries(select_ts_id, select_type_id, plot_id) {
         var type = $("#"+select_type_id).val();
         renderTimeseriesSubPlot(plot_id, type, ts_obj);
 
+
         $("#"+select_ts_id).on('change', function() {
                 var edge = $(this).val();
                 var ts_obj = prepareTimeseries(edge);
@@ -748,7 +757,8 @@ function renderInputTimeseries(select_ts_id, select_type_id, plot_id) {
                 var edge = $("#"+select_ts_id).val();
                 var ts_obj = prepareTimeseries(edge);
                 renderTimeseriesSubPlot(plot_id, type, ts_obj);
-                });
+
+        });
 }
 
 
@@ -894,6 +904,8 @@ function setResultExists() {
     });
 }
 
+;
+
 var scenario_db_id = {{ scenario_db_id }};
 
 var scenario = {{ scenario | tojson }};
@@ -941,7 +953,21 @@ $('#slider_form').change(function () {
     slider_changed = true;
     result_exists = false;
     setSliderChangeInfo();
-    input_overview_map = renderInputOverview('input_overview');
+    //input_overview_map = renderInputOverview('input_overview');
+
+    // RERENDER INPUT TIMESERIES PLOT
+    if ($('.nav li a.active')[0]['hash'] == "#input_timeseries_tab") {
+        var edge = $("#input_timeseries_select_ts").val();
+        var ts_obj = prepareTimeseries(edge);
+        var type = $("#input_timeseries_select_type").val();
+        renderTimeseriesSubPlot("input_timeseries", type, ts_obj);
+    }
+
+    if ($('.nav li a.active')[0]['hash'] == "#input_stacked_tab") {
+        //RERENDER INPUT STACKED TIMESERIES
+        renderStackedInputSubPlot($("#input_stacked_select").val(), "input_stacked")
+    }
+
 });
 
 setResultExists();
