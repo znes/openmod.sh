@@ -43,14 +43,16 @@ function confirmModal(message, header = "", callback=function(){}) {
             +'</div>'
         +'</div>'
         +'</div>');
-    $('#confirmModal').modal().show();
-    $('#confirmModal').on('hide.bs.modal', function(e) {
+    $('#confirmModal').modal();
+    $('#confirmModal').on('hidden.bs.modal', function(e) {
         callback(false);
     });
     $('#confirmModal .confirm').on('click', function(e) {
         $('#confirmModal').unbind( 'hide.bs.modal');
         $('#confirmModal').modal('hide');
-        callback(true);
+        $('#promptModal').on('hidden.bs.modal', function(e) {
+            callback(true);
+        });
     });
 }
 
@@ -68,7 +70,7 @@ function promptModal(text, defaultText="", header = "", callback=function(){}) {
             +'</div>'
             +'<div class="modal-body">' + text + '</div>'
                 +'<div class="form-group">'
-                    +'<input type="text" class="form-control" placeholder="' + defaultText + '">'
+                    +'<input type="text" class="form-control" value="' + defaultText + '">'
                 +'</div>'
             +'<div class="modal-footer">'
                 +'<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>'
@@ -77,13 +79,18 @@ function promptModal(text, defaultText="", header = "", callback=function(){}) {
             +'</div>'
         +'</div>'
         +'</div>');
-    $('#promptModal').modal().show();
-    $('#promptModal').on('hide.bs.modal', function(e) {
+    $('#promptModal').modal();
+    $('#promptModal').on('hidden.bs.modal', function(e) {
         callback(null);
+        return true;
     });
     $('#promptModal .confirm').on('click', function(e) {
+        var inputValue = $('#promptModal').find('input').val();
         $('#promptModal').unbind( 'hide.bs.modal');
         $('#promptModal').modal('hide');
-        callback($('#promptModal').find('input').val());
+        $('#promptModal').on('hidden.bs.modal', function(e) {
+            callback(inputValue);
+        });
+        return true;
     });
 }

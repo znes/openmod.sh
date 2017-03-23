@@ -25,7 +25,7 @@
 <a class="nav-link" href="javascript:void(0)">Update scenario</a>
 </li>
 
-<li class="nav-item" onclick="saveNewScenario(scenario)">
+<li class="nav-item" onclick="callSaveScenarioPrompt(scenario)" >
 <a class="nav-link" href="javascript:void(0)">Save New</a>
 </li>
 
@@ -565,25 +565,37 @@ function getHubs(scenario_db_id, callback) {
     .done(callback)
     }
 
-
-function saveNewScenario(scenario) {
-    do {
-        var newScenarioName = prompt("New name", scenario['name']);
-        if (newScenarioName == null) {
+function callSaveScenarioPrompt(scenario) {
+    // Get name
+    promptModal("New Name", "", "Senario Name", function (input) {
+        if(input == null) {
             return;
         }
-    } while (newScenarioName == "");
-    scenario['name'] = newScenarioName;
-    var newScenarioDescription = prompt("New description", scenario['tags']['description']);
-    if (newScenarioDescription == null) {
-        return;
-    }
+        if(input.length == 0) {
+            // Maybe just Inform
+            alertModal('alert', 'Input needs to be more than 0 characters.');
+            return;
+        }
+        scenario.name = input;
+        // Get Des
+        promptModal("", scenario['tags']['description'], "New description", function (input) {
+            if(input != null){
+                scenario['tags']['description'] = input;
+                saveNewScenario(scenario); 
+            }
+            else {
+                //abgebrochen
+            }
+        });
+    });
+}
+
+function saveNewScenario(scenario) {
     // INDIVIDUAL FOR BIOMETHAN SLIDER DIRTY HACK
     new_value =  $("#biomethan_slider").val();
     emission_factor_new = 0.225 * (1 - (new_value / 100));
     scenario.children_dict["gas_commodity"].tags["emission_factor"] = emission_factor_new;
     // END OF DIRTY HACK
-    scenario['tags']['description'] = newScenarioDescription;
     $.ajax({
         url: 'API/element',
         type: 'post',
@@ -594,14 +606,19 @@ function saveNewScenario(scenario) {
         dataType: 'json',
         success: function(data) {
             resetSliderChange();
-            alert("Saved successfully! Opening new scenario.");
-            window.location.replace('edit_scenario?id=' + data.scenario_db_id);
+            alertModal("Saved successfully! Opening new scenario.", "Info", function() {
+                window.location.replace('edit_scenario?id=' + data.scenario_db_id);
+            });
         },
         error: function() {
-            if (! confirm("Scenario name is already taken. Try again.")) {
-                return;
-            }
-            saveNewScenario(scenario);
+            confirmModal("Scenario name is already taken. Try again.", "Alert", function(input) {
+                if(input != null) {
+                    callSaveScenarioPrompt(scenario);
+                }
+                else {
+                    return;
+                }
+            });       
         }
     });
 }
@@ -909,13 +926,22 @@ function setResultExists() {
     checkIfResultExists(scenario_db_id, function(data) {
         if (data == false) {
             result_exists = false;
+            window.setTimeout(setResultExists, 10000);
         } else {
+            updateDisabledPlotTabs();
             result_exists = true;
         }
     });
 }
 
+<<<<<<< HEAD
 ;
+=======
+function updateDisabledPlotTabs() {
+    $("#plot_tab li a:contains('Result')").toggleClass("disabled", !result_exists);
+}
+
+>>>>>>> features/tab-update
 
 var scenario_db_id = {{ scenario_db_id }};
 
@@ -985,6 +1011,8 @@ setResultExists();
 
 var flow_results = false;
 getFlowResults(scenario_db_id, function(x) {flow_results=x;});
+
+updateDisabledPlotTabs();
 
 </script>
 {% endblock %}
