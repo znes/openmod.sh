@@ -4,12 +4,56 @@
       "value": "installed_power",
       "max": "potential_power"
     },
+    "kiel_solar_rural": {
+      "value": "installed_power",
+      "max": "potential_power"
+    },
     "kiel_wind": {
+      "value": "installed_power",
+      "max": "potential_power"
+    },
+    "kiel_biomass_chp": {
+      "value": "installed_power",
+      "max": "potential_power"
+    },
+    "kiel_biomass_heatplant": {
+      "value": "installed_power",
+      "max": "potential_power"
+    },
+    "rdeck_wind": {
+      "value": "installed_power",
+      "max": "potential_power"
+    },
+    "rdeck_solar": {
+      "value": "installed_power",
+      "max": "potential_power"
+    },
+    "rdeck_solar_rural": {
+      "value": "installed_power",
+      "max": "potential_power"
+    },
+    "rdeck_biomass_plant": {
+      "value": "installed_power",
+      "max": "potential_power"
+    },
+   "ploe_wind": {
+      "value": "installed_power",
+      "max": "potential_power"
+    },
+    "ploe_solar": {
+      "value": "installed_power",
+      "max": "potential_power"
+    },
+    "ploe_solar_rural": {
+      "value": "installed_power",
+      "max": "potential_power"
+    },
+    "ploe_biomass_plant": {
       "value": "installed_power",
       "max": "potential_power"
     }
   },
-  "timeseries_available": ["kiel_wind", "kiel_solar"],
+  "timeseries_available": ["kiel_wind", "kiel_solar", "kiel_solar_rural", "rdeck_wind", "rdeck_solar", "rdeck_solar_rural", "ploe_wind", "ploe_solar", "ploe_solar_rural"],
   "plot_tabs": [
     {"id": "input_overview", "label": "Input Overview", "options": "", "content": "", "onclick": "renderInputOverview('input_overview');", "active": "active"},
     {"id": "input_timeseries", "label": "Input Timeseries", "options": "<select id='input_timeseries_select_ts'></select><select id='input_timeseries_select_type'></select>", "content": "", "onclick": "renderInputTimeseries('input_timeseries_select_ts', 'input_timeseries_select_type', 'input_timeseries')"},
@@ -44,12 +88,12 @@
         "kiel_electricity": {
             "label": "Region Kiel",
             "pos": [54.3, 10.1],
-            "values": ["kiel_solar", "kiel_wind"]
+            "values": ["kiel_solar", "kiel_wind", "kiel_solar_rural",  "kiel_biomass_heatplant", "kiel_biomass_chp"]
         },
         "rdeck_electricity": {
             "label": "Region RD",
             "pos": [54.5, 9.75],
-            "values": []
+            "values": ["rdeck_solar", "rdeck_wind", "rdeck_solar_rural", "rdeck_biomass_plant"]
         },
         "nms_electricity": {
             "label": "Region NMS",
@@ -59,7 +103,7 @@
         "ploe_electricity": {
             "label": "Region PLÖ",
             "pos": [54.35, 10.6],
-            "values": []
+            "values": ["ploe_solar", "ploe_wind", "ploe_solar_rural",  "ploe_biomass_plant"]
         }
     }
 }
