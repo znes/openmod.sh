@@ -159,9 +159,11 @@ function makeStackedResultPlot(div, data, layout) {
         xaxis: {
             rangeselector: selectorOptions,
             rangeslider: {}
+
         },
         yaxis: {
-            fixedrange: true
+            fixedrange: true,
+            title: "Production in MW"
         }
     };
 
@@ -241,7 +243,8 @@ function makeStackedInputPlot(div, data, layout) {
             rangeslider: {}
         },
         yaxis: {
-            fixedrange: true
+            fixedrange: true,
+            title: "Production in MW"
         }
     };
 
@@ -440,7 +443,8 @@ function makeTimeseriesPlot(div, data, layout) {
             rangeslider: {}
         },
         yaxis: {
-            fixedrange: true
+            fixedrange: true,
+            title: layout.yaxis_title
         }
     };
     layout_plotly.title = layout.title;

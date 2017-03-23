@@ -122,7 +122,11 @@ function tracePredecessors(id, level='one') {
 }
 
 function getLabel(element) {
-    if (getTagValue(element, 'label') == undefined) {
+    var keys = Object.keys(scenario.children_dict);
+    if (keys.indexOf(element) == -1) {
+        label = element;
+    }
+    else if (getTagValue(element, 'label') == undefined) {
         label = element;
     }
     else {
@@ -586,7 +590,7 @@ function callSaveScenarioPrompt(scenario) {
         promptModal("", scenario['tags']['description'], "New description", function (input) {
             if(input != null){
                 scenario['tags']['description'] = input;
-                saveNewScenario(scenario); 
+                saveNewScenario(scenario);
             }
             else {
                 //abgebrochen
@@ -623,7 +627,7 @@ function saveNewScenario(scenario) {
                 else {
                     return;
                 }
-            });       
+            });
         }
     });
 }
@@ -741,15 +745,18 @@ function renderTimeseriesSubPlot(plot_id, type, ts_obj) {
                                  "color": ts_obj.color,
                                  "start_date": scenario.tags.year+"-01-01",
                                  "timestep": 3600},
-                           layout={"title": ts_obj.name});
+                           layout={"title": getLabel(ts_obj.name),
+                                   "yaxis_title": "Flow in MW"});
     } else if (type == "duration") {
         makeOrderedTimeseriesPlot(plot_id,
                                   data=ts_obj,
-                                  layout={"title": "Duration curve of "+ts_obj.name});
+                                  layout={"title": "Duration curve of "+getLabel(ts_obj.name),
+                                          "yaxis_title": "Flow in MW"});
     } else if (type == "heatmap") {
         makeHeatmapPlot(plot_id,
                         data=ts_obj,
-                        layout={"title": "Heatmap of "+ts_obj.name});
+                        layout={"title": "Heatmap of "+ getLabel(ts_obj.name),
+                                "yaxis_title": "Flow in MW"});
     }
 }
 
