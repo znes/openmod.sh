@@ -1,6 +1,6 @@
 {
   "tags": {
-    "description": "2014 Status Quo Masterplan Kiel",
+    "description": "2014 Status Quo Masterplan Kiel including heat storage and power to heat",
     "model": "mceb",
     "year": "2014"
   },
@@ -149955,6 +149955,6 @@
       "predecessors": "true"
     }
   },
-  "name": "kiel-2014",
+  "name": "kiel-2014-storage-and-p2h",
   "type": "scenario"
 }
