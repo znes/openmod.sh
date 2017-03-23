@@ -79,9 +79,10 @@ function makeTab(id, label, options, content, onclick="", active="") {
 }
 
 function makeIndividualBiomethanSilder() {
+    $('#slider_form').append("<div><b>Biomethan Anteil in Kiel</b></div>")
     $('#slider_form').append(
         '<div class="form-group row">'
-            +'<label for="'+element+'" class="col-5 col-form-label">Biomethan Anteil</label>'
+            +'<label for="'+element+'" class="col-5 col-form-label">Anteil in %</label>'
             +'<div class="col">'
                 +'<input id="biomethan_slider" class="form-control" type="range" min="0" step="1" value="0" max="100" onchange="updateBiomethanValue(this.value);"/>'
             +'</div>'
