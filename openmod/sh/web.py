@@ -24,8 +24,7 @@ from werkzeug.utils import secure_filename
 import oemof.db
 
 from .bookkeeping import PointIds, InMemorySessionInterface as IMSI
-from .schemas import oms as osm
-from .schemas.osm import Element_Relation_Associations as ERAs
+from .schemas import oms as schema
 
 
 
@@ -122,7 +121,7 @@ login_manager.login_view = 'login'
 login_manager.init_app(app)
 @login_manager.user_loader
 def load_user(user_id):
-    user = osm.User.query.get(user_id) if user_id else None
+    user = schema.User.query.get(user_id) if user_id else None
     return user
 
 class Login(RedirectForm):
@@ -136,7 +135,7 @@ class Login(RedirectForm):
 def login():
     form = Login()
     if form.validate_on_submit():
-        user = load_user(osm.User.name2id(form.username.data))
+        user = load_user(schema.User.name2id(form.username.data))
         #if user is not None:
         if ((user is not None) and (user.check_pw(form.password.data))):
                 fl.login_user(user)
@@ -146,9 +145,9 @@ def login():
                 flask.flash('Invalid username/password combination.')
                 return flask.redirect(flask.url_for('login'))
         #else:
-        #    user = osm.User(form.username.data, form.password.data)
-        #    osm.DB.session.add(user)
-        #    osm.DB.session.commit()
+        #    user = schema.User(form.username.data, form.password.data)
+        #    schema.DB.session.add(user)
+        #    schema.DB.session.commit()
         #    flask.flash('User "{}" created.'.format(user.name))
         #    fl.login_user(user)
         # From now on: user logged in.
@@ -167,9 +166,9 @@ def logout():
 
 ##### User Management stuff ends here (except for the `@fl.login_required`).
 
-app.config['SQLALCHEMY_DATABASE_URI'] = oemof.db.url(osm.configsection)
+app.config['SQLALCHEMY_DATABASE_URI'] = oemof.db.url(schema.configsection)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-osm.DB.init_app(app)
+schema.DB.init_app(app)
 
 @app.route('/')
 @fl.login_required
