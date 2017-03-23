@@ -88,7 +88,7 @@
         "kiel_electricity": {
             "label": "Region Kiel",
             "pos": [54.3, 10.1],
-            "values": ["kiel_solar", "kiel_wind", "kiel_solar_rural",  "kiel_biomass_heatplant", "kiel_biomass_chp"]
+            "values": ["kiel_solar", "kiel_wind", "kiel_solar_rural"]
         },
         "rdeck_electricity": {
             "label": "Region RD",

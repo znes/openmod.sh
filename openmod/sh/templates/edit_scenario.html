@@ -686,11 +686,11 @@ function makeAllAutomaticSlider() {
                 roundTagValue(element, l.max);
                 $('#slider_form').append(
                     '<div class="form-group row">'
-                        +'<label for="'+element+'" class="col-3 col-form-label">'+getLabel(element)+'</label>'
+                        +'<label for="'+element+'" class="col-4 col-form-label">'+getLabel(element)+'</label>'
                         +'<div class="col">'
                             +makeSlider(element, getTagValue(element, l.value), getTagValue(element, l.max))
                         +'</div>'
-        			    +'<div class="col-1">'
+        			    +'<div class="col-2">'
                             +makeSpan(element+"_display", getTagValue(element, l.value))
                         +'</div>'
                     +"</div>");
@@ -805,6 +805,7 @@ function renderInputTimeseries(select_ts_id, select_type_id, plot_id) {
 function renderInputOverview(plot_id) {
     var input_overview_map = makeRegionPlot(plot_id);
     Object.values(region_bar_plot).forEach(function(region) {
+        console.log(region);
         var bound = addGridToRegionPlot(input_overview_map, region.pos, 0.15, 0.3);
         var number_of_values = region.values.length;
         var left_lower = bound[0];
@@ -812,6 +813,7 @@ function renderInputOverview(plot_id) {
         var dwidth = width/(number_of_values+1);
         for(var i=0; i<number_of_values; i++) {
             var bar = region.values[i];
+            console.log(bar);
             var l = lookup[bar];
             var value = scenario.children_dict[bar].tags[l.value];
             var size_factor = 10;
