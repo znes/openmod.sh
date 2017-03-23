@@ -86,9 +86,8 @@ function makeIndividualBiomethanSilder() {
             +'<div class="col">'
                 +'<input id="biomethan_slider" class="form-control" type="range" min="0" step="1" value="0" max="100" onchange="updateBiomethanValue(this.value);"/>'
             +'</div>'
-                +'<span id="biomethan_value"></span>'
             +'<div class="col-1">'
-                +'<span id="biomethan_area_usage"></span>'
+                +'<span id="biomethan_value"></span>'
             +'</div>'
         +'</div>');
     new_value = 100 - ((parseFloat(getTagValue('gas_commodity', 'emission_factor')) / 0.225)  * 100);
@@ -242,8 +241,6 @@ function updateValue(slider_id, newValue) {
     document.getElementById(slider_id + "_display").innerHTML = newValue;
     var l = lookup[slider_id];
     scenario.children_dict[slider_id].tags[l.value] = newValue;
-
-    document.getElementById(slider_id + "_area").innerHTML = getAreaUsage(slider_id);
 }
 
 
@@ -651,10 +648,6 @@ function makeAllAutomaticSlider() {
         			    +'<div class="col-1">'
                             +makeSpan(element+"_display", getTagValue(element, l.value))
                         +'</div>'
-        			    +'<div class="col-1">'
-                            // TODO: How to deal with area?
-                           +makeSpan(element+"_area", 0)
-                        +"</div>"
                     +"</div>");
             }
         });
