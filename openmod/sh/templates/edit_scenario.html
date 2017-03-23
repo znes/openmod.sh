@@ -308,9 +308,11 @@ function prepareRow(keys, dct, factor, firstc, secondc) {
 
 function renderResultSummary(div_id) {
     $('#'+div_id).html("");
+/*
     getEmissionResults(scenario_db_id, multi_hub_name='kiel', function(data) {
         appendToDiv(div_id, JSON.stringify(data));
     });
+*/
     getHubResults(scenario_db_id, 'kiel_electricity', true, function(data) {
         var production_dct = data.kiel_electricity.production;
         var total_production = Object.values(production_dct).reduce(function(a,b) {
@@ -335,7 +337,7 @@ function renderResultSummary(div_id) {
         });
         var columns = Object.keys(production_dct);
         var all_columns = JSON.parse(JSON.stringify(columns));
-        all_columns.splice(0,0,"", "");
+        all_columns.splice(0,0,"Electricity Production", "");
         appendToDiv(div_id, createTable(all_columns, "summary_table_kiel_electricity_production"));
         var row = prepareRow(columns, installed_power_dct, 1,
                              "Installed power", "in MW");
@@ -347,12 +349,14 @@ function renderResultSummary(div_id) {
                              "Fullload hours", "in h");
         addTableRow(row, "summary_table_kiel_electricity_production");
         var row = prepareRow(columns, relative_production_dct, 1/100,
-                             "Share of producion in Kiel", "in %");
+                             "Share of production in Kiel", "in %");
         addTableRow(row, "summary_table_kiel_electricity_production");
     });
+/*
     getHubResults(scenario_db_id, 'kiel_heat', true, function(data) {
         appendToDiv(div_id, JSON.stringify(data));
     });
+*/
 }
 
 function renderHubBarPlot(select_id, plot_id) {
