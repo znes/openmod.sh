@@ -455,7 +455,8 @@ function makeTimeseriesPlot(div, data, layout) {
     var layout_plotly = {
         xaxis: {
             rangeselector: selectorOptions,
-            rangeslider: {}
+            rangeslider: {},
+            tickformat: "%a %d-%m-%Y"
         },
         yaxis: {
             fixedrange: true,
