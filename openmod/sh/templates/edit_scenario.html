@@ -450,7 +450,7 @@ function renderStackedInputPlot(select_id, plot_id) {
         }
         else {
             $.each(data, function(key, value) {
-                if ('name' in value) {
+                if ('name' in value && value.name != 'nms_electricity') {
                    if (value.name in hubs) {
                        $("#"+select_id).append("<option value='"+value.name+"'>"+hubs[value.name]+"</option>");
                    }
