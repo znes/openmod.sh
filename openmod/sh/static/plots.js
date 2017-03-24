@@ -84,7 +84,7 @@ function makeBarPlot(div, data, layout) {
             },
             yaxis: {
                 title: 'Production in MWh',
-                hoverformat: '.2f'
+                hoverformat: '.1f'
             },
             margin: {
                 b : 160
@@ -166,7 +166,7 @@ function makeStackedResultPlot(div, data, layout) {
         yaxis: {
             fixedrange: true,
             title: "Production in MW",
-            hoverformat: '.2f'
+            hoverformat: '.1f'
         }
     };
 
@@ -262,7 +262,7 @@ function makeStackedInputPlot(div, data, layout) {
         yaxis: {
             fixedrange: true,
             title: "Production in MW",
-            hoverformat: '.2f'
+            hoverformat: '.1f'
         }
     };
 
@@ -464,7 +464,7 @@ function makeTimeseriesPlot(div, data, layout) {
         yaxis: {
             fixedrange: true,
             title: layout.yaxis_title,
-            hoverformat: '.2f'
+            hoverformat: '.1f'
         }
     };
     layout_plotly.title = layout.title;
