@@ -181,7 +181,7 @@ function makeStackedResultPlot(div, data, layout) {
     });
 
     var traces = [];
-    console.log(data)
+
     demand = {type: 'scatter', mode: 'lines', x: dates, hoverinfo: "x+text+name"};
     demand.name = getLabel(demand_objects[0].name)
     demand.marker = {"color": data.coloring[demand_objects[0].name].color}
