@@ -159,8 +159,8 @@ function makeStackedResultPlot(div, data, layout) {
         title: layout.title,
         xaxis: {
             rangeselector: selectorOptions,
-            rangeslider: {}
-
+            rangeslider: {},
+            tickformat: "%a %d-%m-%Y"
         },
         yaxis: {
             fixedrange: true,
@@ -254,7 +254,8 @@ function makeStackedInputPlot(div, data, layout) {
         title: layout.title,
         xaxis: {
             rangeselector: selectorOptions,
-            rangeslider: {}
+            rangeslider: {},
+            tickformat: "%a %d-%m-%Y"
         },
         yaxis: {
             fixedrange: true,
