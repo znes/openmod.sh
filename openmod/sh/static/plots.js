@@ -167,14 +167,26 @@ function makeStackedResultPlot(div, data, layout) {
         }
     };
 
+    var demand_objects = [];
     var objects = []
+
     $.each(data, function(key, value) {
         $.each(value['production'], function(name, ts) {
             objects.push({'name': name, 'ts': ts})
         });
+        $.each(value['demand'], function(name, ts) {
+            demand_objects.push({'name': name, 'ts': ts})
+        });
     });
 
     var traces = [];
+    console.log(data)
+    demand = {type: 'scatter', mode: 'lines', x: dates, hoverinfo: "x+text+name"};
+    demand.name = getLabel(demand_objects[0].name)
+    demand.marker = {"color": data.coloring[demand_objects[0].name].color}
+    demand.y = demand_objects[0].ts.map(function(x) { return x * -1; });
+    traces.push(demand)
+
 
     d = {type: 'scatter', mode: 'lines', line: {width: 0}, fill: 'tozeroy',
          x: dates, hoverinfo: "x+text+name"};

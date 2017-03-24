@@ -430,7 +430,8 @@ function renderStackedResultPlot(select_id, plot_id) {
                $("#"+plot_id).html(alertModal("No production for selected hub!"));
             }
             else {
-                data.coloring = getColors(Object.keys(data[hub_name].production));
+                keys = Object.keys(data[hub_name].production).concat(Object.keys(data[hub_name].demand));
+                data.coloring = getColors(keys);
                 makeStackedResultPlot(div=plot_id, data=data,
                                       layout={'title': nice_hub_name});
             }
