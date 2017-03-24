@@ -432,6 +432,8 @@ function renderStackedResultPlot(select_id, plot_id) {
             else {
                 keys = Object.keys(data[hub_name].production).concat(Object.keys(data[hub_name].demand));
                 data.coloring = getColors(keys);
+                data.start_date = scenario.tags.year+"-01-01";
+                data.timestep = 3600;
                 makeStackedResultPlot(div=plot_id, data=data,
                                       layout={'title': nice_hub_name});
             }
@@ -501,6 +503,8 @@ function renderStackedInputSubPlot(hub_name, plot_id) {
     }
     else {
         data.coloring = getColors(elements);
+        data.start_date = scenario.tags.year+"-01-01";
+        data.timestep = 3600;
         makeStackedInputPlot(plot_id, data, layout={'title': 'Stacked Input'});
         }
 

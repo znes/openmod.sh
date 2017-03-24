@@ -136,9 +136,10 @@ function makeStackedResultPlot(div, data, layout) {
     // ts: Array ot ts Object with name, ts, color
     // first element in ts is highest in stack
 
-    // TODO: make dates accoring to scenario.tags.year
-    dates = Array.apply(null, Array(8760)).map(function(_, i) {
-        return new Date(i * 3600 * 1000);
+    var date = new Date(data.start_date);
+    var timestep = data.timestep;
+    var dates = Array.apply(null, Array(8760)).map(function(_, i) {
+        return new Date(Date.parse(date) + ((i-1)*timestep*1000));
     });
 
     var selectorOptions = {
@@ -230,9 +231,10 @@ function makeStackedInputPlot(div, data, layout) {
     // ts: Array ot ts Object with name, ts, color
     // first element in ts is highest in stack
 
-    // TODO: make dates accoring to scenario.tags.year
-    dates = Array.apply(null, Array(8760)).map(function(_, i) {
-        return new Date(i * 3600 * 1000);
+    var date = new Date(data.start_date);
+    var timestep = data.timestep;
+    var dates = Array.apply(null, Array(8760)).map(function(_, i) {
+        return new Date(Date.parse(date) + ((i-1)*timestep*1000));
     });
 
     var selectorOptions = {
