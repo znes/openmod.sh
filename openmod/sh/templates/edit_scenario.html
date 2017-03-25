@@ -136,6 +136,7 @@ function getLabel(element) {
 }
 
 function getTagValue(element, tag) {
+    //console.log(element, tag);
     return scenario.children_dict[element].tags[tag];
 }
 
@@ -164,14 +165,16 @@ function prepareTimeseries(id) {
         ts_obj.color = coloring[id].color;
         if (scenario.children_dict[id].type == 'demand') {
             ts = getSequenceValue(id, 'load_profile');
+            var amount = parseFloat(getTagValue(id, 'amount'));
             ts_obj.ts = ts.map(function(i) {
-                return i * parseFloat(getTagValue(id, 'amount'));
+                return i * amount
             });
         }
         else {
             ts = getSequenceValue(id, 'generator_profile');
+            var installed_power = parseFloat(getTagValue(id, 'installed_power'));
             ts_obj.ts = ts.map(function(i) {
-                return i * parseFloat(getTagValue(id, 'installed_power'));
+                return i * installed_power
             });
         }
     }
@@ -826,6 +829,7 @@ function renderInputOverview(plot_id) {
             var l = lookup[bar];
             var value = scenario.children_dict[bar].tags[l.value];
             var size_factor = max_bar*4;
+            //console.log(bar, value);
             addBarToRegionPlot(input_overview_map, left_lower[0], left_lower[1]+dwidth*(i+1), value/size_factor, bar+": "+value+" MW", getColors([bar])[bar].color);
         }
     });
