@@ -154,9 +154,10 @@ function prepareTimeseries(id) {
     // If id is in the  hub_keys, the timeseries is the resdiual load
     var hub_keys = Object.keys(hubs);
     if (hub_keys.indexOf(id) > -1) {
-        ts_obj.name = "Residuallast " + hubs[id];
+        ts_obj.name = hubs[id];
         ts_obj.ts = getResidualLoad(id);
         ts_obj.color = '#2f1b56';
+        ts_obj.type = "Residualload";
     }
     // otherwise we assume it to be a sequence of the element with the id
     else {
@@ -169,6 +170,7 @@ function prepareTimeseries(id) {
             ts_obj.ts = ts.map(function(i) {
                 return i * amount
             });
+            ts.type = "Demand";
         }
         else {
             ts = getSequenceValue(id, 'generator_profile');
@@ -176,6 +178,7 @@ function prepareTimeseries(id) {
             ts_obj.ts = ts.map(function(i) {
                 return i * installed_power
             });
+            ts_obj.type = "Production";
         }
     }
 
@@ -396,7 +399,8 @@ function renderHubBarPlot(select_id, plot_id) {
                $("#"+plot_id).append("No results in db!");
             }
             else {
-                makeBarPlot(div=plot_id, data=data, layout={'title': nice_hub_name});
+                makeBarPlot(div=plot_id, data=data,
+                            layout={'title': "Yearly Production, Consumption and Im-/Export in " + nice_hub_name});
             }
         });
     });
@@ -438,7 +442,8 @@ function renderStackedResultPlot(select_id, plot_id) {
                 data.start_date = scenario.tags.year+"-01-01";
                 data.timestep = 3600;
                 makeStackedResultPlot(div=plot_id, data=data,
-                                      layout={'title': nice_hub_name});
+                                      layout={'title': "Hourly Production and Demand in "+nice_hub_name,
+                                              'yaxis_title': "Production and Demand in MW"});
             }
         });
     });
@@ -466,13 +471,13 @@ function renderStackedInputPlot(select_id, plot_id) {
         $("#"+plot_id).html("");
         hub_name = $(this).val();
 
-        renderStackedInputSubPlot(hub_name, plot_id);
+        renderStackedInputSubPlot(hub_name, select_id, plot_id);
 
         });
 }
 
 
-function renderStackedInputSubPlot(hub_name, plot_id) {
+function renderStackedInputSubPlot(hub_name, select_id, plot_id) {
 
     var data = {};
     data[hub_name] = {'production':{}, 'demand':{}};
@@ -505,10 +510,13 @@ function renderStackedInputSubPlot(hub_name, plot_id) {
         $("#"+plot_id).html("No data to render!");
     }
     else {
+        nice_hub_name = $("#"+select_id+" option:selected" ).text();
         data.coloring = getColors(elements);
         data.start_date = scenario.tags.year+"-01-01";
         data.timestep = 3600;
-        makeStackedInputPlot(plot_id, data, layout={'title': 'Stacked Input'});
+        makeStackedInputPlot(plot_id, data,
+                             layout={'title':"Hourly Renewable Production and Demand in "+nice_hub_name,
+                                     'yaxis_title': "Production and Demand in MW"});
         }
 
 }
@@ -718,7 +726,7 @@ function renderResultFlowPlot(select_flow_id, select_type_id, plot_id) {
     getFlowResults(scenario_db_id, function(data) {
         $("#"+select_type_id).html("");
         ['chronological', 'duration', 'heatmap'].forEach( function (x) {
-            $("#"+select_type_id).append("<option value='"+x+"'>"+x+"</option>");
+            $("#"+select_type_id).append("<option value='"+x+"'>"+x[0].toUpperCase() + x.slice(1,x.length)+"</option>");
         });
         if (data == false) {
             $("#"+plot_id).html("No results in db");
@@ -759,25 +767,25 @@ function renderTimeseriesSubPlot(plot_id, type, ts_obj) {
                                  "color": ts_obj.color,
                                  "start_date": scenario.tags.year+"-01-01",
                                  "timestep": 3600},
-                           layout={"title": getLabel(ts_obj.name),
-                                   "yaxis_title": "Flow in MW"});
+                           layout={"title": "Hourly " + ts_obj.type + " " + getLabel(ts_obj.name),
+                                   "yaxis_title": ts_obj.type + " in MW"});
     } else if (type == "duration") {
         makeOrderedTimeseriesPlot(plot_id,
                                   data=ts_obj,
                                   layout={"title": "Duration curve of "+getLabel(ts_obj.name),
-                                          "yaxis_title": "Flow in MW"});
+                                          "yaxis_title": ts_obj.type + " in MW"});
     } else if (type == "heatmap") {
         makeHeatmapPlot(plot_id,
                         data=ts_obj,
                         layout={"title": "Heatmap of "+ getLabel(ts_obj.name),
-                                "yaxis_title": "Flow in MW"});
+                                "yaxis_title": ts_obj.type + " in MW"});
     }
 }
 
 function renderInputTimeseries(select_ts_id, select_type_id, plot_id) {
         $("#"+select_type_id).html("");
         ['chronological', 'duration', 'heatmap'].forEach( function (x) {
-            $("#"+select_type_id).append("<option value='"+x+"'>"+x+"</option>");
+            $("#"+select_type_id).append("<option value='"+x+"'>"+x[0].toUpperCase() + x.slice(1,x.lenght)+"</option>");
         });
         var keys = Object.keys(lookup);
 

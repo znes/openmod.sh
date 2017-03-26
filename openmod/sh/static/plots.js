@@ -164,7 +164,7 @@ function makeStackedResultPlot(div, data, layout) {
         },
         yaxis: {
             fixedrange: true,
-            title: "Production and Demand in MW",
+            title: layout.yaxis_title,
             hoverformat: '.1f'
         }
     };
@@ -260,7 +260,7 @@ function makeStackedInputPlot(div, data, layout) {
         },
         yaxis: {
             fixedrange: true,
-            title: "Production and Demand in MW",
+            title: layout.yaxis_title,
             hoverformat: '.1f'
         }
     };
@@ -505,10 +505,12 @@ function makeOrderedTimeseriesPlot(div, data, layout) {
     };
     var layout_plotly = {
         xaxis: {
+            title: "Hours",
             rangeselector: selectorOptions,
             rangeslider: {}
         },
         yaxis: {
+            title: "Flow in MW",
             fixedrange: true,
             hoverformat: '.2f'
         }
