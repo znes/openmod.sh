@@ -67,11 +67,11 @@
   ],
 
     "hubs": {
-        "kiel_electricity": "Kiel Strom",
-        "kiel_heat": "Kiel Wärme",
-        "nms_electricity": "Neumünster",
-        "ploe_electricity": "Plön",
-        "rdeck_electricity": "Rendsburg-Eckernförde"},
+        "kiel_electricity": "Region KI (Strom)",
+        "kiel_heat": "Region KI (Wärme)",
+        "nms_electricity": "Region NMS (Strom)",
+        "ploe_electricity": "Region PLÖ (Strom)",
+        "rdeck_electricity": "Region RD (Strom)"},
     "global_colors": {
         "solar": "orange",
         "wind": "darkblue",
@@ -86,7 +86,7 @@
         "export": "green"},
     "region_bar_plot": {
         "kiel_electricity": {
-            "label": "Region Kiel",
+            "label": "Region KI",
             "pos": [54.3, 10.1],
             "values": ["kiel_solar", "kiel_wind", "kiel_solar_rural"]
         },
