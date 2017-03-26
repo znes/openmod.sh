@@ -75,15 +75,14 @@ function makeBarPlot(div, data, layout) {
             export_sum = export_sum + expor
         });
 		    x_vals.push('Export');
-	            y_vals.push(export_sum);
+	         y_vals.push(export_sum);
     });
 
-    var plotly_layout =  {title: layout.title,
-            axis: {
-                title: 'Technologies'
-            },
+
+    var plotly_layout =  {
+            title: layout.title,
             yaxis: {
-                title: 'Production in MWh',
+                title: 'Energy in MWh',
                 hoverformat: '.1f'
             },
             margin: {
@@ -165,7 +164,7 @@ function makeStackedResultPlot(div, data, layout) {
         },
         yaxis: {
             fixedrange: true,
-            title: "Production in MW",
+            title: "Production and Demand in MW",
             hoverformat: '.1f'
         }
     };
@@ -261,7 +260,7 @@ function makeStackedInputPlot(div, data, layout) {
         },
         yaxis: {
             fixedrange: true,
-            title: "Production in MW",
+            title: "Production and Demand in MW",
             hoverformat: '.1f'
         }
     };
