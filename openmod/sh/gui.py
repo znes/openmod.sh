@@ -253,10 +253,12 @@ def run_simulation():
     """
 
     scenario = flask.request.get_json()
+    user = fl.current_user.name
     parent, child = mp.Pipe()
     result = app.workers.apply_async(mcbeth.wrapped_simulation,
                                      args=(scenario, child))
-    job = Job(result=result, connection=parent)
+    job = Job(result=result, connection=parent, name=scenario['name'],
+              user=user)
 
     app.results[job.key()] = job
 
