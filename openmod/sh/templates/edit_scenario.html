@@ -35,91 +35,21 @@
         <div class="card">
             <div class="row no-gutters">
                 <div class="col-4">
-                    <div class="card-block">
+                    <div class="card-block right-border">
                         <h5 class="card-title">Input Parameter</h5>
-                        <h6 class="card-subtitle">Parameter</h6>
+                        <h6 class="card-subtitle"><br /></h6>
                         <form id="slider_form"></form>
-                        <form>
-                            <div class="form-group row">
-                                <label for="solar_roof" class="col-5 col-form-label">Solar Roof</label>
-                                <div class="col">
-                                    <input id="solar_rural_slider" class="form-control" type="range" min="0" max="50" value="0" step="5" />
-                                </div>
-                                <div class="col-1">
-                                    <span id="installed_power_wind_display">0</span>
-                                </div>
-                                <div class="col-1">
-                                    <span id="installed_power_wind_display">0</span>
-                                </div>
-                            </div>
-                            <div class="form-group row">
-                                <label for="solar_roof" class="col-5 col-form-label">Solar Rural</label>
-                                <div class="col">
-                                    <input id="solar_rural_slider" class="form-control" type="range" min="0" max="50" value="0" step="5" />
-                                </div>
-                                <div class="col-1">
-                                    <span id="installed_power_wind_display">0</span>
-                                </div>
-                                <div class="col-1">
-                                    <span id="installed_power_wind_display">0</span>
-                                </div>
-                            </div>
-                            <div class="form-group row">
-                                <label for="solar_roof" class="col-5 col-form-label">Wind</label>
-                                <div class="col">
-                                    <input id="solar_rural_slider" class="form-control" type="range" min="0" max="50" value="0" step="5" />
-                                </div>
-                                <div class="col-1">
-                                    <span id="installed_power_wind_display">0</span>
-                                </div>
-                                <div class="col-1">
-                                    <span id="installed_power_wind_display">0</span>
-                                </div>
-                            </div>
-                            <div class="form-group row">
-                                <label for="solar_roof" class="col-5 col-form-label">Biomass CHP</label>
-                                <div class="col">
-                                    <input id="solar_rural_slider" class="form-control" type="range" min="0" max="50" value="0" step="5" />
-                                </div>
-                                <div class="col-1">
-                                    <span id="installed_power_wind_display">0</span>
-                                </div>
-                                <div class="col-1">
-                                    <span id="installed_power_wind_display">0</span>
-                                </div>
-                            </div>
-                        </form>
                     </div>
                 </div>
                 <div class="col">
-                <ul class="nav nav-tabs" id="plot_tab">
-                    <li class="nav-item">
-                    <a class="nav-link active" href="#">Region Plot</a>
-                    </li>
-                    <li class="nav-item">
-                    <a class="nav-link" href="#">Timeseries Plot</a>
-                    </li>
-                    <li class="nav-item">
-                    <a class="nav-link" href="#">Heatmap Plot</a>
-                    </li>
-                </ul>
-                    <div class="card-block left-border tab-content" id="plot_tab_content">
-                        Map
+                    <ul class="nav nav-tabs" id="plot_tab">
+                    </ul>
+                    <div class="card-block tab-content" id="plot_tab_content">
                     </div>
                 </div>
             </div>
         </div>
 
-<!-- interface -->
-<div class="container-fluid">
-<div class="row no-gutters tool">
-    <div class="col-3">
-        <div class="toolbar"><br/></div>
-        <div class="body">
-        </div>
-    </div>
-</div>
-</div>
 <script src="/static/jquery-ui.min.js"></script>
 
 <script src="static/plots.js"></script>

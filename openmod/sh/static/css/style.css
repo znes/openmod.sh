@@ -145,6 +145,9 @@ footer {
 .left-border {
 	border-left: 1px solid #eaeaea;	
 }
+.right-border {
+	border-right: 1px solid #eaeaea;	
+}
 
 /**
  * Modal
