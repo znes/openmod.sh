@@ -583,12 +583,12 @@ function getHubResults(scenario_db_id, hub_name, aggregated, callback) {
     }
 
 
-function getFlowResults(scenario_db_id, callback) {
+function getFlowResults(scenario_db_id, subset, callback) {
     return $.ajax({
         url: 'API/flow_results',
         type: 'get',
         data : {scenario_id: scenario_db_id,
-                subset: 'true'}
+                subset: subset}
         })
     .done(callback)
     }
@@ -752,7 +752,7 @@ function makeAllAutomaticSlider() {
 
 
 function renderResultFlowPlot(select_flow_id, select_type_id, plot_id) {
-    getFlowResults(scenario_db_id, function(data) {
+    getFlowResults(scenario_db_id, subset='true', function(data) {
         $("#"+select_type_id).html("");
         ['chronological', 'duration', 'heatmap'].forEach( function (x) {
             $("#"+select_type_id).append("<option value='"+x+"'>"+x[0].toUpperCase() + x.slice(1,x.length)+"</option>");
@@ -874,7 +874,7 @@ function renderInputOverview(plot_id) {
 
 function renderResultOverview(plot_id) {
     if (!flow_results) {
-        getFlowResults(scenario_db_id, function(x) {flow_results=x;});
+        getFlowResults(scenario_db_id, subset='false', function(x) {flow_results=x;});
     }
     $('#'+plot_id).html("");
     var result_overview_map = makeRegionPlot(plot_id);
@@ -1075,7 +1075,7 @@ $('#slider_form').change(function () {
 
 
 var flow_results = false;
-getFlowResults(scenario_db_id, function(x) {flow_results=x;});
+getFlowResults(scenario_db_id, subset='false', function(x) {flow_results=x;});
 
 renderInputOverview('input_overview');
 
