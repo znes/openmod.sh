@@ -386,26 +386,35 @@ function renderHubBarPlot(select_id, plot_id) {
                    }
                 };
             });
+        hub_label = $( "#"+select_id+" option:selected" ).text();
+        hub_name = $( "#"+select_id+" option:selected" ).val();
+        renderHubSubBarPlot(scenario_db_id, hub_label, hub_name, plot_id);
         }
     });
+
+
 
     $("#"+select_id).on('change', function() {
         hub_name = $(this).val()
         nice_hub_name = $( "#"+select_id+" option:selected" ).text();
-        result = getHubResults(scenario_db_id, hub_name, true, function(data) {
-
-            if (data == false) {
-               $("#"+plot_id).html("");
-               $("#"+plot_id).append("No results in db!");
-            }
-            else {
-                makeBarPlot(div=plot_id, data=data,
-                            layout={'title': "Yearly Production, Consumption and Im-/Export in " + nice_hub_name});
-            }
-        });
+        renderHubSubBarPlot(scenario_db_id, hub_label, hub_name, plot_id)
     });
 }
 
+function renderHubSubBarPlot(scenario_db_id, hub_label, hub_name, plot_id) {
+    result = getHubResults(scenario_db_id, hub_name, true, function(data) {
+        if (data == false) {
+            $("#" + plot_id).html("");
+            $("#" + plot_id).append("No results in db!");
+        } else {
+            makeBarPlot(div = plot_id, data = data,
+                layout = {
+                    'title': "Yearly Production, Consumption and Im-/Export in " + hub_label
+                });
+        }
+    });
+
+}
 
 function renderStackedResultPlot(select_id, plot_id) {
     $("#"+select_id).html("");
