@@ -112,8 +112,9 @@ footer {
 .card-area.full {
 	height: 400px;
 }
-.card-alert {
+.alert .card-alert {
 	border-radius: 0px;
+	margin-bottom: 0px;
 }
 .card-footer {
 	font-size: 11px;
