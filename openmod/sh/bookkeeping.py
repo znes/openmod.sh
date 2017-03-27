@@ -21,7 +21,7 @@ class Job():
         Parameters
         ----------
 
-        result : multiprocessing.pool.AsyncResult
+        result: multiprocessing.pool.AsyncResult
             The `AsyncResult` object for which additional information should
             be tracked.
         connection: multiprocessing.Connection
