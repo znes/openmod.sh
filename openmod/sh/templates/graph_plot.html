@@ -1,9 +1,26 @@
 {% extends "base_layout.html" %}
+
+{% block submenu %}
+	<header>
+		<div class="row align-items-center">
+			<div class="col">
+  			<div class="title">Scenario Name</div>
+			Graph
+		</div>
+	</div>
+	</header>
+{% endblock %}
+
 {% block content %}
 
-<div id="graph_plot">
- {{ graph_svg | safe }}
-</div>
+  			<div class="card">
+				<div class="card-header">
+					Dataset
+				</div>
+				<div class="card-block" id="graph_plot">
+				 {{ graph_svg | safe }}
+				</div>
+			</div>
 
 {% endblock %}
 
