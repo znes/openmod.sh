@@ -59,11 +59,11 @@
   ],
 
     "hubs": {
-        "kiel_electricity": "Region Kiel (Electricity)",
-        "kiel_heat": "Region Kiel (Heat)",
-        "nms_electricity": "Region Nms (Electricity)",
-        "ploe_electricity": "Region Plön (Electricity)",
-        "rdeck_electricity": "Region RdEck (Electricity)"},
+        "kiel_electricity": "KI (Electricity)",
+        "kiel_heat": "KI (Heat)",
+        "nms_electricity": "NMS (Electricity)",
+        "ploe_electricity": "PLÖ (Electricity)",
+        "rdeck_electricity": "RD (Electricity)"},
     "global_colors": {
         "solar": "orange",
         "wind": "darkblue",
@@ -78,22 +78,22 @@
         "export": "green"},
     "region_bar_plot": {
         "kiel_electricity": {
-            "label": "Region Kiel",
+            "label": "KI",
             "pos": [54.3, 10.1],
             "values": ["kiel_solar", "kiel_wind", "kiel_solar_rural"]
         },
         "rdeck_electricity": {
-            "label": "Region RdEck",
+            "label": "RD",
             "pos": [54.5, 9.75],
             "values": ["rdeck_solar", "rdeck_wind", "rdeck_solar_rural", "rdeck_biomass_plant"]
         },
         "nms_electricity": {
-            "label": "Region Nms",
+            "label": "NMS",
             "pos": [54.05, 9.97],
             "values": []
         },
         "ploe_electricity": {
-            "label": "Region Plön",
+            "label": "PLÖ",
             "pos": [54.35, 10.6],
             "values": ["ploe_solar", "ploe_wind", "ploe_solar_rural",  "ploe_biomass_plant"]
         }
