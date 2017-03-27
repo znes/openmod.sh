@@ -478,19 +478,23 @@ function renderStackedInputPlot(select_id, plot_id) {
         }
         else {
             $.each(data, function(key, value) {
-                if ('name' in value && value.name != 'nms_electricity') {
-                   if (value.name in hubs) {
-                       $("#"+select_id).append("<option value='"+value.name+"'>"+hubs[value.name]+"</option>");
+                if ( 'name' in value ) {
+                   var skip_hubs = ['nms_electricity', 'kiel_heat']
+                   if (skip_hubs.indexOf(value.name) < 0) {
+                       if (value.name in hubs) {
+                           $("#"+select_id).append("<option value='"+value.name+"'>"+hubs[value.name]+"</option>");
+                       }
                    }
                 };
             });
+        hub_name = $( "#"+select_id+" option:selected" ).val();
+        renderStackedInputSubPlot(hub_name, select_id, plot_id);
         }
     });
 
     $("#"+select_id).on('change', function() {
         $("#"+plot_id).html("");
-        hub_name = $(this).val();
-
+        var hub_name = $(this).val();
         renderStackedInputSubPlot(hub_name, select_id, plot_id);
 
         });
