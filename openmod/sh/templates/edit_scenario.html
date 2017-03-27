@@ -398,8 +398,8 @@ function renderHubBarPlot(select_id, plot_id) {
 
     // Re-Render when other hub is selected
     $("#"+select_id).on('change', function() {
-        hub_name = $(this).val()
-        nice_hub_name = $( "#"+select_id+" option:selected" ).text();
+        var hub_name = $(this).val()
+        var hub_label = $( "#"+select_id+" option:selected" ).text();
         HubSubBarPlot(scenario_db_id, hub_label, hub_name, plot_id)
     });
 }
