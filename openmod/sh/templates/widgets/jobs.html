@@ -40,7 +40,7 @@ function update_job_list(job, container_id) {
 <ul id="jobs">
   {% for k, job in jobs.items() %}
   <li>
-    <a href="/simulation/{{k}}">{{job.name}} ({{job.user}})</a>
+    <a href="/simulation/{{k}}">{{job.scenario}} ({{job.user}})</a>
     ({{ job.status() }})
     <button onclick="update_job_list({{k}}, '#{{container_id}}')">
       Dequeue/Kill

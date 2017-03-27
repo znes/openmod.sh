@@ -257,7 +257,7 @@ def run_simulation():
     parent, child = mp.Pipe()
     result = app.workers.apply_async(mcbeth.wrapped_simulation,
                                      args=(scenario, child))
-    job = Job(result=result, connection=parent, name=scenario['name'],
+    job = Job(result=result, connection=parent, scenario=scenario['name'],
               user=user)
 
     app.results[job.key()] = job
