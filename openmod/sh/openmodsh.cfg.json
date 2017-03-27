@@ -86,22 +86,22 @@
         "export": "green"},
     "region_bar_plot": {
         "kiel_electricity": {
-            "label": "Region KI",
+            "label": "Region Kiel",
             "pos": [54.3, 10.1],
             "values": ["kiel_solar", "kiel_wind", "kiel_solar_rural"]
         },
         "rdeck_electricity": {
-            "label": "Region RD",
+            "label": "Region RdEck",
             "pos": [54.5, 9.75],
             "values": ["rdeck_solar", "rdeck_wind", "rdeck_solar_rural", "rdeck_biomass_plant"]
         },
         "nms_electricity": {
-            "label": "Region NMS",
+            "label": "Region Nms",
             "pos": [54.05, 9.97],
             "values": []
         },
         "ploe_electricity": {
-            "label": "Region PLÖ",
+            "label": "Region Plön",
             "pos": [54.35, 10.6],
             "values": ["ploe_solar", "ploe_wind", "ploe_solar_rural",  "ploe_biomass_plant"]
         }
