@@ -74,16 +74,10 @@ function makeTab(id, label, options, content, collapse="", onclick="", active=""
     var this_plot_tab = '<a class="nav-item nav-link '+active+'" onclick="'+onclick+'" data-toggle="tab" href="#'+id+'_tab">'+label+'</a>'
     if (!collapse) {$('#plot_tab').append(this_plot_tab);}
     $('#plot_tab_result').append(this_plot_tab);
-    var result = "";
-    if (collapse) { result="result"; }
     var this_plot_tab_content = '<div class="tab-pane '+active+'" id="'+id+'_tab" role="tabpanel">'
-                                +'<div class="'+collapse+'">'
                                 +'<div class="toolbar">'+options+'</br></div>'
-                                +'</div>'
-                                +'<div class="'+collapse+' '+result+'">'
                                 +'<div id="'+id+'"></div>'
                                 +content
-                                +'</div>'
                                 +'</div>'
     $('#plot_tab_content').append(this_plot_tab_content);
 }
@@ -997,9 +991,19 @@ function setResultExists(once=false) {
         } else {
             result_exists = true;
             if (!once) {
-                alertModal("The simulation for this scenario is finished.", "Results are available");
+                if (!slider_changed) {
+                    alertModal("The simulation for this scenario is finished.", "Results are available");
+                    updateDisabledPlotTabs();
+                } else {
+                    alertModal("The simulation for the last scenario is finished.<br><br>"
+                               +"But since starting the simulation you have changed some slider values.<br><br>"
+                               +"If you want to keep your changes, save them as a new scenario.<br><br>"
+                               +"If you want to discard the changes and see the results, just refresh this page.",
+                               "Results are available, but...");
+               }
+            } else {
+                updateDisabledPlotTabs();
             }
-            updateDisabledPlotTabs();
         }
     });
 }
