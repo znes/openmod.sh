@@ -66,17 +66,23 @@
 <script src="static/helper.js"></script>
 
 <script type="text/javascript">
-function makeTab(id, label, options, content, onclick="", active="") {
-    $('#plot_tab').append(
-        '<li class="nav-item" onclick="'+onclick+'">'
-        +'<a class="nav-link '+active+'" data-toggle="tab" href="#'+id+'_tab">'+label+'</a>'
-        +'</li>');
-    $('#plot_tab_content').append(
-        '<div class="tab-pane '+active+'" id="'+id+'_tab" role="tabpanel">'
-        +'<div class="toolbar">'+options+'</br></div>'
-        +'<div id="'+id+'"></div>'
-        +content
-        +'</div>');
+function makeTab(id, label, options, content, collapse="", onclick="", active="") {
+    var this_plot_tab = '<li class="nav-item" onclick="'+onclick+'">'
+                        +'<a class="nav-link '+active+'" data-toggle="tab" href="#'+id+'_tab">'+label+'</a>'
+                        +'</li>'
+    if (collapse=="collapse") {this_plot_tab = '<div class="collapse">' + this_plot_tab +'</div>';}
+    $('#plot_tab').append(this_plot_tab);
+    var this_plot_tab_content = '<div class="tab-pane '+active+'" id="'+id+'_tab" role="tabpanel">'
+                                +'<div class="'+collapse+'">'
+                                +'<div class="toolbar">'+options+'</br></div>'
+                                +'</div>'
+                                +'<div class="'+collapse+'">'
+                                +'<div id="'+id+'"></div>'
+                                +content
+                                +'</div>'
+                                +'</div>'
+    console.log(this_plot_tab_content);
+    $('#plot_tab_content').append(this_plot_tab_content);
 }
 
 function makeIndividualBiomethanSilder() {
@@ -993,7 +999,11 @@ function setResultExists(once=false) {
 }
 
 function updateDisabledPlotTabs() {
-//    $("#plot_tab li a:contains('Result')").toggleClass("disabled", !result_exists);-->
+    if (result_exists) {
+        $('.collapse').collapse('show');
+    } else {
+        $('.collapse').collapse('hide');
+    }
 }
 
 var scenario_db_id = {{ scenario_db_id }};
@@ -1022,7 +1032,7 @@ makeAllAutomaticSlider();
 makeIndividualBiomethanSilder();
 
 plot_tabs.forEach(function(tab) {
-    makeTab(tab.id, tab.label, tab.options, tab.content, tab.onclick, tab.active);
+    makeTab(tab.id, tab.label, tab.options, tab.content, tab.collapse, tab.onclick, tab.active);
 });
 
 for (var element in lookup) {
