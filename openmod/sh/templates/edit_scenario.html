@@ -49,7 +49,12 @@
         </div>
     </div>
     <div class="col">
+        <div class="collapse navbar-collapse noresult">
         <ul class="nav nav-tabs" id="plot_tab"></ul>
+        </div>
+        <div class="collapse navbar-collapse result">
+        <ul class="nav nav-tabs" id="plot_tab_result"></ul>
+        </div>
         <div class="tab-content" id="plot_tab_content"></div>
     </div>
 </div>
@@ -66,16 +71,16 @@
 
 <script type="text/javascript">
 function makeTab(id, label, options, content, collapse="", onclick="", active="") {
-    var this_plot_tab = '<li class="nav-item" onclick="'+onclick+'">'
-                        +'<a class="nav-link '+active+'" data-toggle="tab" href="#'+id+'_tab">'+label+'</a>'
-                        +'</li>'
-    if (collapse=="collapse") {this_plot_tab = '<div class="collapse">' + this_plot_tab +'</div>';}
-    $('#plot_tab').append(this_plot_tab);
+    var this_plot_tab = '<a class="nav-item nav-link '+active+'" onclick="'+onclick+'" data-toggle="tab" href="#'+id+'_tab">'+label+'</a>'
+    if (!collapse) {$('#plot_tab').append(this_plot_tab);}
+    $('#plot_tab_result').append(this_plot_tab);
+    var result = "";
+    if (collapse) { result="result"; }
     var this_plot_tab_content = '<div class="tab-pane '+active+'" id="'+id+'_tab" role="tabpanel">'
                                 +'<div class="'+collapse+'">'
                                 +'<div class="toolbar">'+options+'</br></div>'
                                 +'</div>'
-                                +'<div class="'+collapse+'">'
+                                +'<div class="'+collapse+' '+result+'">'
                                 +'<div id="'+id+'"></div>'
                                 +content
                                 +'</div>'
@@ -1001,9 +1006,14 @@ function setResultExists(once=false) {
 
 function updateDisabledPlotTabs() {
     if (result_exists) {
-        $('.collapse').collapse('show');
+        $('.noresult').collapse('hide');
+        $('.result').collapse('show');
+        $($('.result a.active')[0]['hash']).tab('show');
     } else {
-        $('.collapse').collapse('hide');
+        $('.result').collapse('hide');
+        $('.noresult').collapse('show');
+        $('.noresult a.active')[0].click();
+        $($('.noresult a.active')[0]['hash']).tab('show');
     }
 }
 
@@ -1058,14 +1068,14 @@ $('#slider_form').change(function () {
     renderInputOverview('input_overview');
 
     // RERENDER INPUT TIMESERIES PLOT
-    if ($('.nav li a.active')[0]['hash'] == "#input_timeseries_tab") {
+    if ($('.nav a.active')[0]['hash'] == "#input_timeseries_tab") {
         var edge = $("#input_timeseries_select_ts").val();
         var ts_obj = prepareTimeseries(edge);
         var type = $("#input_timeseries_select_type").val();
         renderTimeseriesSubPlot("input_timeseries", type, ts_obj);
     }
 
-    if ($('.nav li a.active')[0]['hash'] == "#input_stacked_tab") {
+    if ($('.nav a.active')[0]['hash'] == "#input_stacked_tab") {
         //RERENDER INPUT STACKED TIMESERIES
         renderStackedInputSubPlot($("#input_stacked_select").val(), "input_stacked")
     }
