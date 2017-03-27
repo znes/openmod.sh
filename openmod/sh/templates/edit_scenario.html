@@ -13,25 +13,20 @@
 
 {% block submenu %}
 
-<li class="nav-item">
-<a class="nav-link" href="#">Selected scenario: {{ scenario.get('name', 'NONE') }}</a>
-</li>
-
-<li class="nav-item">
-<a class="nav-link" href="#" id="sliderChangeInfo"></a>
-</li>
-
-<li class="nav-item" onclick="updateScenario(scenario)">
-<a class="nav-link" href="javascript:void(0)">Save changes</a>
-</li>
-
-<li class="nav-item" onclick="callSaveScenarioPrompt(scenario)" >
-<a class="nav-link" href="javascript:void(0)">Save as new scenario</a>
-</li>
-
-<li class="nav-item" onclick="runSimulation(scenario)">
-<a class="nav-link" href="javascript:void(0)">Run Simulation</a>
-</li>
+    <header>
+        <div class="row align-items-center">
+            <div class="col">
+            <div class="title">{{ scenario.get('name', 'NONE') }}</div>
+                Scenario
+        </div>
+            <div class="col text-right">
+                <a class="nav-link" href="#" id="sliderChangeInfo"></a>
+                <a class="btn btn-primary" href="javascript:void(0)" onclick="updateScenario(scenario)" role="button">Save changes</a>
+                <a class="btn btn-primary" href="javascript:void(0)" onclick="callSaveScenarioPrompt(scenario)" role="button">Save as new scenario</a>
+                <a class="btn btn-primary" href="javascript:void(0)" onclick="runSimulation(scenario)" role="button">Run Simulation</a>
+        </div>
+    </div>
+    </header>
 
 {% endblock %}
 
