@@ -764,12 +764,12 @@ function renderResultFlowPlot(select_flow_id, select_type_id, plot_id) {
                 $("#"+select_flow_id).append("<option value='"+key+"'>"+key+"</option>");
             });
             var edge = $("#"+select_flow_id).val();
-            var ts = {"name": edge, "ts": data[edge]};
+            var ts_obj = {"name": edge, "ts": data[edge], "type": "Flow"};
             var type = $("#"+select_type_id).val();
-            renderTimeseriesSubPlot(plot_id, type, ts);
+            renderTimeseriesSubPlot(plot_id, type, ts_obj);
             $("#"+select_flow_id).on('change', function() {
                 var edge = $(this).val();
-                var ts_obj = {"name": edge, "ts": data[edge]};
+                var ts_obj = {"name": edge, "ts": data[edge], "type": "Flow"};
                 var type = $("#"+select_type_id).val();
                 renderTimeseriesSubPlot(plot_id, type, ts_obj);
                 });
@@ -777,8 +777,8 @@ function renderResultFlowPlot(select_flow_id, select_type_id, plot_id) {
             $("#"+select_type_id).on('change', function() {
                 var type = $(this).val();
                 var edge = $("#"+select_flow_id).val();
-                var ts = {"name": edge, "ts": data[edge]};
-                renderTimeseriesSubPlot(plot_id, type, ts);
+                var ts_obj = {"name": edge, "ts": data[edge], "type": "Flow"};
+                renderTimeseriesSubPlot(plot_id, type, ts_obj);
                 });
         }
    });
