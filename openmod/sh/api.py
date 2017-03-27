@@ -587,7 +587,7 @@ def get_flow_result(scenario_identifier, predecessor_name, successor_name,
 
     return flow_result
 
-def get_flow_results(scenario_identifier, by='id'):
+def get_flow_results(scenario_identifier, by='id', subset='false'):
     """
     Returns
     -------
@@ -617,8 +617,18 @@ def get_flow_results(scenario_identifier, by='id'):
                    .all())
 
         if flow_results:
-            flow_results = {(f.predecessor.name, f.successor.name, f.type): f.value
-                                for f in flow_results}
+            if subset == 'false':
+                flow_results =  {(f.predecessor.name, f.successor.name, f.type):
+                                 f.value for f in flow_results}
+            else:
+                flow_results = {
+                    (get_label(f.predecessor),
+                     get_label(f.successor), f.type): f.value
+                         for f in flow_results
+                             if f.predecessor.type in [
+                                 'volatile_generator', 'flexible_generator',
+                                 'combined_flexbile_generator']
+                             or  f.successor.type == 'demand'}
             return flow_results
 
         else:

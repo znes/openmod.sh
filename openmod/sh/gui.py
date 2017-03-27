@@ -282,6 +282,7 @@ def simulation(job):
 
 
 @app.route('/API/co2_results')
+@fl.login_required
 def provide_co2_results_api():
     """
     """
@@ -293,13 +294,15 @@ def provide_co2_results_api():
     return flask.jsonify(co2_results)
 
 @app.route('/API/flow_results')
+@fl.login_required
 def provide_flow_results_api():
     """
     """
     query_args = flask.request.args.to_dict()
 
     # by scenario id
-    flow_results = get_flow_results(query_args['scenario_id'])
+    flow_results = get_flow_results(query_args['scenario_id'],
+                                    subset=query_args.get('subset', 'false'))
 
     if flow_results:
         flow_results = {k[0]+' -> '+k[1]: v for k,v in flow_results.items()}
@@ -308,6 +311,7 @@ def provide_flow_results_api():
 
 
 @app.route('/API/hub_results')
+@fl.login_required
 def provide_results_api():
     """
     """

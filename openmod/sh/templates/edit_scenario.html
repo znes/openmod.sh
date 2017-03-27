@@ -583,7 +583,8 @@ function getFlowResults(scenario_db_id, callback) {
     return $.ajax({
         url: 'API/flow_results',
         type: 'get',
-        data : {scenario_id: scenario_db_id}
+        data : {scenario_id: scenario_db_id,
+                subset: 'true'}
         })
     .done(callback)
     }
