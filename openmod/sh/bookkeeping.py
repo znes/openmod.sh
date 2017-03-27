@@ -27,6 +27,10 @@ class Job():
         connection: multiprocessing.Connection
             The connection which allows us to communicate with the child
             process.
+        name: str
+            The name of the scenario for which the job computes results.
+        user: str
+            The name of the user who started the job.
         """
         self._status = False
         self.connection = connection
