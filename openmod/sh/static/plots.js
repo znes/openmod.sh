@@ -510,7 +510,7 @@ function makeOrderedTimeseriesPlot(div, data, layout) {
             rangeslider: {}
         },
         yaxis: {
-            title: "Flow in MW",
+            title: layout.yaxis_title,
             fixedrange: true,
             hoverformat: '.2f'
         }

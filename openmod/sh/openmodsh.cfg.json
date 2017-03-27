@@ -67,11 +67,11 @@
   ],
 
     "hubs": {
-        "kiel_electricity": "Region KI (Strom)",
-        "kiel_heat": "Region KI (Wärme)",
-        "nms_electricity": "Region NMS (Strom)",
-        "ploe_electricity": "Region PLÖ (Strom)",
-        "rdeck_electricity": "Region RD (Strom)"},
+        "kiel_electricity": "Region Kiel (Electricity)",
+        "kiel_heat": "Region Kiel (Heat)",
+        "nms_electricity": "Region Nms (Electricity)",
+        "ploe_electricity": "Region Plön (Electricity)",
+        "rdeck_electricity": "Region RdEck (Electricity)"},
     "global_colors": {
         "solar": "orange",
         "wind": "darkblue",
