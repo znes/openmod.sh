@@ -12,14 +12,6 @@
       "value": "installed_power",
       "max": "potential_power"
     },
-    "kiel_biomass_chp": {
-      "value": "installed_power",
-      "max": "potential_power"
-    },
-    "kiel_biomass_heatplant": {
-      "value": "installed_power",
-      "max": "potential_power"
-    },
     "rdeck_wind": {
       "value": "installed_power",
       "max": "potential_power"
