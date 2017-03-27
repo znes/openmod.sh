@@ -103,8 +103,14 @@ footer {
 .card-header, .card-footer {
 	padding: 10px 20px;
 }
-.card-block {
+.card-block, .card-area {
 	padding: 20px 20px 25px;
+}
+.card-area {
+	border: 0px;
+}
+.card-area.full {
+	height: 400px;
 }
 .card-footer {
 	font-size: 11px;
