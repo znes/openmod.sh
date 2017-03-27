@@ -38,11 +38,11 @@ function update_job_list(job, container_id) {
 {% if jobs %}
 <p>Queued/Running Simulations:</p>
 <ul id="jobs">
-  {% for job in jobs %}
+  {% for k, job in jobs.items() %}
   <li>
-    <a href="/simulation/{{job}}">{{job}}</a>
-    ({{ jobs[job].status() }})
-    <button onclick="update_job_list({{job}}, '#{{container_id}}')">
+    <a href="/simulation/{{k}}">{{job.name}} ({{job.user}})</a>
+    ({{ job.status() }})
+    <button onclick="update_job_list({{k}}, '#{{container_id}}')">
       Dequeue/Kill
     </button>
   </li>
