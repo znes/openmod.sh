@@ -1,87 +1,147 @@
 body {
-	font-size: 14px;
-}
-
-body > header {
-	background: #2f1b56;
-	color: #ffffff;
-	padding: 5px 10px;
-}
-
-body > header .logo {
-	padding: 10px 30px 15px;
-	text-transform: uppercase;
-	font-size: 12px;
-}
-body > header .logo .name {
-	font-size: 20px;
-}
-body > header .logo span {
-	font-size: 10px;
-	vertical-align: 10px;
-}
-
-body > header .nav {
-	font-size: 14px;
-}
-
-body > header a, nav.subnav a {
-	color: #ffffff;
-}
-body > header a:focus, body > header a:hover, nav.subnav a:focus, nav.subnav a:hover {
-	color: #ffff00;
-}
-
-nav.subnav {
-	background: #36215e;
-	font-size: 12px;
+	font-size: 13px;
+	letter-spacing: 0.5px;
+    color: #6a6c6f;
+	background: #f1f3f6;
 }
 
 /**
- * Tool
+ * Site Header
  */
-.row.tool > div {
-	border-right: 1px solid #dadada;
-	border-bottom: 1px solid #dadada;
+header.head {
+	border-top: 5px solid #f1ad02;
+	background: #2f1b56;
+	color: #ffffff;
+	padding: 5px 25px;
 }
-.tool header {
-	padding: 10px 15px;
-	border-bottom: 1px solid #dadada;
-	font-weight: 800;
-}
-.tool .nav-tabs {
-	border-bottom: 1px solid #dadada;
+
+/* Logo */
+header.head .logo {
+	padding: 10px 30px 15px 0px;
+	text-transform: uppercase;
 	font-size: 12px;
 }
-.tool .nav-link {
-	border: 0px;
-	border-right: 1px solid #dadada;
-	padding: 10px 15px;
-	border-radius: 0px;
-	background: #ebebeb;
-	color: #969696;
-	font-weight: normal;
+header.head .logo span {
+	font-size: 10px;
+	vertical-align: 4px;
+	color: #f1ad02;
 }
-.tool .nav-link.active, .tool .nav-link:focus, .tool .nav-link:hover {
-	background: #ffffff;
-	color: #000000;
-	font-weight: 800;
+header.head .logo .name {
+	font-size: 16px;
 }
-.tool .nav-tabs .nav-item {
-	margin-bottom: 0px;
-}
-.tool .toolbar {
-	background: #ebebeb;
-	border-bottom: 1px solid #d7d7d7;
-	padding: 5px 15px;
-	font-size: 12px;
-}
-.tool .body {
-	padding: 15px 20px;
-}
-.tool label {
+
+/* Navigation */
+header.head .nav a {
+	color: #a7b1c2;
 	display: block;
+	padding: 15px 20px 20px;
 }
-.tool .table th {
-	border-top: 0px;
+header.head .nav a:hover, header.head .nav a:focus, header.head .nav a.active {
+	color: #f1ad02;	
+}
+
+/**
+ * Breadcrump / Contentheader
+ */
+.main > header {
+	padding: 15px 25px;
+	background: #ffffff;
+	border-bottom: 1px solid #eaeaea;
+	font-size: 12px;
+}
+.main > header .title {
+	font-weight: 800;
+	font-size: 14px;
+}
+
+/**
+ * Footer
+ */
+footer {
+	background: #ffffff;
+	border-top: 1px solid #eaeaea;
+	padding: 15px 25px;
+	font-size: 10px;
+}
+
+/**
+ * Content
+ */
+.content {
+	padding: 25px 40px 40px;
+}
+
+/**
+ * Buttons
+ */
+.btn {
+	border-radius: 3px;
+    padding: 8px 15px;
+    font-size: 14px;
+}
+.btn-primary {
+	background: #f1ad02;
+	border: 1px solid #e3a302;
+}
+
+/**
+ * Forms
+ */
+.form-control {
+	font-size: 14px;
+	line-height: 12px;
+}
+
+/**
+ * Cards
+ */
+.card {
+	margin-bottom: 25px;
+	border-top: 2px solid #f1ad02;
+	border-radius: 0px 0px 3px 3px;
+}
+.card-header, .card-footer {
+	padding: 10px 20px;
+}
+.card-block {
+	padding: 20px 20px 25px;
+}
+.card-footer {
+	font-size: 11px;
+}
+.card-noborder {
+	border: 0px;
+}
+
+/**
+ * Tabs
+ */
+.nav-tabs {
+	background: #f1ad02;
+	border: 0px;
+	padding-top: 5px;
+}
+.nav-tabs a.nav-link {
+	color: #ffffff;
+	border: 0px;
+	border-radius: 4px 4px 0px 0px;
+	margin-left: 7px;
+	padding-bottom: 10px;
+}
+.nav-tabs a:focus, .nav-tabs a:hover, .nav-tabs a.nav-link.active {
+	background: #ffffff;
+	color: #f1ad02;
+}
+.left-border {
+	border-left: 1px solid #eaeaea;	
+}
+
+/**
+ * Modal
+ */
+.modal-content {
+	border-radius: 0px 0px 3px 3px;
+}
+.modal-header {
+	border-top: 5px solid #f1ad02;	
 }
