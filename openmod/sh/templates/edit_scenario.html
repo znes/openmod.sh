@@ -378,7 +378,6 @@ function renderHubBarPlot(select_id, plot_id) {
             $("#"+plot_id).append("No hubs founds!");
         }
         else {
-
             $.each(data, function(key, value) {
                 if ('name' in value) {
                    if (value.name in hubs) {
@@ -386,22 +385,22 @@ function renderHubBarPlot(select_id, plot_id) {
                    }
                 };
             });
+        // Render first time when landing on tab and options have been 'build'
         hub_label = $( "#"+select_id+" option:selected" ).text();
         hub_name = $( "#"+select_id+" option:selected" ).val();
-        renderHubSubBarPlot(scenario_db_id, hub_label, hub_name, plot_id);
+        HubSubBarPlot(scenario_db_id, hub_label, hub_name, plot_id);
         }
     });
 
-
-
+    // Re-Render when other hub is selected
     $("#"+select_id).on('change', function() {
         hub_name = $(this).val()
         nice_hub_name = $( "#"+select_id+" option:selected" ).text();
-        renderHubSubBarPlot(scenario_db_id, hub_label, hub_name, plot_id)
+        HubSubBarPlot(scenario_db_id, hub_label, hub_name, plot_id)
     });
 }
 
-function renderHubSubBarPlot(scenario_db_id, hub_label, hub_name, plot_id) {
+function HubSubBarPlot(scenario_db_id, hub_label, hub_name, plot_id) {
     result = getHubResults(scenario_db_id, hub_name, true, function(data) {
         if (data == false) {
             $("#" + plot_id).html("");
@@ -431,32 +430,44 @@ function renderStackedResultPlot(select_id, plot_id) {
                    }
                 };
             });
+        // Render first time when lading on page
+        hub_label = $( "#"+select_id+" option:selected" ).text();
+        hub_name = $( "#"+select_id+" option:selected" ).val();
+        StackedResultSubPlot(scenario_db_id, hub_label, hub_name, plot_id);
         }
     });
 
+    // Re-Render when other hub is selected
     $("#"+select_id).on('change', function() {
         hub_name = $(this).val();
-        nice_hub_name = $( "#"+select_id+" option:selected" ).text();
+        hub_label = $( "#"+select_id+" option:selected" ).text();
+        StackedResultSubPlot(scenario_db_id, hub_label, hub_name, plot_id);
 
-        getHubResults(scenario_db_id, hub_name, false, function(data) {
-            if (data == false) {
-               $("#"+plot_id).html("No results in db!");
-            }
-            else if (jQuery.isEmptyObject(data[hub_name].production)) {
-               $("#"+plot_id).html(alertModal("No production for selected hub!"));
-            }
-            else {
-                keys = Object.keys(data[hub_name].production).concat(Object.keys(data[hub_name].demand));
-                data.coloring = getColors(keys);
-                data.start_date = scenario.tags.year+"-01-01";
-                data.timestep = 3600;
-                makeStackedResultPlot(div=plot_id, data=data,
-                                      layout={'title': "Hourly Production and Demand in "+nice_hub_name,
-                                              'yaxis_title': "Production and Demand in MW"});
-            }
-        });
     });
 }
+
+function StackedResultSubPlot(scenario_db_id, hub_label, hub_name, plot_id) {
+    getHubResults(scenario_db_id, hub_name, false, function(data) {
+        if (data == false) {
+           $("#"+plot_id).html("No results in db!");
+        }
+        else if (jQuery.isEmptyObject(data[hub_name].production)) {
+           $("#"+plot_id).html(alertModal("No production for selected hub!"));
+        }
+        else {
+            keys = Object.keys(data[hub_name].production).concat(Object.keys(data[hub_name].demand));
+            data.coloring = getColors(keys);
+            data.start_date = scenario.tags.year+"-01-01";
+            data.timestep = 3600;
+            makeStackedResultPlot(div=plot_id, data=data,
+                                  layout={'title': "Hourly Production and Demand in "+hub_label,
+                                          'yaxis_title': "Production and Demand in MW"});
+        }
+    });
+
+}
+
+
 
 function renderStackedInputPlot(select_id, plot_id) {
     $("#"+select_id).html("");
