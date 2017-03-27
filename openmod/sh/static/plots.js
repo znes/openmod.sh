@@ -116,7 +116,7 @@ function makeHeatmapPlot(div, data, layout) {
     var plotly_layout = {
         title: layout.title,
         axis: {
-            title: 'Day of the year'
+            title: 'Day of the year',
         },
         yaxis: {
             title: 'Hour of the day'

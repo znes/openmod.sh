@@ -802,7 +802,7 @@ function renderTimeseriesSubPlot(plot_id, type, ts_obj) {
     } else if (type == "heatmap") {
         makeHeatmapPlot(plot_id,
                         data=ts_obj,
-                        layout={"title": "Heatmap of "+ getLabel(ts_obj.name),
+                        layout={"title": "Heatmap of "+ getLabel(ts_obj.name) + " in MW",
                                 "yaxis_title": ts_obj.type + " in MW"});
     }
 }
