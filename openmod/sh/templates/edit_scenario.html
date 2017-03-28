@@ -1006,11 +1006,13 @@ function setResultExists(once=false) {
             }
         } else {
             result_exists = true;
+
             if (!once) {
                 if (!slider_changed) {
                     alertModal("The simulation for this scenario is finished.", "Results are available");
                     updateDisabledPlotTabs();
                 } else {
+                	result_exists = false;
                     alertModal("The simulation for the last scenario is finished.<br><br>"
                                +"But since starting the simulation you have changed some slider values.<br><br>"
                                +"If you want to keep your changes, save them as a new scenario.<br><br>"
@@ -1018,6 +1020,9 @@ function setResultExists(once=false) {
                                "Results are available, but...");
                }
             } else {
+            	if(slider_changed)
+            		result_exists = false;
+                
                 updateDisabledPlotTabs();
             }
         }
