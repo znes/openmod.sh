@@ -960,11 +960,27 @@ function getResidualLoad(hub_name) {
     return residual_load;
 }
 
+function clickDiscard() {
+    confirmModal("Do you really want to loose your changes?",  "Alert",
+            function(input) {
+                if(input == true) {
+                    location.reload();
+                } else {
+        	           return;
+    	             }
+             });
+}
+
+
 function setSliderChangeInfo() {
     if (slider_changed) {
+        $('#sliderChangeInfo').show();
         $('#sliderChangeInfo').html("WITH CHANGES");
+        $('#discardChanges').show();
+        $('#discardChanges').html("Discard Changes");
     } else {
-        $('#sliderChangeInfo').html("");
+         $('#sliderChangeInfo').hide();
+         $('#discardChanges').hide();
     }
 }
 
@@ -1092,5 +1108,8 @@ getFlowResults(scenario_db_id, subset='false', function(x) {flow_results=x;});
 
 renderInputOverview('input_overview');
 
+// Hide button / info when landing on page for the first time
+$('#sliderChangeInfo').hide();
+$('#discardChanges').hide();
 </script>
 {% endblock %}
