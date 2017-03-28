@@ -85,3 +85,12 @@ nav.subnav {
 .tool .table th {
 	border-top: 0px;
 }
+
+/**
+ * Custom Nav Style
+ */
+.nav li .disabledLinkCustom {
+ 	color: #ffff00;
+	text-decoration: none;
+	cursor: default;
+ }
