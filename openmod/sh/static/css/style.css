@@ -37,7 +37,7 @@ header.head .nav a {
 	padding: 15px 20px 20px;
 }
 header.head .nav a:hover, header.head .nav a:focus, header.head .nav a.active {
-	color: #f1ad02;	
+	color: #f1ad02;
 }
 
 /**
@@ -143,10 +143,10 @@ footer {
 	color: #f1ad02;
 }
 .left-border {
-	border-left: 1px solid #eaeaea;	
+	border-left: 1px solid #eaeaea;
 }
 .right-border {
-	border-right: 1px solid #eaeaea;	
+	border-right: 1px solid #eaeaea;
 }
 
 /**
@@ -155,6 +155,21 @@ footer {
 .modal-content {
 	border-radius: 0px 0px 3px 3px;
 }
+
 .modal-header {
-	border-top: 5px solid #f1ad02;	
+	border-top: 5px solid #f1ad02;
 }
+
+.tool .table th {
+	border-top: 0px;
+}
+
+/**
+ * Custom Nav Style
+ */
+.nav li .disabledLinkCustom {
+ 	color: #ffff00;
+	text-decoration: none;
+	cursor: default;
+ }
+
