@@ -1,7 +1,25 @@
 {% extends "base_layout.html" %}
-{% block body %}
 
-    <title>Export Dataset</title>
-    <h1>Export dataset (JSON)</h1>
+{% block submenu %}
+	<header>
+		<div class="row align-items-center">
+			<div class="col">
+  			<div class="title">Export Dataset</div>
+			JSON
+		</div>
+	</div>
+	</header>
+{% endblock %}
 
+{% block content %}
+  			<div class="card">
+				<div class="card-header">
+					Dataset
+				</div>
+				<textarea class="card-area full">
+{
+	"data": "value"
+}
+				</textarea>
+			</div>
 {% endblock %}

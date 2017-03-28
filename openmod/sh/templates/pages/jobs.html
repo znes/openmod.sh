@@ -1,5 +1,15 @@
 {% extends "base_layout.html" %}
 
+{% block submenu %}
+	<header>
+		<div class="row align-items-center">
+			<div class="col">
+  				<div class="title">Queued/Running Simulations</div>
+			</div>
+		</div>
+	</header>
+{% endblock %}
+
 {% block content %}
 
 {% include 'widgets/jobs.html' %}

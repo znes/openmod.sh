@@ -13,49 +13,54 @@
 
 {% block submenu %}
 
-<li class="nav-item">
-<a class="nav-link disabledLinkCustom" href="#">Selected scenario: {{ scenario.get('name', 'NONE') }}</a>
-</li>
 
-<li class="nav-item">
-<a class="nav-link disabledLinkCustom" href="#" id="sliderChangeInfo"></a>
-</li>
+    <header>
+        <div class="row align-items-center">
+            <div class="col">
+            <div class="title">{{ scenario.get('name', 'NONE') }}</div>
+                Scenario
+        </div>
+            <div class="col text-right">
+                <a class="disabledLinkCustom" href="#" id="sliderChangeInfo"></a>
+                <a class="btn btn-primary" href="#" onclick="clickDiscard();" id="discardChanges" role="button"></a>
+                <a class="btn btn-primary" href="javascript:void(0)" onclick="updateScenario(scenario)" role="button">Save changes</a>
+                <a class="btn btn-primary" href="javascript:void(0)" onclick="callSaveScenarioPrompt(scenario)" role="button">Save as new scenario</a>
+                <a class="btn btn-primary" href="javascript:void(0)" onclick="runSimulation(scenario)" role="button">Run Simulation</a>
+        </div>
+    </div>
+    </header>
 
-<li class="nav-item" onclick="updateScenario(scenario)">
-<a class="nav-link" href="javascript:void(0)">Save changes</a>
-</li>
 
-<li class="nav-item" onclick="callSaveScenarioPrompt(scenario)" > 
-<a class="nav-link" href="javascript:void(0)">Save as new scenario</a>
-</li>
-
-<li class="nav-item" onclick="runSimulation(scenario)">
-<a class="nav-link" href="javascript:void(0)">Run Simulation</a>
-</li>
 
 {% endblock %}
 
 
 {% block content %}
-<!-- interface -->
-<div class="container-fluid">
-<div class="row no-gutters tool">
-    <div class="col-3">
-        <header>
-            Input Parameter
-        </header>
-        <div class="body">
-            <form id="slider_form"></form>
+
+
+<div class="card">
+    <div class="row no-gutters">
+        <div class="col-4">
+            <div class="card-block right-border">
+                <h5 class="card-title">Input Parameter</h5>
+                <h6 class="card-subtitle"><br /></h6>
+                <form id="slider_form"></form>
+            </div>
+        </div>
+        <div class="col">
+            <div class="collapse navbar-collapse noresult">
+               <ul class="nav nav-tabs" id="plot_tab"></ul>
+            </div>
+            <div class="collapse navbar-collapse result">
+            <ul class="nav nav-tabs" id="plot_tab_result"></ul>
+            </div>
+            <div class="card-block tab-content" id="plot_tab_content">
+            </div>
         </div>
     </div>
-    <div class="col">
-        <div class="navbar-collapse">
-            <ul class="nav nav-tabs" id="plot_tab"></ul>
-        </div>
-        <div class="tab-content" id="plot_tab_content"></div>
-    </div>
 </div>
-</div>
+
+
 <script src="/static/jquery-ui.min.js"></script>
 
 <script src="static/plots.js"></script>

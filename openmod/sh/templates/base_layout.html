@@ -23,35 +23,36 @@
 
   </head>
   <body>
-  	<header>
-  		<div class="row align-items-center">
+  {% block site %}
+  	<header class="head">
+  		<div class="row align-items-center no-gutters">
 		  	<div class="col-2 logo">
 			  	<div class="name">
 			  		OPENMOD.SH <span>0.2</span>
 			  	</div>
 			  	Energiekollektiv
 		  	</div>
-		  	<div class="col">
-  				<ul class="nav">
+	  		<div class="col">
+				<ul class="nav">
 					<li class="nav-item">
 						<a class="nav-link" href="scenario_overview">Scenario Overview</a>
 					</li>
-					<li class="nav-item" onclick="openImportModal()">
-						<a class="nav-link" href="javascript:void(0)">Import</a>
+					<li class="nav-item"> <!-- onclick="openImportModal()">-->
+						<a class="nav-link" href="#" data-toggle="modal" data-target="#importModal">Import</a><!--href="javascript:void(0)"-->
 					</li>
 					<li class="nav-item">
 						<a class="nav-link" href="jobs">Jobs</a>
 					</li>
 				</ul>
 			</div>
-		  	<div class="col-2">
-  				<ul class="nav">
-  				    <!-- TODO: Add help page -->
+		  	<div class="col-2 text-right">
+				<ul class="nav">
+					    <!-- TODO: Add help page -->
 					<li class="nav-item">
 						<a class="nav-link" href="#">Help</a>
 					</li>
-  				    <!-- TODO: User name should be showing up here -->
-					<li class="nav-item">
+					    <!-- TODO: User name should be showing up here -->
+						<li class="nav-item">
 						<a class="nav-link" href="#">User</a>
 					</li>
 					<li class="nav-item">
@@ -61,147 +62,57 @@
 			</div>
 		</div>
   	</header>
-  	<nav class="subnav">
-	  	<div class="col">
-			<ul class="nav">
-            
-            {% block submenu %}
+  	<div class="main">
+        {% block submenu %}
+  		<header>
+  			<div class="row align-items-center">
+	  			<div class="col">
+		  			<div class="title">Selected scenario name</div>
+	  				Bla
+				</div>
+			</div>
+  		</header>
+        {% endblock %}
+  		<div class="content">
+            {% block content %}
             {% endblock %}
-            
-			</ul>
-		</div>  		
-  	</nav>
+  		</div>
+  	</div>
+  	<footer>
+  		&copy; OPENMOD.SH - Energiekollektiv 2017
+  		<!-- company | text -->
+  	</footer>
 
-		<!-- Import Modal -->
-        <div class="modal fade" id="importModal" tabindex="-1" role="dialog" aria-labelledby="importModalLabel" aria-hidden="true">
-          <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title" id="importModalLabel">Import a scenario</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
-                </button>
-              </div>
-              <div class="modal-body">
-                You can import scenarios only in the openmod.sh specific JSON-format.
-                <!-- TODO: Fine tune to handle success error response and ask for alternative scenario name -->
-                <form id="input-file-form">
-                    <div class="form-group">
-                        <label for="input-file-select">Choose file:</label>
-                        <input type="file" id="input-file-select" class="form-control-file" id="scenarioInputFile" aria-describedby="fileHelp " name="scenariofiles">
-                        <small id="fileHelp" class="form-text text-muted">The file has to be a json-file following the openmod.sh API structure.</small>
-                        <div id="inputResponse"></div>
-                        <button class="btn btn-primary" id="input-upload-button">Upload</button>
-                    </div>
-                </form>
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-              </div>
-            </div>
+	<!-- Import Modal -->
+    <div class="modal fade" id="importModal" tabindex="-1" role="dialog" aria-labelledby="importModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="importModalLabel">Import a scenario</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            You can import scenarios only in the openmod.sh specific JSON-format.
+            <!-- TODO: Fine tune to handle success error response and ask for alternative scenario name -->
+            <form id="input-file-form">
+                <div class="form-group">
+                    <label for="input-file-select">Choose file:</label>
+                    <input type="file" id="input-file-select" class="form-control-file" id="scenarioInputFile" aria-describedby="fileHelp " name="scenariofiles">
+                    <small id="fileHelp" class="form-text text-muted">The file has to be a json-file following the openmod.sh API structure.</small>
+                    <div id="inputResponse"></div>
+                    <button class="btn btn-primary" id="input-upload-button">Upload</button>
+                </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
           </div>
         </div>
-
-
-	{% block content %}
-	{% endblock %}
-
-<!--  	<header>
-	  	<div class="container">
-			<ul class="nav">
-				<li class="nav-item logo">
-					Energiekollektiv<br />
-					<span>openmod.sh</span>
-				</li>
-				{% block nav %}
-				<li class="nav-item">
-					<a class="nav-link active" href="#">Overview</a>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link" href="#">Import</a>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link" href="#">Compare Results</a>
-				</li>
-				{% endblock %}
-			</ul>
-	  	</div>
-  	</header>
-  	<nav class="subnav">
-  		{% block subnav %}
-	  	<div class="container">
-			<ul class="nav">
-				<li class="nav-item">
-					<a class="nav-link" href="#">Update</a>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link" href="#">Save new</a>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link" href="#">Go to Overview</a>
-				</li>
-			</ul>
-	  	</div>
-		{% endblock %}
-  	</nav>
-	<footer>
-		<div class="container">
-			<div class="row navfooter">
-				<div class="col">
-					<b>openmod.sh</b>
-					<ul class="nav flex-column">
-						<li class="nav-item">
-							<a class="nav-link active" href="#">Overview</a>
-						</li>
-						<li class="nav-item">
-							<a class="nav-link" href="#">Import</a>
-						</li>
-						<li class="nav-item">
-							<a class="nav-link" href="#">Compare Results</a>
-						</li>
-						<li class="nav-item">
-							<a class="nav-link" href="#">Logout</a>
-						</li>
-					</ul>
-				</div>
-				<div class="col">
-					<b>Energiekollektiv</b>
-					<ul class="nav flex-column">
-						<li class="nav-item">
-							<a class="nav-link" href="#">Press Releases</a>
-						</li>
-						<li class="nav-item">
-							<a class="nav-link" href="#">Mission</a>
-						</li>
-						<li class="nav-item">
-							<a class="nav-link" href="#">Team</a>
-						</li>
-					</ul>
-				</div>
-				<div class="col">
-					<b>Externe Links</b>
-				</div>
-			</div>
-			
-			<div class="row legalfooter">
-				<div class="col-5">
-					Energiekollektiv<br />
-				   <em>openmod.sh: an oemof based modelling software.</em>
-				</div>
-				<div class="col">
-					Private Policy
-				</div>
-				<div class="col">
-					Terms & Conditions
-				</div>
-				<div class="col">
-					Copyright Notifications
-				</div>
-			</div>
-
-			<div class="legal">&copy; Copyright 2017 by Energiekollektiv</div>
-		</div>
-	</footer>-->
+      </div>
+    </div>
+  {% endblock %}
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
@@ -226,7 +137,6 @@ $('#importModal').on('hide.bs.modal', function () {
 function openImportModal() {
     $('#importModal').modal();
 }
-
 
 var form = document.getElementById('input-file-form');
 var fileSelect = document.getElementById('input-file-select');
