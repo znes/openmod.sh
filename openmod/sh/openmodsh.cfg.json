@@ -46,12 +46,12 @@
     {"id": "input_overview", "label": "Input Overview", "options": "", "content": "", "onclick": "renderInputOverview('input_overview');", "active": "active"},
     {"id": "input_timeseries", "label": "Input Timeseries", "options": "<select id='input_timeseries_select_ts'></select><select id='input_timeseries_select_type'></select>", "content": "", "onclick": "renderInputTimeseries('input_timeseries_select_ts', 'input_timeseries_select_type', 'input_timeseries')"},
     {"id": "input_stacked", "label": "Input Stacked", "options": "<select id='input_stacked_select'></select>", "content": "", "onclick": "renderStackedInputPlot('input_stacked_select', 'input_stacked')"},
-    {"id": "result_overview", "label": "Result Overview", "options": "", "content": "", "onclick": "renderResultOverview('result_overview');", "active": "", "collapse": "collapse"},
-    {"id": "result_hub", "label": "Result Hub", "options": "<select id='result_hub_select'></select>","content": "", "onclick": "renderHubBarPlot('result_hub_select', 'result_hub')", "collapse": "collapse"},
-    {"id": "result_timeseries", "label": "Result Timeseries", "options": "<select id='result_timeseries_select_flow'></select><select id='result_timeseries_select_type'></select>", "content": "", "onclick": "renderResultFlowPlot('result_timeseries_select_flow', 'result_timeseries_select_type', 'result_timeseries')", "collapse": "collapse"},
-    {"id": "result_stacked", "label": "Result Stacked", "options": "<select id='result_stacked_select'></select>", "content": "", "onclick": "renderStackedResultPlot('result_stacked_select', 'result_stacked')", "collapse": "collapse"},
-    {"id": "result_co2", "label": "Result CO2", "options": "","content": "", "onclick": "renderEmissionBarPlot('result_co2')", "collapse": "collapse"},
-    {"id": "result_summary", "label": "Result Summary", "options": "", "content": "", "onclick": "renderResultSummary('result_summary');", "active": "", "collapse": "collapse"}
+    {"id": "result_overview", "label": "Result Overview", "options": "", "content": "", "onclick": "renderResultOverview('result_overview');", "active": "", "linkClass": "collapse"},
+    {"id": "result_hub", "label": "Result Hub", "options": "<select id='result_hub_select'></select>","content": "", "onclick": "renderHubBarPlot('result_hub_select', 'result_hub')", "linkClass": "collapse"},
+    {"id": "result_timeseries", "label": "Result Timeseries", "options": "<select id='result_timeseries_select_flow'></select><select id='result_timeseries_select_type'></select>", "content": "", "onclick": "renderResultFlowPlot('result_timeseries_select_flow', 'result_timeseries_select_type', 'result_timeseries')", "linkClass": "collapse"},
+    {"id": "result_stacked", "label": "Result Stacked", "options": "<select id='result_stacked_select'></select>", "content": "", "onclick": "renderStackedResultPlot('result_stacked_select', 'result_stacked')", "linkClass": "collapse"},
+    {"id": "result_co2", "label": "Result CO2", "options": "","content": "", "onclick": "renderEmissionBarPlot('result_co2')", "linkClass": "collapse"},
+    {"id": "result_summary", "label": "Result Summary", "options": "", "content": "", "onclick": "renderResultSummary('result_summary');", "active": "", "linkClass": "collapse"}
   ],
 
     "hubs": {

@@ -14,22 +14,18 @@
 {% block submenu %}
 
 <li class="nav-item">
-<a class="nav-link" href="#">Selected scenario: {{ scenario.get('name', 'NONE') }}</a>
+<a class="nav-link disabledLinkCustom" href="#">Selected scenario: {{ scenario.get('name', 'NONE') }}</a>
 </li>
 
 <li class="nav-item">
-<a class="nav-link" href="#" id="sliderChangeInfo"></a>
-</li>
-
-<li class="nav-item" onclick="clickDiscard();">
-<a class="nav-link" href="#" id="discardChanges"></a>
+<a class="nav-link disabledLinkCustom" href="#" id="sliderChangeInfo"></a>
 </li>
 
 <li class="nav-item" onclick="updateScenario(scenario)">
 <a class="nav-link" href="javascript:void(0)">Save changes</a>
 </li>
 
-<li class="nav-item" onclick="callSaveScenarioPrompt(scenario)" >
+<li class="nav-item" onclick="callSaveScenarioPrompt(scenario)" > 
 <a class="nav-link" href="javascript:void(0)">Save as new scenario</a>
 </li>
 
@@ -53,11 +49,8 @@
         </div>
     </div>
     <div class="col">
-        <div class="collapse navbar-collapse noresult">
-        <ul class="nav nav-tabs" id="plot_tab"></ul>
-        </div>
-        <div class="collapse navbar-collapse result">
-        <ul class="nav nav-tabs" id="plot_tab_result"></ul>
+        <div class="navbar-collapse">
+            <ul class="nav nav-tabs" id="plot_tab"></ul>
         </div>
         <div class="tab-content" id="plot_tab_content"></div>
     </div>
@@ -74,10 +67,10 @@
 <script src="static/helper.js"></script>
 
 <script type="text/javascript">
-function makeTab(id, label, options, content, collapse="", onclick="", active="") {
-    var this_plot_tab = '<a class="nav-item nav-link '+active+'" onclick="'+onclick+'" data-toggle="tab" href="#'+id+'_tab">'+label+'</a>'
-    if (!collapse) {$('#plot_tab').append(this_plot_tab);}
-    $('#plot_tab_result').append(this_plot_tab);
+function makeTab(id, label, options, content, additonalClass="", onclick="", active="") {
+    var this_plot_tab = '<a class="nav-item nav-link ' + active + ' ' + additonalClass + '" onclick="'+onclick+'" data-toggle="tab" href="#'+id+'_tab">'+label+'</a>';
+    $('#plot_tab').append(this_plot_tab);
+    //$('#plot_tab_result').append(this_plot_tab);
     var this_plot_tab_content = '<div class="tab-pane '+active+'" id="'+id+'_tab" role="tabpanel">'
                                 +'<div class="toolbar">'+options+'</br></div>'
                                 +'<div id="'+id+'"></div>'
@@ -109,7 +102,6 @@ function updateBiomethanValue(value) {
 
 
 function tracePredecessors(id, level='one') {
-
     ps_obj = {};
 
     if (level == 'one') {
@@ -963,27 +955,11 @@ function getResidualLoad(hub_name) {
     return residual_load;
 }
 
-
-function clickDiscard() {
-    confirmModal("Do you really want to loose your changes?",  "Alert",
-                 function(input) {
-                    if(input == true) {
-                        location.reload();
-                    } else {
-                        return;
-                      }
-                });
-}
-
 function setSliderChangeInfo() {
     if (slider_changed) {
-        $('#sliderChangeInfo').show();
         $('#sliderChangeInfo').html("WITH CHANGES");
-        $('#discardChanges').show();
-        $('#discardChanges').html("Discard Changes");
     } else {
-        $('#sliderChangeInfo').hide();
-        $('#discardChanges').hide();
+        $('#sliderChangeInfo').html("");
     }
 }
 
@@ -1032,13 +1008,10 @@ function setResultExists(once=false) {
 
 function updateDisabledPlotTabs() {
     if (result_exists) {
-        $('.noresult').collapse('hide');
-        $('.result').collapse('show');
-        $($('.result a.active')[0]['hash']).tab('show');
+        $("#plot_tab .collapse").show();
     } else {
-        $('.result').collapse('hide');
-        $('.noresult').collapse('show');
-        $($('.noresult a.active')[0]['hash']).tab('show');
+        $("#plot_tab .collapse").hide();
+        $("#plot_tab a:first").tab("show");
     }
 }
 
@@ -1068,7 +1041,7 @@ makeAllAutomaticSlider();
 makeIndividualBiomethanSilder();
 
 plot_tabs.forEach(function(tab) {
-    makeTab(tab.id, tab.label, tab.options, tab.content, tab.collapse, tab.onclick, tab.active);
+    makeTab(tab.id, tab.label, tab.options, tab.content, tab.linkClass, tab.onclick, tab.active);
 });
 
 for (var element in lookup) {
@@ -1107,8 +1080,7 @@ $('#slider_form').change(function () {
 
 });
 
-$('#sliderChangeInfo').hide();
-$('#discardChanges').hide();
+
 
 var flow_results = false;
 getFlowResults(scenario_db_id, subset='false', function(x) {flow_results=x;});
