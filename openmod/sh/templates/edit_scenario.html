@@ -21,6 +21,10 @@
 <a class="nav-link" href="#" id="sliderChangeInfo"></a>
 </li>
 
+<li class="nav-item" onclick="location.reload();">
+<a class="nav-link" href="#" id="discardChanges"></a>
+</li>
+
 <li class="nav-item" onclick="updateScenario(scenario)">
 <a class="nav-link" href="javascript:void(0)">Save changes</a>
 </li>
@@ -961,8 +965,10 @@ function getResidualLoad(hub_name) {
 function setSliderChangeInfo() {
     if (slider_changed) {
         $('#sliderChangeInfo').html("WITH CHANGES");
+        $('#discardChanges').html("Discard Changes");
     } else {
         $('#sliderChangeInfo').html("");
+        $('#discardChanges').html("");
     }
 }
 
