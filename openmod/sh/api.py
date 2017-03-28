@@ -769,17 +769,21 @@ def get_co2_results(scenario_identifier, multi_hub_name, by='id', aggregated=Tru
                                                     'kiel_heat',
                                                     by='id')
 
-                        elec_flow = get_flow_result(scenario_identifier,
+                        el_flow = get_flow_result(scenario_identifier,
                                                     r.predecessor.name,
                                                     'kiel_electricity',
                                                     by='id')
 
-                        elec_share = []
+                        el_share = []
                         heat_share = []
-                        for i in range(len(elec_flow)):
-                            elec_share.append(elec_flow[i] / (heat_flow[i] + elec_flow[i]))
-                            heat_share.append(heat_flow[i] / (heat_flow[i] + elec_flow[i]))
-
+                        for i in range(len(el_flow)):
+                            total_output = (heat_flow[i] + el_flow[i])
+                            if total_output > 0:
+                                el_share.append(el_flow[i] / (heat_flow[i] + el_flow[i]))
+                                heat_share.append(heat_flow[i] / (heat_flow[i] + el_flow[i]))
+                            else:
+                                el_share.append(0)
+                                heat_share.append(0)
 
                         # weight with 'heat_share' and add to heat result
                         co2_dict['heat'][get_label(r.predecessor)] = [

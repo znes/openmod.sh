@@ -95,7 +95,7 @@ def create_energy_system(scenario):
     start = first + pd.DateOffset(
                 hours=int(scenario['tags'].get('start_timestep', 1))-1)
     end = first + pd.DateOffset(
-                hours=int(scenario['tags'].get('end_timestep', 3))-1)
+                hours=int(scenario['tags'].get('end_timestep', 8760))-1)
     timeindex = pd.date_range(start=start, end=end, freq='H')
 
     # create energy sytem and disable automatic registry of node objects
@@ -424,7 +424,7 @@ def create_model(es):
         "scenario {}...".format(es.scenario_name))
     es.model = OperationalModel(es=es)
     # TODO: Add lp file writing in openmod debug mode only?
-    if True:
+    if False:
         es.model.write(es.scenario_name+'.lp',
                        io_options={'symbolic_solver_labels':True})
 
