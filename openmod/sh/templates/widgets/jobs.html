@@ -36,23 +36,39 @@ function update_job_list(job, container_id) {
 
 </script>
 {% if jobs %}
-<p>Queued/Running Simulations:</p>
-<ul id="jobs">
-  {% for job in jobs %}
-  <li>
-    <a href="/simulation/{{job}}">{{job}}</a>
-    ({{ jobs[job].status() }})
-    <button onclick="update_job_list({{job}}, '#{{container_id}}')">
-      Dequeue/Kill
-    </button>
-  </li>
-  {% endfor %}
-</ul>
-<button onclick="update('#{{container_id}}')">Update</button>
-<button onclick="remove_dead_jobs('#{{container_id}}')">
+      <div class="card">
+        <div class="card-block">
+          <h4 class="card-title">Queued/Running Simulations</h4>
+        </div>
+        <ul id="jobs" class="list-group list-group-flush">
+        {% for job in jobs %}
+        <li class="list-group-item">
+          <a href="/simulation/{{job}}">{{job}}</a>
+          ({{ jobs[job].status() }})
+          <button class="btn btn-primary" onclick="update_job_list({{job}}, '#{{container_id}}')">
+            Dequeue/Kill
+          </button>
+        </li>
+        {% endfor %}
+        </ul>
+        <div class="card-block">
+          <button class="btn btn-primary" onclick="update('#{{container_id}}')">Update</button>
+          <button class="btn btn-primary" onclick="remove_dead_jobs('#{{container_id}}')">
+        </div>
+        <div class="card-footer text-muted">
+          2 days ago
+        </div>
+      </div>
   Remove Dead Jobs
 </button>
 {% else %}
-<p> No Jobs. </p>
+
+        <div class="card">
+        <div class="card-block">
+          <h4 class="card-title">Queued/Running Simulations</h4>
+          <h4 class="card-subtitle mb-2 text-muted">No Jobs.</h4>
+          <p><br /></p>
+        </div>
+      </div>
 {% endif %}
 </div>
