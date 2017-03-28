@@ -21,6 +21,7 @@
         </div>
             <div class="col text-right">
                 <a class="nav-link" href="#" id="sliderChangeInfo"></a>
+                <a class="btn btn-primary" href="#" onclick="clickDiscard();" id="discardChanges" role="button"></a>
                 <a class="btn btn-primary" href="javascript:void(0)" onclick="updateScenario(scenario)" role="button">Save changes</a>
                 <a class="btn btn-primary" href="javascript:void(0)" onclick="callSaveScenarioPrompt(scenario)" role="button">Save as new scenario</a>
                 <a class="btn btn-primary" href="javascript:void(0)" onclick="runSimulation(scenario)" role="button">Run Simulation</a>
@@ -28,10 +29,12 @@
     </div>
     </header>
 
+
 {% endblock %}
 
 
 {% block content %}
+
         <div class="card">
             <div class="row no-gutters">
                 <div class="col-4">
@@ -42,13 +45,18 @@
                     </div>
                 </div>
                 <div class="col">
-                    <ul class="nav nav-tabs" id="plot_tab">
-                    </ul>
+                    <div class="collapse navbar-collapse noresult">
+                       <ul class="nav nav-tabs" id="plot_tab"></ul>
+                    </div>
+                    <div class="collapse navbar-collapse result">
+                    <ul class="nav nav-tabs" id="plot_tab_result"></ul>
+                    </div>
                     <div class="card-block tab-content" id="plot_tab_content">
                     </div>
                 </div>
             </div>
         </div>
+
 
 <script src="/static/jquery-ui.min.js"></script>
 
@@ -61,17 +69,16 @@
 <script src="static/helper.js"></script>
 
 <script type="text/javascript">
-function makeTab(id, label, options, content, onclick="", active="") {
-    $('#plot_tab').append(
-        '<li class="nav-item" onclick="'+onclick+'">'
-        +'<a class="nav-link '+active+'" data-toggle="tab" href="#'+id+'_tab">'+label+'</a>'
-        +'</li>');
-    $('#plot_tab_content').append(
-        '<div class="tab-pane '+active+'" id="'+id+'_tab" role="tabpanel">'
-        +'<div class="toolbar">'+options+'</br></div>'
-        +'<div id="'+id+'"></div>'
-        +content
-        +'</div>');
+function makeTab(id, label, options, content, collapse="", onclick="", active="") {
+    var this_plot_tab = '<a class="nav-item nav-link '+active+'" onclick="'+onclick+'" data-toggle="tab" href="#'+id+'_tab">'+label+'</a>'
+    if (!collapse) {$('#plot_tab').append(this_plot_tab);}
+    $('#plot_tab_result').append(this_plot_tab);
+    var this_plot_tab_content = '<div class="tab-pane '+active+'" id="'+id+'_tab" role="tabpanel">'
+                                +'<div class="toolbar">'+options+'</br></div>'
+                                +'<div id="'+id+'"></div>'
+                                +content
+                                +'</div>'
+    $('#plot_tab_content').append(this_plot_tab_content);
 }
 
 function makeIndividualBiomethanSilder() {
@@ -197,7 +204,8 @@ function getColors(element_names) {
         }
 
         if (scenario.children_dict[name].type == 'flexible_generator' ||
-            scenario.children_dict[name].type == 'combined_flexible_generator') {
+            scenario.children_dict[name].type == 'combined_flexible_generator' ||
+            scenario.children_dict[name].type == 'extraction_turbine') {
 
             // check for P2H Units
             if (getTagValue(tracePredecessors(name, level='one'), 'sector') == 'electricity') {
@@ -389,8 +397,8 @@ function renderHubBarPlot(select_id, plot_id) {
 
     // Re-Render when other hub is selected
     $("#"+select_id).on('change', function() {
-        hub_name = $(this).val()
-        nice_hub_name = $( "#"+select_id+" option:selected" ).text();
+        var hub_name = $(this).val()
+        var hub_label = $( "#"+select_id+" option:selected" ).text();
         HubSubBarPlot(scenario_db_id, hub_label, hub_name, plot_id)
     });
 }
@@ -574,12 +582,12 @@ function getHubResults(scenario_db_id, hub_name, aggregated, callback) {
     }
 
 
-function getFlowResults(scenario_db_id, callback) {
+function getFlowResults(scenario_db_id, subset, callback) {
     return $.ajax({
         url: 'API/flow_results',
         type: 'get',
         data : {scenario_id: scenario_db_id,
-                subset: 'true'}
+                subset: subset}
         })
     .done(callback)
     }
@@ -691,8 +699,9 @@ function updateScenario(scenario) {
         dataType: 'json',
         success: function(data) {
             resetSliderChange();
-            alertModal("Updated successfully! Opening updated scenario.");
-            window.location.replace('edit_scenario?id=' + data.scenario_db_id);
+            alertModal("Opening updated scenario.", "Updated successfully!", function () {
+                window.location.replace('edit_scenario?id=' + data.scenario_db_id);
+            });
         },
         error: function() {
             alert("Error. This should not have happened. Call somebody.");
@@ -743,7 +752,7 @@ function makeAllAutomaticSlider() {
 
 
 function renderResultFlowPlot(select_flow_id, select_type_id, plot_id) {
-    getFlowResults(scenario_db_id, function(data) {
+    getFlowResults(scenario_db_id, subset='true', function(data) {
         $("#"+select_type_id).html("");
         ['chronological', 'duration', 'heatmap'].forEach( function (x) {
             $("#"+select_type_id).append("<option value='"+x+"'>"+x[0].toUpperCase() + x.slice(1,x.length)+"</option>");
@@ -818,7 +827,7 @@ function renderInputTimeseries(select_ts_id, select_type_id, plot_id) {
 
         var hub_keys = Object.keys(hubs)
         hub_keys.forEach(function (key) {
-            $("#"+select_ts_id).append("<option value='"+key+"'>"+"Residuallast "+hubs[key]+"</option>");
+            $("#"+select_ts_id).append("<option value='"+key+"'>"+hubs[key]+" Residuallast"+"</option>");
         });
 
 
@@ -865,7 +874,7 @@ function renderInputOverview(plot_id) {
 
 function renderResultOverview(plot_id) {
     if (!flow_results) {
-        getFlowResults(scenario_db_id, function(x) {flow_results=x;});
+        getFlowResults(scenario_db_id, subset='false', function(x) {flow_results=x;});
     }
     $('#'+plot_id).html("");
     var result_overview_map = makeRegionPlot(plot_id);
@@ -949,11 +958,27 @@ function getResidualLoad(hub_name) {
     return residual_load;
 }
 
+
+function clickDiscard() {
+    confirmModal("Do you really want to loose your changes?",  "Alert",
+                 function(input) {
+                    if(input == true) {
+                        location.reload();
+                    } else {
+                        return;
+                      }
+                });
+}
+
 function setSliderChangeInfo() {
     if (slider_changed) {
+        $('#sliderChangeInfo').show();
         $('#sliderChangeInfo').html("WITH CHANGES");
+        $('#discardChanges').show();
+        $('#discardChanges').html("Discard Changes");
     } else {
-        $('#sliderChangeInfo').html("");
+        $('#sliderChangeInfo').hide();
+        $('#discardChanges').hide();
     }
 }
 
@@ -982,13 +1007,34 @@ function setResultExists(once=false) {
             }
         } else {
             result_exists = true;
-            updateDisabledPlotTabs();
+            if (!once) {
+                if (!slider_changed) {
+                    alertModal("The simulation for this scenario is finished.", "Results are available");
+                    updateDisabledPlotTabs();
+                } else {
+                    alertModal("The simulation for the last scenario is finished.<br><br>"
+                               +"But since starting the simulation you have changed some slider values.<br><br>"
+                               +"If you want to keep your changes, save them as a new scenario.<br><br>"
+                               +"If you want to discard the changes and see the results, just refresh this page.",
+                               "Results are available, but...");
+               }
+            } else {
+                updateDisabledPlotTabs();
+            }
         }
     });
 }
 
 function updateDisabledPlotTabs() {
-//    $("#plot_tab li a:contains('Result')").toggleClass("disabled", !result_exists);-->
+    if (result_exists) {
+        $('.noresult').collapse('hide');
+        $('.result').collapse('show');
+        $($('.result a.active')[0]['hash']).tab('show');
+    } else {
+        $('.result').collapse('hide');
+        $('.noresult').collapse('show');
+        $($('.noresult a.active')[0]['hash']).tab('show');
+    }
 }
 
 var scenario_db_id = {{ scenario_db_id }};
@@ -1017,7 +1063,7 @@ makeAllAutomaticSlider();
 makeIndividualBiomethanSilder();
 
 plot_tabs.forEach(function(tab) {
-    makeTab(tab.id, tab.label, tab.options, tab.content, tab.onclick, tab.active);
+    makeTab(tab.id, tab.label, tab.options, tab.content, tab.collapse, tab.onclick, tab.active);
 });
 
 for (var element in lookup) {
@@ -1042,24 +1088,25 @@ $('#slider_form').change(function () {
     renderInputOverview('input_overview');
 
     // RERENDER INPUT TIMESERIES PLOT
-    if ($('.nav li a.active')[0]['hash'] == "#input_timeseries_tab") {
+    if ($('.nav a.active')[0]['hash'] == "#input_timeseries_tab") {
         var edge = $("#input_timeseries_select_ts").val();
         var ts_obj = prepareTimeseries(edge);
         var type = $("#input_timeseries_select_type").val();
         renderTimeseriesSubPlot("input_timeseries", type, ts_obj);
     }
 
-    if ($('.nav li a.active')[0]['hash'] == "#input_stacked_tab") {
+    if ($('.nav a.active')[0]['hash'] == "#input_stacked_tab") {
         //RERENDER INPUT STACKED TIMESERIES
         renderStackedInputSubPlot($("#input_stacked_select").val(), "input_stacked")
     }
 
 });
 
-
+$('#sliderChangeInfo').hide();
+$('#discardChanges').hide();
 
 var flow_results = false;
-getFlowResults(scenario_db_id, function(x) {flow_results=x;});
+getFlowResults(scenario_db_id, subset='false', function(x) {flow_results=x;});
 
 renderInputOverview('input_overview');
 

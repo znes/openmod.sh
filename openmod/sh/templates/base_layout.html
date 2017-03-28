@@ -124,6 +124,20 @@
     <script src="/static/helper.js"></script>
 
 <script type="text/javascript">
+function getRootUrl() {
+	return window.location.origin?window.location.origin+'/':window.location.protocol+'/'+window.location.host+'/';
+}
+
+$('#importModal').on('hide.bs.modal', function () {
+    var root_url = getRootUrl();
+    console.log(root_url);
+    window.location = root_url + 'scenario_overview'
+});
+
+function openImportModal() {
+    $('#importModal').modal();
+}
+
 var form = document.getElementById('input-file-form');
 var fileSelect = document.getElementById('input-file-select');
 var uploadButton = document.getElementById('input-upload-button');

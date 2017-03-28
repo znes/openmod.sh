@@ -41,11 +41,11 @@ function update_job_list(job, container_id) {
           <h4 class="card-title">Queued/Running Simulations</h4>
         </div>
         <ul id="jobs" class="list-group list-group-flush">
-        {% for job in jobs %}
-        <li class="list-group-item">
-          <a href="/simulation/{{job}}">{{job}}</a>
-          ({{ jobs[job].status() }})
-          <button class="btn btn-primary" onclick="update_job_list({{job}}, '#{{container_id}}')">
+       {% for k, job in jobs.items() %}
+          <li>
+        <a href="/simulation/{{k}}">{{job.scenario}} ({{job.user}})</a>
+        ({{ job.status() }})
+          <button class="btn btn-primary" onclick="update_job_list({{k}}, '#{{container_id}}')">
             Dequeue/Kill
           </button>
         </li>
@@ -53,14 +53,15 @@ function update_job_list(job, container_id) {
         </ul>
         <div class="card-block">
           <button class="btn btn-primary" onclick="update('#{{container_id}}')">Update</button>
-          <button class="btn btn-primary" onclick="remove_dead_jobs('#{{container_id}}')">
+          <button class="btn btn-primary" onclick="remove_dead_jobs('#{{container_id}}')"> Remove Dead Jobs
+</button>
         </div>
         <div class="card-footer text-muted">
           2 days ago
         </div>
       </div>
-  Remove Dead Jobs
-</button>
+
+
 {% else %}
 
         <div class="card">

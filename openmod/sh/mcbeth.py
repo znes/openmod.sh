@@ -12,7 +12,8 @@ import logging
 from oemof.tools import logger
 from oemof.network import Node
 from oemof.solph import (Sink, Source, LinearTransformer, Storage, Bus, Flow,
-                         OperationalModel, EnergySystem, GROUPINGS)
+                         VariableFractionTransformer, OperationalModel,
+                         EnergySystem, GROUPINGS)
 
 from openmod.sh.api import results_to_db
 
@@ -248,6 +249,46 @@ def populate_energy_system(es, node_data):
                 es.add(obj)
                 obj.type = n['type']
 
+        # create variable fraction transformers for extraction turbines
+        if n['type'] == 'extraction_turbine':
+            ss = {es.groups[i].sector: es.groups[i] for i in n['successors']
+                  if i in [n.label for n in es.nodes]}
+            ps = es.groups[n['predecessors'][0]]
+
+            conversion_factors = {
+                ss['heat']: _float(n, 'thermal_efficiency'),
+                ss['electricity']: _float(n, 'electrical_efficiency')}
+
+            if _float(n, 'min_fullloadhours') == 0:
+                summed_min = None
+            else:
+                summed_min = _float(n, 'min_fullloadhours')
+
+            outputs={
+                ss['heat']: Flow(),
+                ss['electricity']: Flow(
+                    nominal_value=_float(n, 'installed_power'),
+                    variable_costs=_float(n, 'variable_cost'),
+                    summed_max= _float(n, 'max_fullloadhours'),
+                    summed_min=summed_min)}
+
+            if ss.get('co2'):
+                # select input of predecessor for transformer (commodity source)
+                conversion_factors[ss['co2']] = list(
+                    es.groups[n['predecessors'][0]].inputs.keys())[0].emission_factor
+                outputs[ss['co2']] = Flow()
+
+            obj = VariableFractionTransformer(
+                            label=n['name'],
+                            outputs=outputs,
+                            inputs={ps:
+                                Flow()},
+                            conversion_factors=conversion_factors,
+                            conversion_factor_single_flow={
+                                ss['electricity']: _float(n, 'condensing_efficiency')})
+            es.add(obj)
+            obj.type = n['type']
+
         # create linear transformers for flexible generators
         if n['type'] == 'flexible_generator':
             ss = {es.groups[i].sector: es.groups[i] for i in n['successors']
@@ -382,7 +423,6 @@ def create_model(es):
     logging.info("Creating oemof.solph.OperationalModel instance for" \
         "scenario {}...".format(es.scenario_name))
     es.model = OperationalModel(es=es)
-
     # TODO: Add lp file writing in openmod debug mode only?
     if False:
         es.model.write(es.scenario_name+'.lp',
@@ -520,45 +560,12 @@ def wrapped_simulation(scenario, connection):
 
 if __name__ == "__main__":
 
-    from openmod.sh.api import get_hub_results
-    import openmod.sh.schemas.oms as schema
-    from openmod.sh import web
-#
-#    # just for testing purposes
-    scenario = json.load(open('data/scenarios/kiel-statusquo-explicit-geoms-sequences_new.json'))
-#    #updates = json.load(open('../../data/scenarios/update-elements.json'))
+    scenario = json.load(open('../../data/scenarios/kiel-2014-explicit-geoms-sequences.json'))
+
     es = create_energy_system(scenario)
     es = populate_energy_system(es=es, node_data=scenario['children'])
     es = create_model(es)
     es = compute_results(es)
-#
-#
-    web.app.app_context().push()
-    schema.DB.create_all()
-    schema.DB.session.flush()
-    schema.DB.session.commit()
-#
-    results_to_db(scenario['name'], es.results)
-
-    results_aggregated = get_hub_results(scenario['name'], 'kiel_electricity', by='name')
-    results = get_hub_results(scenario['name'], 'kiel_electricity', by='name', aggregated=False)
-
-
-
-    #element = schema.Element.query.filter_by(name="status_quo_2014_explicit").first()
-#
-#    # check if element has more than one parent, if so: raise error
-#    for child in element.children:
-#        parents = [parent for parent in child.parents]
-#        if len(parents) > 1:
-#            raise ValueError(
-#                "Deleting element {0} with all its children failed. " \
-#                "Child {1} does have more than one parent.".format(element.name,
-#                                                                   child.name))
-#
-#    schema.DB.session.delete(element)
-#
-#    schema.DB.session.commit()
 
 #    import graphviz as gv
 #    import oemof.network as ntwk

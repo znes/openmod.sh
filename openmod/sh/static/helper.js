@@ -18,7 +18,7 @@ function alertModal(message, header = "", callback=function(){}) {
         +'</div>'
         +'</div>');
     $('#alertModal').modal().show();
-    $('#alertModal').on('hide.bs.modal', function(e) {
+    $('#alertModal').on('hidden.bs.modal', function() {
         callback();
     });
 }
@@ -48,9 +48,9 @@ function confirmModal(message, header = "", callback=function(){}) {
         callback(false);
     });
     $('#confirmModal .confirm').on('click', function(e) {
-        $('#confirmModal').unbind( 'hide.bs.modal');
+        $('#confirmModal').unbind( 'hidden.bs.modal');
         $('#confirmModal').modal('hide');
-        $('#promptModal').on('hidden.bs.modal', function(e) {
+        $('#confirmModal').on('hidden.bs.modal', function(e) {
             callback(true);
         });
     });

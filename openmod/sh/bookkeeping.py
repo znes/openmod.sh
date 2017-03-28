@@ -16,21 +16,27 @@ from flask.sessions import (SessionInterface as SI, SessionMixin as SM)
 class Job():
     """ A convenience class enhancing `multiprocessing.pool.AsyncResult` with additional information.
     """
-    def __init__(self, result, connection):
+    def __init__(self, result, connection, scenario, user):
         """
         Parameters
         ----------
 
-        result : multiprocessing.pool.AsyncResult
+        result: multiprocessing.pool.AsyncResult
             The `AsyncResult` object for which additional information should
             be tracked.
         connection: multiprocessing.Connection
             The connection which allows us to communicate with the child
             process.
+        scenario: str
+            The name of the scenario for which the job computes results.
+        user: str
+            The name of the user who started the job.
         """
         self._status = False
         self.connection = connection
         self.result = result
+        self.scenario = scenario
+        self.user = user
 
     def key(self):
         return str(id(self.result))

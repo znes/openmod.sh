@@ -628,7 +628,9 @@ def get_flow_results(scenario_identifier, by='id', subset='false'):
                              if f.predecessor.type in [
                                  'volatile_generator', 'flexible_generator',
                                  'combined_flexbile_generator']
-                             or  f.successor.type == 'demand'}
+                             and get_tag_value(f.successor.tags, 'sector') != 'co2'
+                             or  f.successor.type == 'demand'
+                             and get_tag_value(f.successor.tags, 'sector') != 'co2'}
             return flow_results
 
         else:
@@ -760,6 +762,39 @@ def get_co2_results(scenario_identifier, multi_hub_name, by='id', aggregated=Tru
                         # weight with 'el_share' and add to electricity result
                         co2_dict['electricity'][get_label(r.predecessor)] = [
                                                 v * el_share for v in r.value]
+
+                    # extraction turbiness have two other outputs butput
+                    if r.predecessor.type == 'extraction_turbine':
+
+                        heat_flow = get_flow_result(scenario_identifier,
+                                                    r.predecessor.name,
+                                                    'kiel_heat',
+                                                    by='id')
+
+                        el_flow = get_flow_result(scenario_identifier,
+                                                    r.predecessor.name,
+                                                    'kiel_electricity',
+                                                    by='id')
+
+                        el_share = []
+                        heat_share = []
+                        for i in range(len(el_flow)):
+                            total_output = (heat_flow[i] + el_flow[i])
+                            if total_output > 0:
+                                el_share.append(el_flow[i] / (heat_flow[i] + el_flow[i]))
+                                heat_share.append(heat_flow[i] / (heat_flow[i] + el_flow[i]))
+                            else:
+                                el_share.append(0)
+                                heat_share.append(0)
+
+                        # weight with 'heat_share' and add to heat result
+                        co2_dict['heat'][get_label(r.predecessor)] = [
+                                               r.value[i] * heat_share[i]
+                                                   for i in range(len(r.value))]
+                        # weight with 'el_share' and add to electricity result
+                        co2_dict['electricity'][get_label(r.predecessor)] = [
+                                               r.value[i] * el_share[i]
+                                                   for i in range(len(r.value))]
 
             # We also need to check the export slacks
             # in the case of electricity we need to weight this with the

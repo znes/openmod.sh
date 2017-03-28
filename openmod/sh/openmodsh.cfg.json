@@ -4,19 +4,7 @@
       "value": "installed_power",
       "max": "potential_power"
     },
-    "kiel_solar_rural": {
-      "value": "installed_power",
-      "max": "potential_power"
-    },
     "kiel_wind": {
-      "value": "installed_power",
-      "max": "potential_power"
-    },
-    "kiel_biomass_chp": {
-      "value": "installed_power",
-      "max": "potential_power"
-    },
-    "kiel_biomass_heatplant": {
       "value": "installed_power",
       "max": "potential_power"
     },
@@ -53,25 +41,25 @@
       "max": "potential_power"
     }
   },
-  "timeseries_available": ["kiel_wind", "kiel_solar", "kiel_solar_rural", "rdeck_wind", "rdeck_solar", "rdeck_solar_rural", "ploe_wind", "ploe_solar", "ploe_solar_rural"],
+  "timeseries_available": ["kiel_wind", "kiel_solar", "rdeck_wind", "rdeck_solar", "rdeck_solar_rural", "ploe_wind", "ploe_solar", "ploe_solar_rural"],
   "plot_tabs": [
     {"id": "input_overview", "label": "Input Overview", "options": "", "content": "", "onclick": "renderInputOverview('input_overview');", "active": "active"},
     {"id": "input_timeseries", "label": "Input Timeseries", "options": "<select id='input_timeseries_select_ts'></select><select id='input_timeseries_select_type'></select>", "content": "", "onclick": "renderInputTimeseries('input_timeseries_select_ts', 'input_timeseries_select_type', 'input_timeseries')"},
     {"id": "input_stacked", "label": "Input Stacked", "options": "<select id='input_stacked_select'></select>", "content": "", "onclick": "renderStackedInputPlot('input_stacked_select', 'input_stacked')"},
-    {"id": "result_overview", "label": "Result Overview", "options": "", "content": "", "onclick": "renderResultOverview('result_overview');", "active": ""},
-    {"id": "result_hub", "label": "Result Hub", "options": "<select id='result_hub_select'></select>","content": "", "onclick": "renderHubBarPlot('result_hub_select', 'result_hub')"},
-    {"id": "result_timeseries", "label": "Result Timeseries", "options": "<select id='result_timeseries_select_flow'></select><select id='result_timeseries_select_type'></select>", "content": "", "onclick": "renderResultFlowPlot('result_timeseries_select_flow', 'result_timeseries_select_type', 'result_timeseries')"},
-    {"id": "result_stacked", "label": "Result Stacked", "options": "<select id='result_stacked_select'></select>", "content": "", "onclick": "renderStackedResultPlot('result_stacked_select', 'result_stacked')"},
-    {"id": "result_co2", "label": "Result CO2", "options": "","content": "", "onclick": "renderEmissionBarPlot('result_co2')"},
-    {"id": "result_summary", "label": "Result Summary", "options": "", "content": "", "onclick": "renderResultSummary('result_summary');", "active": ""}
+    {"id": "result_overview", "label": "Result Overview", "options": "", "content": "", "onclick": "renderResultOverview('result_overview');", "active": "", "collapse": "collapse"},
+    {"id": "result_hub", "label": "Result Hub", "options": "<select id='result_hub_select'></select>","content": "", "onclick": "renderHubBarPlot('result_hub_select', 'result_hub')", "collapse": "collapse"},
+    {"id": "result_timeseries", "label": "Result Timeseries", "options": "<select id='result_timeseries_select_flow'></select><select id='result_timeseries_select_type'></select>", "content": "", "onclick": "renderResultFlowPlot('result_timeseries_select_flow', 'result_timeseries_select_type', 'result_timeseries')", "collapse": "collapse"},
+    {"id": "result_stacked", "label": "Result Stacked", "options": "<select id='result_stacked_select'></select>", "content": "", "onclick": "renderStackedResultPlot('result_stacked_select', 'result_stacked')", "collapse": "collapse"},
+    {"id": "result_co2", "label": "Result CO2", "options": "","content": "", "onclick": "renderEmissionBarPlot('result_co2')", "collapse": "collapse"},
+    {"id": "result_summary", "label": "Result Summary", "options": "", "content": "", "onclick": "renderResultSummary('result_summary');", "active": "", "collapse": "collapse"}
   ],
 
     "hubs": {
-        "kiel_electricity": "Region Kiel (Electricity)",
-        "kiel_heat": "Region Kiel (Heat)",
-        "nms_electricity": "Region Nms (Electricity)",
-        "ploe_electricity": "Region Plön (Electricity)",
-        "rdeck_electricity": "Region RdEck (Electricity)"},
+        "kiel_electricity": "KI (Electricity)",
+        "kiel_heat": "KI (Heat)",
+        "nms_electricity": "NMS (Electricity)",
+        "ploe_electricity": "PLÖ (Electricity)",
+        "rdeck_electricity": "RD (Electricity)"},
     "global_colors": {
         "solar": "orange",
         "wind": "darkblue",
@@ -86,22 +74,22 @@
         "export": "green"},
     "region_bar_plot": {
         "kiel_electricity": {
-            "label": "Region Kiel",
+            "label": "KI",
             "pos": [54.3, 10.1],
-            "values": ["kiel_solar", "kiel_wind", "kiel_solar_rural"]
+            "values": ["kiel_solar", "kiel_wind"]
         },
         "rdeck_electricity": {
-            "label": "Region RdEck",
+            "label": "RD",
             "pos": [54.5, 9.75],
             "values": ["rdeck_solar", "rdeck_wind", "rdeck_solar_rural", "rdeck_biomass_plant"]
         },
         "nms_electricity": {
-            "label": "Region Nms",
+            "label": "NMS",
             "pos": [54.05, 9.97],
             "values": []
         },
         "ploe_electricity": {
-            "label": "Region Plön",
+            "label": "PLÖ",
             "pos": [54.35, 10.6],
             "values": ["ploe_solar", "ploe_wind", "ploe_solar_rural",  "ploe_biomass_plant"]
         }
