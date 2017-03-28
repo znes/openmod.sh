@@ -8,7 +8,6 @@
 		<div class="row align-items-center">
 			<div class="col">
   				<div class="title">Scenarios</div>
-				Bla
 			</div>
 		</div>
 	</header>
@@ -34,7 +33,6 @@
 						{% for k,v in scenarios.items() %}
 						<tr>
 							<td>{{ scenarios[k]['name'] }}</td>
-							<td>Ready</td>
 							<td>
 								<form action="{{ url_for('provide_element_api_route') }}"
 								 method=get>
