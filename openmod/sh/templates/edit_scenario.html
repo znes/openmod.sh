@@ -21,7 +21,7 @@
 <a class="nav-link" href="#" id="sliderChangeInfo"></a>
 </li>
 
-<li class="nav-item" onclick="location.reload();">
+<li class="nav-item" onclick="clickDiscard();">
 <a class="nav-link" href="#" id="discardChanges"></a>
 </li>
 
@@ -962,13 +962,27 @@ function getResidualLoad(hub_name) {
     return residual_load;
 }
 
+
+function clickDiscard() {
+    confirmModal("Do you really want to loose your changes?",  "Alert",
+                 function(input) {
+                    if(input == false) {
+                        location.reload();
+                    } else {
+                        return;
+                      }
+                });
+}
+
 function setSliderChangeInfo() {
     if (slider_changed) {
+        $('#sliderChangeInfo').show();
         $('#sliderChangeInfo').html("WITH CHANGES");
+        $('#discardChanges').show();
         $('#discardChanges').html("Discard Changes");
     } else {
-        $('#sliderChangeInfo').html("");
-        $('#discardChanges').html("");
+        $('#sliderChangeInfo').hide();
+        $('#discardChanges').hide();
     }
 }
 
@@ -1092,7 +1106,8 @@ $('#slider_form').change(function () {
 
 });
 
-
+$('#sliderChangeInfo').hide();
+$('#discardChanges').hide();
 
 var flow_results = false;
 getFlowResults(scenario_db_id, subset='false', function(x) {flow_results=x;});
