@@ -889,6 +889,9 @@ def get_hub_results(scenario_identifier, hub_name, by='id', aggregated=True):
                             hub_results[hub_name]['import'][label] = r.value
                         else:
                             hub_results[hub_name]['production'][label] = r.value
+                if r.successor.name == hub_name \
+                    and r.predecessor.name == 'kiel_heat_slack_source':
+                        hub_results[hub_name]['production'][r.predecessor.name] = r.value
                 if r.predecessor.name == hub_name:
                     if r.successor.type not in ['transmission', 'source']:
                         label = r.successor.name
