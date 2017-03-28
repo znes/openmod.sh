@@ -704,8 +704,9 @@ function updateScenario(scenario) {
         dataType: 'json',
         success: function(data) {
             resetSliderChange();
-            alertModal("Updated successfully! Opening updated scenario.");
-            window.location.replace('edit_scenario?id=' + data.scenario_db_id);
+            alertModal("Opening updated scenario.", "Updated successfully!", function () {
+                window.location.replace('edit_scenario?id=' + data.scenario_db_id);
+            });
         },
         error: function() {
             alert("Error. This should not have happened. Call somebody.");
