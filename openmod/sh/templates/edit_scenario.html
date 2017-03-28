@@ -205,7 +205,8 @@ function getColors(element_names) {
         }
 
         if (scenario.children_dict[name].type == 'flexible_generator' ||
-            scenario.children_dict[name].type == 'combined_flexible_generator') {
+            scenario.children_dict[name].type == 'combined_flexible_generator' ||
+            scenario.children_dict[name].type == 'extraction_turbine') {
 
             // check for P2H Units
             if (getTagValue(tracePredecessors(name, level='one'), 'sector') == 'electricity') {
@@ -826,7 +827,7 @@ function renderInputTimeseries(select_ts_id, select_type_id, plot_id) {
 
         var hub_keys = Object.keys(hubs)
         hub_keys.forEach(function (key) {
-            $("#"+select_ts_id).append("<option value='"+key+"'>"+"Residuallast "+hubs[key]+"</option>");
+            $("#"+select_ts_id).append("<option value='"+key+"'>"+hubs[key]+" Residuallast"+"</option>");
         });
 
 
