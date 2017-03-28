@@ -127,7 +127,7 @@ footer {
  * Tabs
  */
 .nav-tabs {
-	background: #f1ad02;
+	background: #2f1b56;
 	border: 0px;
 	padding-top: 5px;
 }
@@ -138,8 +138,11 @@ footer {
 	margin-left: 7px;
 	padding-bottom: 10px;
 }
-.nav-tabs a:focus, .nav-tabs a:hover, .nav-tabs a.nav-link.active {
+.nav-tabs a.nav-link.active {
 	background: #ffffff;
+	color: #2f1b56;
+}
+.nav-tabs a:focus, .nav-tabs a:hover {
 	color: #f1ad02;
 }
 .left-border {
@@ -167,9 +170,7 @@ footer {
 /**
  * Custom Nav Style
  */
-.nav li .disabledLinkCustom {
- 	color: #ffff00;
-	text-decoration: none;
+.btn.noLink {
 	cursor: default;
  }
 

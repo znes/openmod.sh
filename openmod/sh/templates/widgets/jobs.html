@@ -42,7 +42,7 @@ function update_job_list(job, container_id) {
         </div>
         <ul id="jobs" class="list-group list-group-flush">
        {% for k, job in jobs.items() %}
-          <li>
+          <li class="list-group-item">
         <a href="/simulation/{{k}}">{{job.scenario}} ({{job.user}})</a>
         ({{ job.status() }})
           <button class="btn btn-primary" onclick="update_job_list({{k}}, '#{{container_id}}')">
