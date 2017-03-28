@@ -4,10 +4,6 @@
       "value": "installed_power",
       "max": "potential_power"
     },
-    "kiel_solar_rural": {
-      "value": "installed_power",
-      "max": "potential_power"
-    },
     "kiel_wind": {
       "value": "installed_power",
       "max": "potential_power"
@@ -45,7 +41,7 @@
       "max": "potential_power"
     }
   },
-  "timeseries_available": ["kiel_wind", "kiel_solar", "kiel_solar_rural", "rdeck_wind", "rdeck_solar", "rdeck_solar_rural", "ploe_wind", "ploe_solar", "ploe_solar_rural"],
+  "timeseries_available": ["kiel_wind", "kiel_solar", "rdeck_wind", "rdeck_solar", "rdeck_solar_rural", "ploe_wind", "ploe_solar", "ploe_solar_rural"],
   "plot_tabs": [
     {"id": "input_overview", "label": "Input Overview", "options": "", "content": "", "onclick": "renderInputOverview('input_overview');", "active": "active"},
     {"id": "input_timeseries", "label": "Input Timeseries", "options": "<select id='input_timeseries_select_ts'></select><select id='input_timeseries_select_type'></select>", "content": "", "onclick": "renderInputTimeseries('input_timeseries_select_ts', 'input_timeseries_select_type', 'input_timeseries')"},
@@ -80,7 +76,7 @@
         "kiel_electricity": {
             "label": "KI",
             "pos": [54.3, 10.1],
-            "values": ["kiel_solar", "kiel_wind", "kiel_solar_rural"]
+            "values": ["kiel_solar", "kiel_wind"]
         },
         "rdeck_electricity": {
             "label": "RD",
