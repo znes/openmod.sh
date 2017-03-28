@@ -42,7 +42,7 @@ def _float(obj, attr):
                 'amount': None,
                 'variable_cost': 0,
                 'efficiency' : 1,
-                'min_amount':0,
+                'min_amount':None,
                 'max_amount': None,
                 'max_fullloadhours': None,
                 'min_fullloadhours': 0}
@@ -147,14 +147,35 @@ def populate_energy_system(es, node_data):
                 min_amount = _float(n, 'min_amount')
 
                 # assign the lager value of min/max amount to nominal value
-                nv = max_amount
 
-                if nv is None:
-                    summed_max = None
-                    summed_min = None
+                if _float(n, 'installed_power') is not None:
+                    nv = _float(n, 'installed_power')
+                    if max_amount is not None:
+                        summed_max = max_amount / nv
+                    else:
+                        summed_max = None
+                    if min_amount is not None:
+                        summed_min = min_amount / nv
+                    else:
+                        summed_min = None
                 else:
-                    summed_max = max_amount / nv
-                    summed_min = min_amount / nv
+                    if max_amount is None and min_amount is None:
+                        nv = None
+                        summed_max = None
+                        summed_min = None
+                    if max_amount is None and min_amount is not None:
+                        nv = min_amount
+                        summed_max = None
+                        summed_min = min_amount / nv
+                    if max_amount is not None and min_amount is None:
+                        nv = max_amount
+                        summed_max = max_amount / nv
+                        summed_min = None
+                    if max_amount is not None and min_amount is not None:
+                        nv = max_amount
+                        summed_max = max_amount / nv
+                        summed_min = min_amount / nv
+
                 # if summe_min i.e min_amount is 0, we do not want to build the
                 # constraint, therefore summed_min is set to None
                 if summed_min == 0:
