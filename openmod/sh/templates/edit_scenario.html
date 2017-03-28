@@ -201,6 +201,9 @@ function getColors(element_names) {
         if (scenario.children_dict[name].type == 'combined_flexible_transformer') {
                 coloring[name].opacity = 0.5;
         }
+        if (scenario.children_dict[name].type == 'source') {
+                coloring[name] = "yellow";
+        }
 
         if (scenario.children_dict[name].type == 'flexible_generator' ||
             scenario.children_dict[name].type == 'combined_flexible_generator' ||
