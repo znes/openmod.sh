@@ -967,7 +967,7 @@ function getResidualLoad(hub_name) {
 function clickDiscard() {
     confirmModal("Do you really want to loose your changes?",  "Alert",
                  function(input) {
-                    if(input == false) {
+                    if(input == true) {
                         location.reload();
                     } else {
                         return;
