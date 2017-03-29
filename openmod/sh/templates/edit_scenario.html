@@ -245,18 +245,32 @@ function addArrays(arrays) {
     return total_sum;
 }
 
-// WORKS ONLY FOR VOLATILE GENERATORS AT THE MOMENT!
 function getAreaUsage(element_name) {
-    var area_select = getTagValue(element_name, 'fuel_type');
-
-    if (area_select == undefined) {
-        var area_usage = null;
+    if (element_name == 'biomethan') {
+        var biomethan_usage_specific = 0.5; //getTagValue('area_usage', 'biomethan');
+        return biomethan_usage_specific;
     }
+    else if (element_name == 'biomass') {
+        var biomass_usage_specific = 0.5; //getTagValue('area_factors', 'biomass');
+        return getSingleFlowResult(scenario_db_id, 'biomass_commodity_kiel', 'kiel_biomass',
+                            function(data) {
+                                    var sum = data.reduce(function(a,b) {
+                                            return a+b;}, 0)
+                                    var biomass_area_usage = sum * parseFloat(biomass_usage_specific)
+                            });
+        }
     else {
-        var area_usage = getTagValue('area_factors', area_select) *
-            parseFloat(getTagValue(element_name, 'installed_power'));
-    }
-    return area_usage;
+        var area_select = getTagValue(element_name, 'fuel_type');
+
+        if (area_select == undefined) {
+            var area_usage = null;
+        }
+        else {
+            var area_usage = getTagValue('area_factors', area_select) *
+                parseFloat(getTagValue(element_name, 'installed_power'));
+        }
+        return area_usage;
+      }
 }
 
 function updateValue(slider_id, newValue) {
@@ -327,6 +341,38 @@ function prepareRow(keys, dct, factor, firstc, secondc) {
 function renderResultSummary(div_id) {
     $('#'+div_id).html("");
 
+    // AREA USAGE (REMOVE AFTER KIEL WORKSHOP!!!!)
+    var area_helper = {'kiel_solar':'KI Solar',
+                       'kiel_wind':'KI Wind',
+                       'biogas':'Biomethan Import' ,
+                       'biomass':'Biomasse Import'};
+    var area_columns = ["kiel_solar", "biomethan", "biomass"];
+    var all_area_columns = JSON.parse(JSON.stringify(area_columns));
+    all_area_columns.splice(0, 0, "Area", "");
+    var area_dct = {};
+    var relative_area_dct = {};
+
+    appendToDiv(div_id,
+        createTable(
+            all_area_columns.map(
+                function (x) {
+                    if (area_helper[x] != undefined) {
+                        return area_helper[x];
+                    } else {
+                        return x;
+                      }}),
+                    "summary_area"));
+
+    for (var i=0; i < area_columns.length; i++) {
+        area_dct[area_columns[i]] = getAreaUsage(area_columns[i])
+        relative_area_dct[area_columns[i]] = getAreaUsage(area_columns[i]) / 11865 * 100
+    }
+    var area_row = prepareRow(area_columns, area_dct, 1, "Area", "in ha");
+    addTableRow(area_row, "summary_area");
+    var relative_area_row = prepareRow(area_columns, relative_area_dct, 1, "Area", "in %");
+    addTableRow(relative_area_row, "summary_area");
+
+    // EMISSIONS RESULTS
     getEmissionResults(scenario_db_id, multi_hub_name='kiel', function(data) {
         var helper = {'electricity':'Strom', 'heat':'Wärme' ,
                       'import':'Import', 'export': 'Export'};
@@ -355,13 +401,14 @@ function renderResultSummary(div_id) {
         var relative_production_dct = {}
         var installed_power_dct = {};
         var fullload_hours_dct = {};
+        var area_usage_dct = {};
         Object.keys(production_dct).forEach(function(x) {
             var installed_power = scenario.children_dict[x].tags.installed_power;
             var production = production_dct[x];
             relative_production_dct[x] = production/total_production;
             installed_power_dct[x] = installed_power;
             fullload_hours_dct[x] = production_dct[x]/installed_power;
-            console.log(x, production_dct[x], installed_power);
+            area_usage_dct[x] = getAreaUsage(x);
             if ((!installed_power) || installed_power=='null' || installed_power==0) {
                 if (production !== 0) {
                     console.log("installed_power of "+x+" is null or 0 but production is "+production);
@@ -386,6 +433,7 @@ function renderResultSummary(div_id) {
         addTableRow(row, "summary_table_kiel_electricity_production");
         var row = prepareRow(columns, relative_production_dct, 1/100,
                              "Share of production in Kiel", "in %");
+
         addTableRow(row, "summary_table_kiel_electricity_production");
     });
 
@@ -439,6 +487,7 @@ function renderResultSummary(div_id) {
                              "Share of production in Kiel", "in %");
         addTableRow(row, "summary_table_kiel_heat_production");
     });
+
 
 }
 
@@ -651,6 +700,16 @@ function getHubResults(scenario_db_id, hub_name, aggregated, callback) {
     .done(callback)
     }
 
+function getSingleFlowResult(scenario_db_id, predecessor, successor, callback) {
+    return $.ajax({
+        url: 'API/single_flow_result',
+        type: 'get',
+        data : {scenario_id: scenario_db_id,
+                predecessor: predecessor,
+                successor: successor}
+        })
+    .done(callback)
+    }
 
 function getFlowResults(scenario_db_id, subset, callback) {
     return $.ajax({

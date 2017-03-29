@@ -14,7 +14,7 @@ from openmod.sh.api import (provide_element_api, json_to_db,
                            provide_elements_api, provide_sequence_api,
                            allowed_file, explicate_hubs, delete_element_from_db,
                            results_to_db, get_hub_results, create_transmission,
-                           get_flow_results, get_co2_results)
+                           get_flow_results, get_flow_result, get_co2_results)
 from openmod.sh.forms import ComputeForm
 from openmod.sh.visualization import make_graph_plot
 from openmod.sh.web import app, csrf
@@ -294,6 +294,21 @@ def provide_co2_results_api():
                                                    multi_hub_name=query_args['multi_hub_name'],
                                                    by='id', aggregated=True)
     return flask.jsonify(co2_results)
+
+@app.route('/API/single_flow_result')
+@fl.login_required
+def provide_single_flow_result_api():
+    """
+    """
+    query_args = flask.request.args.to_dict()
+
+    # by scenario id
+    single_flow_result = get_flow_result(query_args['scenario_id'],
+                                         query_args['predecessor'],
+                                         query_args['successor'])
+
+    return flask.jsonify(single_flow_result)
+
 
 @app.route('/API/flow_results')
 @fl.login_required
