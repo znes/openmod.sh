@@ -333,14 +333,17 @@ function renderResultSummary(div_id) {
         var columns = Object.keys(helper);
         var all_columns = JSON.parse(JSON.stringify(columns));
         all_columns.splice(0, 0, "Emissionen", "");
-        appendToDiv(div_id, createTable(all_columns.map(
-            function (x) {
-                if (helper[x] != undefined) {
-                    return helper[x];
-                } else {
-                    return x;
-                  }})
-            ), "summary_emissions");
+        appendToDiv(
+            div_id,
+            createTable(
+                all_columns.map(
+                    function (x) {
+                        if (helper[x] != undefined) {
+                            return helper[x];
+                        } else {
+                            return x;
+                        }}),
+                    "summary_emissions"));
         var row = prepareRow(columns, data, 1000, "Emissionen", "in 1000 t");
         addTableRow(row, "summary_emissions");
     });
