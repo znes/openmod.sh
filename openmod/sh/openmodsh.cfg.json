@@ -43,7 +43,7 @@
   },
   "timeseries_available": ["kiel_wind", "kiel_solar", "rdeck_wind", "rdeck_solar", "rdeck_solar_rural", "ploe_wind", "ploe_solar", "ploe_solar_rural"],
   "plot_tabs": [
-    {"id": "input_overview", "label": "Input Overview", "options": "", "content": "", "onclick": "renderInputOverview('input_overview');", "active": "active"},
+    {"id": "input_overview", "label": "Input Overview", "options": "", "content": "", "onclick": "", "active": "active"},
     {"id": "input_timeseries", "label": "Input Timeseries", "options": "<select id='input_timeseries_select_ts'></select><select id='input_timeseries_select_type'></select>", "content": "", "onclick": "renderInputTimeseries('input_timeseries_select_ts', 'input_timeseries_select_type', 'input_timeseries')"},
     {"id": "input_stacked", "label": "Input Stacked", "options": "<select id='input_stacked_select'></select>", "content": "", "onclick": "renderStackedInputPlot('input_stacked_select', 'input_stacked')"},
     {"id": "result_overview", "label": "Result Overview", "options": "", "content": "", "onclick": "renderResultOverview('result_overview');", "active": "", "linkClass": "collapse"},
