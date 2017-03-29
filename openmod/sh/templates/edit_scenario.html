@@ -252,11 +252,11 @@ function getAreaUsage(element_name) {
     }
     else if (element_name == 'biomass') {
         var biomass_usage_specific = 0.5; //getTagValue('area_factors', 'biomass');
-        return getSingleFlowResult(scenario_db_id, 'biomass_commodity_kiel', 'kiel_biomass',
+        getSingleFlowResult(scenario_db_id, 'biomass_commodity_kiel', 'kiel_biomass',
                             function(data) {
                                     var sum = data.reduce(function(a,b) {
-                                            return a+b;}, 0)
-                                    var biomass_area_usage = sum * parseFloat(biomass_usage_specific)
+                                                    return a+b;}, 0)
+                                    return sum * parseFloat(biomass_usage_specific)
                             });
         }
     else {
@@ -344,7 +344,7 @@ function renderResultSummary(div_id) {
     // AREA USAGE (REMOVE AFTER KIEL WORKSHOP!!!!)
     var area_helper = {'kiel_solar':'KI Solar',
                        'kiel_wind':'KI Wind',
-                       'biogas':'Biomethan Import' ,
+                       'biomethan':'Biomethan Import' ,
                        'biomass':'Biomasse Import'};
     var area_columns = ["kiel_solar", "biomethan", "biomass"];
     var all_area_columns = JSON.parse(JSON.stringify(area_columns));
