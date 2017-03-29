@@ -892,42 +892,43 @@ function renderInputOverview(plot_id) {
 }
 
 function renderResultOverview(plot_id) {
-    if (!flow_results) {
-        getFlowResults(scenario_db_id, subset='false', function(x) {flow_results=x;});
-    }
-    $('#'+plot_id).html("");
-    var result_overview_map = makeRegionPlot(plot_id);
-    var positions = {};
-    Object.keys(region_bar_plot).forEach(function(key) {
-        positions[key] = region_bar_plot[key].pos;
-    });
-    var number_of_positions = Object.values(positions).length;
-    var arrows = {};
-    var max = 0;
-    Object.keys(positions).forEach(function(k) {
-        arrows[k] = {}
-        Object.keys(positions).forEach(function(l) {
-            if (k !== l) {
-                var value = flow_results[k+' -> '+l].reduce(function(a, b) {return a+b;});
-                arrows[k][l] = value;
-                if (value > max) {
-                    max = value;
+    getFlowResults(scenario_db_id, subset='false', function(data) {
+
+        var flow_results = data;
+
+        $('#'+plot_id).html("");
+        var result_overview_map = makeRegionPlot(plot_id);
+        var positions = {};
+        Object.keys(region_bar_plot).forEach(function(key) {
+            positions[key] = region_bar_plot[key].pos;
+        });
+        var number_of_positions = Object.values(positions).length;
+        var arrows = {};
+        var max = 0;
+        Object.keys(positions).forEach(function(k) {
+            arrows[k] = {}
+            Object.keys(positions).forEach(function(l) {
+                if (k !== l) {
+                    var value = flow_results[k+' -> '+l].reduce(function(a, b) {return a+b;});
+                    arrows[k][l] = value;
+                    if (value > max) {
+                        max = value;
+                    }
                 }
-            }
+            });
         });
-    });
-    var pixel_add = 10;
-    Object.keys(arrows).forEach(function(k) {
-        Object.keys(arrows[k]).forEach(function(l) {
-            var value = arrows[k][l];
-            addArrowToRegionPlot(result_overview_map, positions[k], positions[l],
-                                 value,
-                                 getLabel(k)+' -> '+getLabel(l)+': '+Math.round(value/1000)+' GWh',
-                                 value/max*pixel_add);
+        var pixel_add = 10;
+        Object.keys(arrows).forEach(function(k) {
+            Object.keys(arrows[k]).forEach(function(l) {
+                var value = arrows[k][l];
+                addArrowToRegionPlot(result_overview_map, positions[k], positions[l],
+                                     value,
+                                     getLabel(k)+' -> '+getLabel(l)+': '+Math.round(value/1000)+' GWh',
+                                     value/max*pixel_add);
+            });
         });
-    });
-    Object.values(region_bar_plot).forEach(function(region) {
-        var bound = addGridToRegionPlot(result_overview_map, region.pos, 0.15, 0.3);
+        Object.values(region_bar_plot).forEach(function(region) {
+            var bound = addGridToRegionPlot(result_overview_map, region.pos, 0.15, 0.3);
 /*
         var number_of_values = region.values.length;
         var left_lower = bound[0];
@@ -941,6 +942,7 @@ function renderResultOverview(plot_id) {
             addBarToRegionPlot(result_overview_map, left_lower[0], left_lower[1]+dwidth*(i+1), value/size_factor, bar+": "+value+" MW", getColors([bar])[bar].color);
         }
 */
+        });
     });
 }
 
@@ -1128,10 +1130,6 @@ $('#slider_form').change(function () {
 
 });
 
-
-
-var flow_results = false;
-getFlowResults(scenario_db_id, subset='false', function(x) {flow_results=x;});
 
 renderInputOverview('input_overview');
 
