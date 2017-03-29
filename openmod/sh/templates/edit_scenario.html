@@ -326,11 +326,25 @@ function prepareRow(keys, dct, factor, firstc, secondc) {
 
 function renderResultSummary(div_id) {
     $('#'+div_id).html("");
-/*
+
     getEmissionResults(scenario_db_id, multi_hub_name='kiel', function(data) {
-        appendToDiv(div_id, JSON.stringify(data));
+        var helper = {'electricity':'Strom', 'heat':'Wärme' ,
+                      'import':'Import', 'export': 'Export'};
+        var columns = Object.keys(helper);
+        var all_columns = JSON.parse(JSON.stringify(columns));
+        all_columns.splice(0, 0, "Emissionen", "");
+        appendToDiv(div_id, createTable(all_columns.map(
+            function (x) {
+                if (helper[x] != undefined) {
+                    return helper[x];
+                } else {
+                    return x;
+                  }})
+            ), "summary_emissions");
+        var row = prepareRow(columns, data, 1000, "Emissionen", "in 1000 t");
+        addTableRow(row, "summary_emissions");
     });
-*/
+
     getHubResults(scenario_db_id, 'kiel_electricity', true, function(data) {
         var production_dct = data.kiel_electricity.production;
         var total_production = Object.values(production_dct).reduce(function(a,b) {
@@ -371,11 +385,58 @@ function renderResultSummary(div_id) {
                              "Share of production in Kiel", "in %");
         addTableRow(row, "summary_table_kiel_electricity_production");
     });
-/*
+
     getHubResults(scenario_db_id, 'kiel_heat', true, function(data) {
-        appendToDiv(div_id, JSON.stringify(data));
+        var production_dct = data.kiel_heat.production;
+        var total_production = Object.values(production_dct).reduce(function(a,b) {
+            return a+b;}, 0);
+        var relative_production_dct = {}
+        var installed_power_dct = {};
+        var fullload_hours_dct = {};
+        Object.keys(production_dct).forEach(function(x) {
+            var installed_power = 0;
+            if (scenario.children_dict[x].type == 'flexible_generator') {
+                installed_power = parseFloat(scenario.children_dict[x].tags.installed_power);
+            }
+            if (scenario.children_dict[x].type == 'combined_flexible_generator' ||
+                scenario.children_dict[x].type == 'extraction_turbine') {
+                installed_power = parseFloat(scenario.children_dict[x].tags.installed_power) /
+                                    parseFloat(scenario.children_dict[x].tags.electrical_efficiency) *
+                                    parseFloat(scenario.children_dict[x].tags.thermal_efficiency);
+            }
+            var production = production_dct[x];
+            relative_production_dct[x] = production/total_production;
+            installed_power_dct[x] = installed_power;
+            fullload_hours_dct[x] = production_dct[x]/installed_power;
+
+            if ((!installed_power) || installed_power=='null' || installed_power==0) {
+                if (production !== 0) {
+                    console.log("installed_power of "+x+" is null or 0 but production is "+production);
+                }
+                installed_power_dct[x] = 0;
+                fullload_hours_dct[x] = 0;
+            }
+        });
+         var columns = Object.keys(production_dct);
+        var all_columns = JSON.parse(JSON.stringify(columns));
+
+        all_columns.splice(0,0,"Heat Production", "");
+        appendToDiv(div_id, createTable(all_columns.map(function(name){return(getLabel(name));}),
+                    "summary_table_kiel_heat_production"));
+        var row = prepareRow(columns, installed_power_dct, 1,
+                             "Installed power", "in MW");
+        addTableRow(row, "summary_table_kiel_heat_production");
+        var row = prepareRow(columns, production_dct, 1000,
+                             "Heat production", "in GWh");
+        addTableRow(row, "summary_table_kiel_heat_production");
+        var row = prepareRow(columns, fullload_hours_dct, 1,
+                             "Fullload hours", "in h");
+        addTableRow(row, "summary_table_kiel_heat_production");
+        var row = prepareRow(columns, relative_production_dct, 1/100,
+                             "Share of production in Kiel", "in %");
+        addTableRow(row, "summary_table_kiel_heat_production");
     });
-*/
+
 }
 
 function renderHubBarPlot(select_id, plot_id) {
