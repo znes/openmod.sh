@@ -956,7 +956,6 @@ function renderResultOverview(plot_id) {
     getFlowResults(scenario_db_id, subset='false', function(data) {
 
         var flow_results = data;
-        console.log(flow_results);
 
         $('#'+plot_id).html("");
         var result_overview_map = makeRegionPlot(plot_id);
@@ -979,25 +978,36 @@ function renderResultOverview(plot_id) {
                 }
             });
         });
-        var pixel_add = 10;
+        var pixel_add = 12;
         Object.keys(region_bar_plot).forEach(function(region_id) {
             var region = region_bar_plot[region_id];
             var bound = addGridToRegionPlot(result_overview_map, region.pos, 0.15, 0.3);
-            console.log(bound);
-            var value = 100;
-            var arrow_length = 0.1;
-            var arrow_distance = 0.1;
+            var arrow_length = 0.01;
+            var arrow_distance = 0.05;
             var import_arrow = JSON.parse(JSON.stringify(region.pos));
-            import_arrow = [[import_arrow[0], import_arrow[1]-arrow_distance],
+            import_arrow = [[import_arrow[0]+arrow_length, import_arrow[1]-arrow_distance],
                             [import_arrow[0], import_arrow[1]-arrow_distance]];
+            var export_arrow = JSON.parse(JSON.stringify(region.pos));
+            export_arrow = [[export_arrow[0], export_arrow[1]+arrow_distance],
+                            [export_arrow[0]+arrow_length, export_arrow[1]+arrow_distance]];
+            var import_value = flow_results['BRD_electricity -> '+region_id].reduce(function(a, b) {return a+b;});
+            var export_value = flow_results[region_id+' -> BRD_electricity'].reduce(function(a, b) {return a+b;});
+            if (import_value > max) {
+                max = import_value;
+            }
+            if (export_value > max) {
+                max = export_value;
+            }
             addArrowToRegionPlot(result_overview_map, import_arrow[0], import_arrow[1],
-                     value,
-                     getLabel(region_id)+' -> '+'BRD'+': '+Math.round(value/1000)+' GWh',
-                     value/max*pixel_add);
-            addArrowToRegionPlot(result_overview_map, region.pos, region.pos,
-                     value,
-                     getLabel(region_id)+' -> '+'BRD'+': '+Math.round(value/1000)+' GWh',
-                     value/max*pixel_add);
+                     import_value,
+                     'BRD'+' -> '+getLabel(region_id)+': '+Math.round(import_value/1000)+' GWh',
+                     import_value/max*pixel_add,
+                     shorten=false);
+            addArrowToRegionPlot(result_overview_map, export_arrow[0], export_arrow[1],
+                     export_value,
+                     getLabel(region_id)+' -> '+'BRD'+': '+Math.round(export_value/1000)+' GWh',
+                     export_value/max*pixel_add,
+                     shorten=false);
         });
         Object.keys(arrows).forEach(function(k) {
             Object.keys(arrows[k]).forEach(function(l) {
@@ -1007,20 +1017,6 @@ function renderResultOverview(plot_id) {
                                      getLabel(k)+' -> '+getLabel(l)+': '+Math.round(value/1000)+' GWh',
                                      value/max*pixel_add);
             });
-
-/*
-        var number_of_values = region.values.length;
-        var left_lower = bound[0];
-        var width = bound[1][1]-bound[0][1];
-        var dwidth = width/(number_of_values+1);
-        for(var i=0; i<number_of_values; i++) {
-            var bar = region.values[i];
-            var l = lookup[bar];
-            var value = scenario.children_dict[bar].tags[l.value];
-            var size_factor = 10;
-            addBarToRegionPlot(result_overview_map, left_lower[0], left_lower[1]+dwidth*(i+1), value/size_factor, bar+": "+value+" MW", getColors([bar])[bar].color);
-        }
-*/
         });
     });
 }

@@ -405,18 +405,23 @@ function addGridToRegionPlot(map, pos, height, width) {
     return bounds;
 }
 
-function addArrowToRegionPlot(map, pos0, pos1, value, label, pixel) {
-    var vector = [];
-    for (var i=0; i<pos0.length; i++) {
-        vector.push(pos1[i]-pos0[i]);
-    }
-    var start_point = [];
-    for (var i=0; i<pos0.length; i++) {
-        start_point.push(pos0[i]+0.515*vector[i]);
-    }
-    var end_point = [];
-    for (var i=0; i<pos0.length; i++) {
-        end_point.push(start_point[i]+0.12*vector[i]);
+function addArrowToRegionPlot(map, pos0, pos1, value, label, pixel, shorten=true) {
+    if (shorten) {
+        var vector = [];
+        for (var i=0; i<pos0.length; i++) {
+            vector.push(pos1[i]-pos0[i]);
+        }
+        var start_point = [];
+        for (var i=0; i<pos0.length; i++) {
+            start_point.push(pos0[i]+0.515*vector[i]);
+        }
+        var end_point = [];
+        for (var i=0; i<pos0.length; i++) {
+            end_point.push(start_point[i]+0.12*vector[i]);
+        }
+    } else {
+        var start_point = pos0;
+        var end_point = pos1;
     }
     var arrow_color = "red";
     var pixel_line = 4;
