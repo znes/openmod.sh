@@ -37,7 +37,7 @@ app.session_interface = IMSI()
 
 # Set up a pool of workers to which jobs can be submitted and a dictionary
 # which stores the asynchronous result objects.
-app.workers = mpp.Pool(1)
+app.workers = mpp.Pool(4)
 app.results = {}
 
 ##### Utility Functions #######################################################
