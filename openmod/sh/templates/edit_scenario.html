@@ -886,7 +886,7 @@ function renderInputOverview(plot_id) {
             var value = scenario.children_dict[bar].tags[l.value];
             var size_factor = max_bar*4;
             //console.log(bar, value);
-            addBarToRegionPlot(input_overview_map, left_lower[0], left_lower[1]+dwidth*(i+1), value/size_factor, bar+": "+value+" MW", getColors([bar])[bar].color);
+            addBarToRegionPlot(input_overview_map, left_lower[0], left_lower[1]+dwidth*(i+1), value/size_factor, getLabel(bar)+": "+value+" MW", getColors([bar])[bar].color);
         }
     });
 }
