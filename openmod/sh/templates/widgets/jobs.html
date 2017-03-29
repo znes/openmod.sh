@@ -40,21 +40,33 @@ function update_job_list(job, container_id) {
         <div class="card-block">
           <h4 class="card-title">Queued/Running Simulations</h4>
         </div>
-        <ul id="jobs" class="list-group list-group-flush">
-       {% for k, job in jobs.items() %}
-          <li class="list-group-item">
-        <a href="/simulation/{{k}}">{{job.scenario}} ({{job.user}})</a>
-        ({{ job.status() }})
-          <button class="btn btn-primary" onclick="update_job_list({{k}}, '#{{container_id}}')">
-            Dequeue/Kill
-          </button>
-        </li>
-        {% endfor %}
-        </ul>
+            <table class="table table-hover">
+					<thead>
+					    <tr>
+                                   <th width="10%">Scenario</th>
+                                   <th width="10%">User</th>
+							<th width="5%">Process</th>
+                                   <th width="5%">Stop</th>
+					    </tr>
+					</thead>
+					<tbody>
+						 {% for k, job in jobs.items() %}
+						<tr>
+							<td><a href="/simulation/{{k}}">{{job.scenario}}</a></td>
+                                    <td>    {{job.user}}</td>
+                                   <td>{{ job.status() }}</td>
+							<td>
+                                    <button class="btn btn-primary" onclick="update_job_list({{k}}, '#{{container_id}}')">
+                                    Dequene / Kill
+                                    </button>
+    						     </td>
+						</tr>
+					    {% endfor %}
+					</tbody>
+				</table>
         <div class="card-block">
           <button class="btn btn-primary" onclick="update('#{{container_id}}')">Update</button>
-          <button class="btn btn-primary" onclick="remove_dead_jobs('#{{container_id}}')"> Remove Dead Jobs
-</button>
+          <button class="btn btn-primary" onclick="remove_dead_jobs('#{{container_id}}')"> Remove Dead Jobs</button>
         </div>
         <div class="card-footer text-muted">
           2 days ago
