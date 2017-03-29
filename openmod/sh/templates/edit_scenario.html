@@ -1054,7 +1054,10 @@ function updateDisabledPlotTabs() {
         $("#plot_tab .collapse").show();
     } else {
         $("#plot_tab .collapse").hide();
-        $("#plot_tab a:first").tab("show");
+        var input_tabs = ["#input_overview", "#input_timeseries_tab", "#input_stacked_tab"];
+        if ( input_tabs.indexOf($('.nav a.active')[0]['hash']) == -1 ) {
+            $("#plot_tab a:first").tab("show");
+        }
     }
 }
 
@@ -1106,7 +1109,9 @@ $('#slider_form').change(function () {
     result_exists = false;
     updateDisabledPlotTabs();
     setSliderChangeInfo();
-    renderInputOverview('input_overview');
+    if ($('.nav a.active')[0]['hash'] == "#input_overview") {
+        renderInputOverview('input_overview');
+    }
 
     // RERENDER INPUT TIMESERIES PLOT
     if ($('.nav a.active')[0]['hash'] == "#input_timeseries_tab") {
