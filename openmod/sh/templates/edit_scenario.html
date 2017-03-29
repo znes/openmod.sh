@@ -83,22 +83,22 @@ function makeTab(id, label, options, content, additonalClass="", onclick="", act
 
 function makeIndividualBiomethanSilder() {
     $('#slider_form').append("<div><b>Biomethan Anteil in Kiel</b></div>")
+    var val = 100 - ((parseFloat(getTagValue('gas_commodity', 'emission_factor')) / 0.225)  * 100);
     $('#slider_form').append(
         '<div class="form-group row">'
             +'<label for="'+element+'" class="col-5 col-form-label">Anteil in %</label>'
             +'<div class="col">'
-                +'<input id="biomethan_slider" class="form-control" type="range" min="0" step="1" value="0" max="100" onchange="updateBiomethanValue(this.value);"/>'
+                +'<input id="biomethan_slider" class="form-control" type="range" min="0" step="1" value="'+val+'" max="100" onchange="updateBiomethanValue(this.value);"/>'
             +'</div>'
             +'<div class="col-1">'
                 +'<span id="biomethan_value"></span>'
             +'</div>'
         +'</div>');
-    new_value = 100 - ((parseFloat(getTagValue('gas_commodity', 'emission_factor')) / 0.225)  * 100);
-    $('#biomethan_value').html(new_value.toString());
+    updateBiomethanValue(val);
 }
 
 function updateBiomethanValue(value) {
-    new_value =  $("#biomethan_slider").val();
+    var new_value =  $("#biomethan_slider").val();
     $('#biomethan_value').html(new_value.toString());
 }
 
