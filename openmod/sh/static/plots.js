@@ -170,25 +170,41 @@ function makeStackedResultPlot(div, data, layout) {
     };
 
     var demand_objects = [];
-    var objects = []
+    var storage_demand_objects = [];
+    var objects = [];
 
     $.each(data, function(key, value) {
         $.each(value['production'], function(name, ts) {
             objects.push({'name': name, 'ts': ts})
         });
         $.each(value['demand'], function(name, ts) {
-            demand_objects.push({'name': name, 'ts': ts})
+            if (scenario.children_dict[name].type == 'demand') {
+                demand_objects.push({'name': name, 'ts': ts})
+            }
+            if (scenario.children_dict[name].type == 'storage') {
+                storage_demand_objects.push({'name': name, 'ts':ts})
+            }
         });
     });
 
     var traces = [];
 
-    demand = {type: 'scatter', mode: 'lines', x: dates, hoverinfo: "x+text+name"};
-    demand.name = getLabel(demand_objects[0].name)
-    demand.marker = {"color": data.coloring[demand_objects[0].name].color}
+    // Demand line
+    var demand = {type: 'scatter', mode: 'lines', x: dates, hoverinfo: "x+text+name"};
+    demand.name = getLabel(demand_objects[0].name);
+    demand.marker = {"color": data.coloring[demand_objects[0].name].color};
     demand.y = demand_objects[0].ts.map(function(x) { return x * -1; });
     traces.push(demand)
-
+    // Storage Demand line
+    if (storage_demand_objects.length > 0) {
+        var storage_demand = {type: 'scatter', mode: 'lines', x: dates, hoverinfo: "x+text+name"};
+        storage_demand.name = getLabel(storage_demand_objects[0].name) + " (laden)";
+        storage_demand.marker = {"color": "black"};
+        storage_demand.line = {"dash": "dashdot", "width": 1};
+        var y = storage_demand_objects[0].ts.map(function(x) { return x * -1; });
+        storage_demand.y = addArrays([y, demand.y]);
+        traces.push(storage_demand);
+    }
 
     d = {type: 'scatter', mode: 'lines', line: {width: 0}, fill: 'tozeroy',
          x: dates, hoverinfo: "x+text+name"};
@@ -201,7 +217,8 @@ function makeStackedResultPlot(div, data, layout) {
     var text = [];
     t.ts.forEach(function(x) {text.push(String(x))});
     d.text = text;
-    //d.fillcolor = t.color;
+
+
 
     traces.push(d);
     base = t.ts;
