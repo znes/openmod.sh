@@ -682,37 +682,50 @@ function saveNewScenario(scenario) {
     });
 }
 
+
 function updateScenario(scenario) {
     // Delete existing scenario
-    $.get('delete', {
-        id: scenario_db_id
-    });
-    // Update scenario children from dict which is manipulated by slider
-    // INDIVIDUAL FOR BIOMETHAN SLIDER DIRTY HACK
-    new_value =  $("#biomethan_slider").val();
-    emission_factor_new = 0.225 * (1 - (new_value / 100));
-    scenario.children_dict["gas_commodity"].tags["emission_factor"] = emission_factor_new;
-    // END OF DIRTY HACK
-    scenario.children = Object.values(scenario.children_dict);
-    // Use element API to write to DB
-    $.ajax({
-        url: 'API/element',
-        type: 'post',
-        data: JSON.stringify(scenario),
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        dataType: 'json',
-        success: function(data) {
-            resetSliderChange();
-            alertModal("Opening updated scenario.", "Updated successfully!", function () {
-                window.location.replace('edit_scenario?id=' + data.scenario_db_id);
-            });
-        },
-        error: function() {
-            alert("Error. This should not have happened. Call somebody.");
-        }
-    });
+    confirmModal("Override existing scenario with new values?", "Alert",
+        function(input) {
+            if(input == true) {
+                // If confirmed, delete scenario
+                $.get('delete', {
+                    id: scenario_db_id
+                });
+                // Update scenario children from dict which is manipulated by slider
+                // INDIVIDUAL FOR BIOMETHAN SLIDER DIRTY HACK
+                new_value =  $("#biomethan_slider").val();
+                emission_factor_new = 0.225 * (1 - (new_value / 100));
+                scenario.children_dict["gas_commodity"].tags["emission_factor"] = emission_factor_new;
+                // END OF DIRTY HACK
+                scenario.children = Object.values(scenario.children_dict);
+                // Use element API to write to DB
+                $.ajax({
+                    url: 'API/element',
+                    type: 'post',
+                    data: JSON.stringify(scenario),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    dataType: 'json',
+                    success: function(data) {
+                        resetSliderChange();
+                        alertModal("Opening updated scenario.", "Updated successfully!", function () {
+                            window.location.replace('edit_scenario?id=' + data.scenario_db_id);
+                        });
+                    },
+                    error: function() {
+                        alert("Error. This should not have happened. Call somebody.");
+                    }
+                });
+
+
+                } else {
+        	           return;
+    	             }
+             });
+
+
 }
 
 function makeSlider(id, value, max) {
