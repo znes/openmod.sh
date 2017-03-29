@@ -53,10 +53,8 @@
 								</form>
 							</td>
 					      	<td>
-								<form action="" method=get onsubmit="deleteScenario({{k}});">
-        								<input type=submit value="To Hell!" class="btn btn-primary">
-								</form>
-	      					</td>
+					      		<button href="javascript:void(0)" type=submit value="To Hell!" class="btn btn-primary" onclick="deleteScenario({{k}})">Delete</button>
+		 					</td>
 						</tr>
 					    {% endfor %}
 					</tbody>
@@ -108,18 +106,20 @@ if (document.referrer.split("/").pop() == "login?next=%2F") {
     $('#welcomeModal').modal();
 }
 
-function deleteScenario(scenarioId) {
-    var x = confirm("Are you sure you want to delete?");
-    if (x) {
-        $.ajax({
-            url: 'delete' + '?' + $.param({"id": scenarioId}),
-            type: 'GET',
-            success: function () {alert("Deleted successfully.");},
-            error: function () {alert("Error while attempting to delete.");}
-        });
-    } else {
-        return;
-    }
+function deleteScenario(scenarioId,e=null) {
+    confirmModal("Are you sure you want to delete?", "Delete", function(input) {
+        if(input == true) {
+            $.ajax({
+	            url: 'delete' + '?' + $.param({"id": scenarioId}),
+	            type: 'GET',
+	            success: function () {alertModal("Deleted successfully.","", function(){window.location.reload();})},
+	            error: function () {alertModal("Error while attempting to delete.","", function(){window.location.reload();});}
+	        });
+        }
+        else {
+            return;
+        }
+    });
 }
 
 </script>
