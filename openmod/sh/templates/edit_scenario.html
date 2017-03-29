@@ -956,6 +956,7 @@ function renderResultOverview(plot_id) {
     getFlowResults(scenario_db_id, subset='false', function(data) {
 
         var flow_results = data;
+        console.log(flow_results);
 
         $('#'+plot_id).html("");
         var result_overview_map = makeRegionPlot(plot_id);
@@ -979,6 +980,25 @@ function renderResultOverview(plot_id) {
             });
         });
         var pixel_add = 10;
+        Object.keys(region_bar_plot).forEach(function(region_id) {
+            var region = region_bar_plot[region_id];
+            var bound = addGridToRegionPlot(result_overview_map, region.pos, 0.15, 0.3);
+            console.log(bound);
+            var value = 100;
+            var arrow_length = 0.1;
+            var arrow_distance = 0.1;
+            var import_arrow = JSON.parse(JSON.stringify(region.pos));
+            import_arrow = [[import_arrow[0], import_arrow[1]-arrow_distance],
+                            [import_arrow[0], import_arrow[1]-arrow_distance]];
+            addArrowToRegionPlot(result_overview_map, import_arrow[0], import_arrow[1],
+                     value,
+                     getLabel(region_id)+' -> '+'BRD'+': '+Math.round(value/1000)+' GWh',
+                     value/max*pixel_add);
+            addArrowToRegionPlot(result_overview_map, region.pos, region.pos,
+                     value,
+                     getLabel(region_id)+' -> '+'BRD'+': '+Math.round(value/1000)+' GWh',
+                     value/max*pixel_add);
+        });
         Object.keys(arrows).forEach(function(k) {
             Object.keys(arrows[k]).forEach(function(l) {
                 var value = arrows[k][l];
@@ -987,9 +1007,7 @@ function renderResultOverview(plot_id) {
                                      getLabel(k)+' -> '+getLabel(l)+': '+Math.round(value/1000)+' GWh',
                                      value/max*pixel_add);
             });
-        });
-        Object.values(region_bar_plot).forEach(function(region) {
-            var bound = addGridToRegionPlot(result_overview_map, region.pos, 0.15, 0.3);
+
 /*
         var number_of_values = region.values.length;
         var left_lower = bound[0];
