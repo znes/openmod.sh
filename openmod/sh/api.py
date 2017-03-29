@@ -912,13 +912,13 @@ def get_hub_results(scenario_identifier, hub_name, by='id', aggregated=True):
 
             storages = set([k for k in keys if keys.count(k) > 1])
             for storage in storages:
-                storage_net = [p-d for p,d in
+                storage_net = [p+d for p,d in
                                zip(hub_results[hub_name]['production'][storage],
                                    hub_results[hub_name]['demand'][storage])]
                 hub_results[hub_name]['production'][storage] = \
                     [p if p > 0 else p-p for p in storage_net]
                 hub_results[hub_name]['demand'][storage] = \
-                    [p if p < 0 else p+p for p in storage_net]
+                    [p if p < 0 else p-p for p in storage_net]
 
             if aggregated:
                 for k in hub_results[hub_name]:
