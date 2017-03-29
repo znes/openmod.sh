@@ -119,8 +119,12 @@ class RedirectForm(wtfl.Form):
 login_manager = fl.LoginManager()
 login_manager.login_view = 'login'
 
-# TODO: LOGIN SHOULD BE ENABLE FOR PRODUCTION AGAIN
-app.config['LOGIN_DISABLED'] = True
+# if you want to disable login requirement add value login_disabled = true to
+#  your ~/.oemof/config.ini file
+try :
+    app.config['LOGIN_DISABLED'] = oemof.db.config.get(schema.configsection, 'login_disabled')
+except:
+    pass
 
 login_manager.init_app(app)
 @login_manager.user_loader
