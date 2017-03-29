@@ -38,7 +38,7 @@ function update_job_list(job, container_id) {
 {% if jobs %}
       <div class="card">
         <div class="card-block">
-          <h4 class="card-title">Queued/Running Simulations</h4>
+          <h4 class="card-title">Waiting/Running Simulations</h4>
         </div>
             <table class="table table-hover">
 					<thead>
@@ -57,7 +57,7 @@ function update_job_list(job, container_id) {
                                    <td>{{ job.status() }}</td>
 							<td>
                                     <button class="btn btn-primary" onclick="update_job_list({{k}}, '#{{container_id}}')">
-                                    Dequene / Kill
+                                    Pause / Kill
                                     </button>
     						     </td>
 						</tr>
