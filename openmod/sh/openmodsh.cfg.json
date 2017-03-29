@@ -71,7 +71,9 @@
         "electricity": "#438277",
         "heat": "darkred",
         "import": "red",
-        "export": "green"},
+        "export": "green",
+        "slack": "yellow",
+        "storage": "blue"},
     "region_bar_plot": {
         "kiel_electricity": {
             "label": "KI",

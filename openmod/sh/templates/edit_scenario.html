@@ -202,10 +202,10 @@ function getColors(element_names) {
                 coloring[name].opacity = 0.5;
         }
         if (scenario.children_dict[name].type == 'source') {
-                coloring[name].color = "yellow";
+                coloring[name].color = global_colors['slack'];
         }
         if (scenario.children_dict[name].type == 'storage') {
-                coloring[name].color = "blue";
+                coloring[name].color = global_colors['storage'];;
         }
 
         if (scenario.children_dict[name].type == 'flexible_generator' ||
@@ -1028,7 +1028,7 @@ function setResultExists(once=false) {
             } else {
             	if(slider_changed)
             		result_exists = false;
-                
+
                 updateDisabledPlotTabs();
             }
         }
