@@ -143,7 +143,7 @@ def login():
                 #print("Current user: {}".format(fl.current_user))
         else:
                 flask.flash('Invalid username/password combination.')
-                return flask.redirect(flask.url_for('login'))
+                return form.redirect('login')
         #else:
         #    user = schema.User(form.username.data, form.password.data)
         #    schema.DB.session.add(user)
