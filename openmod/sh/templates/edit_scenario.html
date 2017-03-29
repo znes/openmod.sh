@@ -922,7 +922,7 @@ function renderResultOverview(plot_id) {
             var value = arrows[k][l];
             addArrowToRegionPlot(result_overview_map, positions[k], positions[l],
                                  value,
-                                 k+' -> '+l+': '+value/1000+' GWh',
+                                 getLabel(k)+' -> '+getLabel(l)+': '+Math.round(value/1000)+' GWh',
                                  value/max*pixel_add);
         });
     });
