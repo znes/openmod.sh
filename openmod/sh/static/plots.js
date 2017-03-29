@@ -189,22 +189,7 @@ function makeStackedResultPlot(div, data, layout) {
 
     var traces = [];
 
-    // Demand line
-    var demand = {type: 'scatter', mode: 'lines', x: dates, hoverinfo: "x+text+name"};
-    demand.name = getLabel(demand_objects[0].name);
-    demand.marker = {"color": data.coloring[demand_objects[0].name].color};
-    demand.y = demand_objects[0].ts.map(function(x) { return x * -1; });
-    traces.push(demand)
-    // Storage Demand line
-    if (storage_demand_objects.length > 0) {
-        var storage_demand = {type: 'scatter', mode: 'lines', x: dates, hoverinfo: "x+text+name"};
-        storage_demand.name = getLabel(storage_demand_objects[0].name) + " (laden)";
-        storage_demand.marker = {"color": "black"};
-        storage_demand.line = {"dash": "dashdot", "width": 1};
-        var y = storage_demand_objects[0].ts.map(function(x) { return x * -1; });
-        storage_demand.y = addArrays([y, demand.y]);
-        traces.push(storage_demand);
-    }
+
 
     d = {type: 'scatter', mode: 'lines', line: {width: 0}, fill: 'tozeroy',
          x: dates, hoverinfo: "x+text+name"};
@@ -241,6 +226,26 @@ function makeStackedResultPlot(div, data, layout) {
         //d.fillcolor = t.color;
         traces.push(d);
     };
+
+
+    // Demand line
+    var demand = {type: 'scatter', mode: 'lines', x: dates, hoverinfo: "x+text+name"};
+    demand.name = getLabel(demand_objects[0].name);
+    demand.marker = {"color": data.coloring[demand_objects[0].name].color};
+    demand.line = {"width": 1};
+    demand.y = demand_objects[0].ts.map(function(x) { return x * -1; });
+    traces.push(demand)
+    // Storage Demand line
+    if (storage_demand_objects.length > 0) {
+        var storage_demand = {type: 'scatter', mode: 'lines', x: dates, hoverinfo: "x+text+name"};
+        storage_demand.name = getLabel(storage_demand_objects[0].name) + " (laden)";
+        storage_demand.marker = {"color": "darkred"};
+        storage_demand.line = {"dash": "dashdot", "width": 1};
+        var y = storage_demand_objects[0].ts.map(function(x) { return x * -1; });
+        storage_demand.y = addArrays([y, demand.y]);
+        traces.push(storage_demand);
+    }
+
     Plotly.newPlot(div, traces, plotly_layout);
 }
 

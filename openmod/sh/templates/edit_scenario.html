@@ -202,7 +202,10 @@ function getColors(element_names) {
                 coloring[name].opacity = 0.5;
         }
         if (scenario.children_dict[name].type == 'source') {
-                coloring[name] = "yellow";
+                coloring[name].color = "yellow";
+        }
+        if (scenario.children_dict[name].type == 'storage') {
+                coloring[name].color = "blue";
         }
 
         if (scenario.children_dict[name].type == 'flexible_generator' ||
