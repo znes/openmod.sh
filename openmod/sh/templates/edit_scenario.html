@@ -363,12 +363,29 @@ function renderResultSummary(div_id) {
     $('#'+div_id).html("");
 
     //HEATPUMP Potential:
-    var potential = {};
+    var potential_helper = {'heatpump':'KI Wärme'};
+    var potential_dct = {};
+    var potential_columns = ["heatpump"];
+    var all_potential_columns = JSON.parse(JSON.stringify(potential_columns));
+    all_potential_columns.splice(0, 0, "Potential", "");
+
+    appendToDiv(div_id,
+        createTable(
+            all_potential_columns.map(
+                function (x) {
+                    if (potential_helper[x] != undefined) {
+                        return potential_helper[x];
+                    } else {
+                        return x;
+                      }}),
+                    "summary_potential"));
+
     getHeatPumpPotential(function(x) {
-            potential['heatpump'] = x.reduce(function(a,b) {
+            potential_dct['heatpump'] = x.reduce(function(a,b) {
                                         return a+b;}, 0);
                          });
-    console.log(potential);
+    var potential_row = prepareRow(potential_columns, potential_dct, 1000, "Wärmepumpen Potential", "in GWh");
+    addTableRow(potential_row, "summary_potential");
 
     // AREA USAGE (REMOVE AFTER KIEL WORKSHOP!!!!)
     var area_helper = {'kiel_solar':'KI Solar',
