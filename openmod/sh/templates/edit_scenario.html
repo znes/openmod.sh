@@ -269,7 +269,7 @@ function getHeatPumpPotential(callback) {
         function(data) {
                 var heat_profile = scenario.children_dict['kiel_demand_heat'].sequences.load_profile
                 var heat_demand = heat_profile.map(
-                                    function(x) { return x * parseFloat(getTagValue('kiel_demand_heat', 'amount')); }
+                                    function(x) { return x * parseFloat(getTagValue('kiel_demand_heat', 'household_amount')); }
                                   );
                 var heatpump_potential = []
                 for (var i=0; i < data.length; i++) {
@@ -713,8 +713,8 @@ function runSimulation(scenario) {
     if (!slider_changed) {
         checkIfResultExists(scenario_db_id, function(data) {
             if (data == false) {
-                alertModal("The simulation runs in the background. See Jobs for an overview of running simmulation.", 
-                    "", 
+                alertModal("The simulation runs in the background. See Jobs for an overview of running simmulation.",
+                    "",
                     function() {
                         $.ajax({
                             url: 'simulate',
