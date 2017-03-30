@@ -245,34 +245,38 @@ function addArrays(arrays) {
     return total_sum;
 }
 
-function getBiomassAreaUsage(callback) {
-    var biomass_usage_specific = 0.5; //getTagValue('area_factors', 'biomass');
+function getBiomassAreaUsage(callback_biomass, callback_biomethan) {
+    var biomass_usage_specific = getTagValue('area_factors', 'biomass');
     getSingleFlowResult(scenario_db_id, 'biomass_commodity_kiel', 'kiel_biomass',
                         function(data) {
                                 var sum = data.reduce(function(a,b) {
                                                 return a+b;}, 0);
-                                callback(sum * parseFloat(biomass_usage_specific));
+                                callback_biomass(sum * parseFloat(biomass_usage_specific));
+                        });
+    var biomethan_usage_specific = getTagValue('area_factors', 'biomethan');
+    getSingleFlowResult(scenario_db_id, 'gas_commodity', 'global_gas',
+                        function(data) {
+                                var sum = data.reduce(function(a,b) {
+                                                return a+b;}, 0);
+                                callback_biomethan(sum *
+                                                   parseFloat(biomethan_usage_specific) *
+                                                   parseFloat($('#biomethan_slider').val()));
                         });
 }
 
 
 function getAreaUsage(element_name) {
-    if (element_name == 'biomethan') {
-        var biomethan_usage_specific = 0.5; //getTagValue('area_usage', 'biomethan');
-        return biomethan_usage_specific;
+    var area_select = getTagValue(element_name, 'fuel_type');
+
+    if (area_select == undefined) {
+        var area_usage = null;
     }
     else {
-        var area_select = getTagValue(element_name, 'fuel_type');
+        var area_usage = getTagValue('area_factors', area_select) *
+            parseFloat(getTagValue(element_name, 'installed_power'));
+    }
+    return area_usage;
 
-        if (area_select == undefined) {
-            var area_usage = null;
-        }
-        else {
-            var area_usage = getTagValue('area_factors', area_select) *
-                parseFloat(getTagValue(element_name, 'installed_power'));
-        }
-        return area_usage;
-      }
 }
 
 function updateValue(slider_id, newValue) {
@@ -367,12 +371,19 @@ function renderResultSummary(div_id) {
                     "summary_area"));
 
     for (var i=0; i < area_columns.length-1; i++) {
-        area_dct[area_columns[i]] = getAreaUsage(area_columns[i])
-        relative_area_dct[area_columns[i]] = getAreaUsage(area_columns[i]) / 11865 * 100
+        if (['biomethan', 'biomass'].indexOf(area_columns[i]) == -1 ) {
+            area_dct[area_columns[i]] = getAreaUsage(area_columns[i])
+            relative_area_dct[area_columns[i]] = getAreaUsage(area_columns[i]) / 11865 * 100
+        }
     }
-    getBiomassAreaUsage(function(x) {
-        area_dct['biomass'] = x;
-        relative_area_dct['biomass'] = x / 11865 * 100;
+    getBiomassAreaUsage(
+        function(biomass) {
+            area_dct['biomass'] = biomass;
+            relative_area_dct['biomass'] = biomass / 11865 * 100;},
+        function(biomethan) {
+
+        area_dct['biomethan'] = biomethan;
+        relative_area_dct['biomethan'] = biomethan / 11865 * 100;
         var area_row = prepareRow(area_columns, area_dct, 1, "Area", "in ha");
         addTableRow(area_row, "summary_area");
         var relative_area_row = prepareRow(area_columns, relative_area_dct, 1, "Area", "in %");
