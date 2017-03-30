@@ -901,7 +901,7 @@ function makeAllAutomaticSlider() {
             if (getTagValue(element, l.value) != "null") {
                 roundTagValue(element, l.value);
                 roundTagValue(element, l.max);
-                var slider_max = 2*parseFloat(getTagValue(element, l.max));
+                var slider_max = parseFloat(getTagValue(element, l.max));
                 if (slider_max > max_bar) {
                     max_bar = slider_max;
                 }
