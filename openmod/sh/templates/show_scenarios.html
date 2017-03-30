@@ -20,7 +20,8 @@
 				<table class="table table-hover">
 					<thead>
 					    <tr>
-							<th width="15%">Scenario</th>
+							<th width="15%">Name</th>
+                                   <th>Year</th>
                                    <th width="25%">Description</th>
 							<th>Edit</th>
 							<th>Get JSON - dataset</th>
@@ -32,6 +33,7 @@
 						{% for k,v in scenarios.items() %}
 						<tr>
 							<td>{{ scenarios[k]['name'] }}</td>
+                                   <td>{{ scenarios[k]['tags']['year'] }}</td>
                                    <td>{{ scenarios[k]['tags']['description'] }}</td>
 							<td>
 							<form action="{{ url_for('edit_scenario') }}" method=get>
@@ -53,7 +55,7 @@
 								</form>
 							</td>
 					      	<td>
-					      		<button href="javascript:void(0)" type=submit value="To Hell!" class="btn btn-primary" onclick="deleteScenario({{k}})">Delete</button>
+					      		<button href="javascript:void(0)" type=submit value="Delete!" class="btn btn-primary" onclick="deleteScenario({{k}})">Delete</button>
 		 					</td>
 						</tr>
 					    {% endfor %}
