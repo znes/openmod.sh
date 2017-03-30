@@ -264,6 +264,21 @@ function getBiomassAreaUsage(callback_biomass, callback_biomethan) {
                         });
 }
 
+function getHeatPumpPotential(callback) {
+    getSingleFlowResult(scenario_db_id, 'kiel_electricity', 'BRD_export',
+        function(data) {
+                var heat_profile = scenario.children_dict['kiel_demand_heat'].sequences.load_profile
+                var heat_demand = heat_profile.map(
+                                    function(x) { return x * parseFloat(getTagValue('kiel_demand_heat', 'amount')); }
+                                  );
+                var heatpump_potential = []
+                for (var i=0; i < data.length; i++) {
+                    heatpump_potential.push(Math.min(heat_demand[i], data[i]));
+                }
+                callback(heatpump_potential);
+        });
+
+}
 
 function getAreaUsage(element_name) {
     var area_select = getTagValue(element_name, 'fuel_type');
@@ -346,6 +361,14 @@ function prepareRow(keys, dct, factor, firstc, secondc) {
 
 function renderResultSummary(div_id) {
     $('#'+div_id).html("");
+
+    //HEATPUMP Potential:
+    var potential = {};
+    getHeatPumpPotential(function(x) {
+            potential['heatpump'] = x.reduce(function(a,b) {
+                                        return a+b;}, 0);
+                         });
+    console.log(potential);
 
     // AREA USAGE (REMOVE AFTER KIEL WORKSHOP!!!!)
     var area_helper = {'kiel_solar':'KI Solar',
