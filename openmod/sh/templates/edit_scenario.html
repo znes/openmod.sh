@@ -245,20 +245,22 @@ function addArrays(arrays) {
     return total_sum;
 }
 
+function getBiomassAreaUsage(callback) {
+    var biomass_usage_specific = 0.5; //getTagValue('area_factors', 'biomass');
+    getSingleFlowResult(scenario_db_id, 'biomass_commodity_kiel', 'kiel_biomass',
+                        function(data) {
+                                var sum = data.reduce(function(a,b) {
+                                                return a+b;}, 0);
+                                callback(sum * parseFloat(biomass_usage_specific));
+                        });
+}
+
+
 function getAreaUsage(element_name) {
     if (element_name == 'biomethan') {
         var biomethan_usage_specific = 0.5; //getTagValue('area_usage', 'biomethan');
         return biomethan_usage_specific;
     }
-    else if (element_name == 'biomass') {
-        var biomass_usage_specific = 0.5; //getTagValue('area_factors', 'biomass');
-        getSingleFlowResult(scenario_db_id, 'biomass_commodity_kiel', 'kiel_biomass',
-                            function(data) {
-                                    var sum = data.reduce(function(a,b) {
-                                                    return a+b;}, 0)
-                                    return sum * parseFloat(biomass_usage_specific)
-                            });
-        }
     else {
         var area_select = getTagValue(element_name, 'fuel_type');
 
@@ -346,6 +348,7 @@ function renderResultSummary(div_id) {
                        'kiel_wind':'KI Wind',
                        'biomethan':'Biomethan Import' ,
                        'biomass':'Biomasse Import'};
+    // biomass has to be last
     var area_columns = ["kiel_solar", "biomethan", "biomass"];
     var all_area_columns = JSON.parse(JSON.stringify(area_columns));
     all_area_columns.splice(0, 0, "Area", "");
@@ -363,14 +366,18 @@ function renderResultSummary(div_id) {
                       }}),
                     "summary_area"));
 
-    for (var i=0; i < area_columns.length; i++) {
+    for (var i=0; i < area_columns.length-1; i++) {
         area_dct[area_columns[i]] = getAreaUsage(area_columns[i])
         relative_area_dct[area_columns[i]] = getAreaUsage(area_columns[i]) / 11865 * 100
     }
-    var area_row = prepareRow(area_columns, area_dct, 1, "Area", "in ha");
-    addTableRow(area_row, "summary_area");
-    var relative_area_row = prepareRow(area_columns, relative_area_dct, 1, "Area", "in %");
-    addTableRow(relative_area_row, "summary_area");
+    getBiomassAreaUsage(function(x) {
+        area_dct['biomass'] = x;
+        relative_area_dct['biomass'] = x / 11865 * 100;
+        var area_row = prepareRow(area_columns, area_dct, 1, "Area", "in ha");
+        addTableRow(area_row, "summary_area");
+        var relative_area_row = prepareRow(area_columns, relative_area_dct, 1, "Area", "in %");
+        addTableRow(relative_area_row, "summary_area");
+    });
 
     // EMISSIONS RESULTS
     getEmissionResults(scenario_db_id, multi_hub_name='kiel', function(data) {
