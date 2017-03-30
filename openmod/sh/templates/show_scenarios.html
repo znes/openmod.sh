@@ -4,95 +4,95 @@
 {% endblock %}
 
 {% block submenu %}
-	<header>
-		<div class="row align-items-center">
-			<div class="col">
-  				<div class="title">Scenarios</div>
-			</div>
+<header>
+	<div class="row align-items-center">
+		<div class="col">
+			<div class="title">Scenarios</div>
 		</div>
-	</header>
+	</div>
+</header>
 {% endblock %}
 
 {% block content %}
 
-			<!-- interface -->
-			<div class="card">
-				<table class="table table-hover">
-					<thead>
-					    <tr>
-							<th width="15%">Name</th>
-                                   <th>Year</th>
-                                   <th width="25%">Description</th>
-							<th>Edit</th>
-							<th>Get JSON - dataset</th>
-				               <th>Get Results</th>
-							<th>Delete</th>
-					    </tr>
-					</thead>
-					<tbody>
-						{% for k,v in scenarios.items() %}
-						<tr>
-							<td>{{ scenarios[k]['name'] }}</td>
-                                   <td>{{ scenarios[k]['tags']['year'] }}</td>
-                                   <td>{{ scenarios[k]['tags']['description'] }}</td>
-							<td>
-							<form action="{{ url_for('edit_scenario') }}" method=get>
-							<input type=submit value="Edit" class="btn btn-primary">
-							<input type="hidden" name="id" value="{{k}}">
-							</form>
-    						     </td>
-							<td>
-								<form action="{{ url_for('download') }}" method=get>
-									<input type=submit value="Download" class="btn btn-primary">
-									<input type="hidden" name="id" value="{{k}}">
-								</form>
-							</td>
-							<td>
-								<form action="{{ url_for('download') }}" method=get>
-									<input type=submit value="Download" class="btn btn-primary">
-									<input type="hidden" name="id" value="{{k}}">
-									<input type="hidden" name="results" value="true">
-								</form>
-							</td>
-					      	<td>
-					      		<button href="javascript:void(0)" type=submit value="Delete!" class="btn btn-primary" onclick="deleteScenario({{k}})">Delete</button>
-		 					</td>
-						</tr>
-					    {% endfor %}
-					</tbody>
-				</table>
-			</div>
+<!-- interface -->
+<div class="card">
+	<table class="table table-hover">
+		<thead>
+			<tr>
+				<th width="15%" class="sortTh">Name</th>
+				<th class="sortTh">Year</th>
+				<th width="25%">Description</th>
+				<th>Edit</th>
+				<th>Get JSON - dataset</th>
+				<th>Get Results</th>
+				<th>Delete</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for k,v in scenarios.items() %}
+			<tr>
+				<td>{{ scenarios[k]['name'] }}</td>
+				<td>{{ scenarios[k]['tags']['year'] }}</td>
+				<td>{{ scenarios[k]['tags']['description'] }}</td>
+				<td>
+					<form action="{{ url_for('edit_scenario') }}" method=get>
+						<input type=submit value="Edit" class="btn btn-primary">
+						<input type="hidden" name="id" value="{{k}}">
+					</form>
+				</td>
+				<td>
+					<form action="{{ url_for('download') }}" method=get>
+						<input type=submit value="Download" class="btn btn-primary">
+						<input type="hidden" name="id" value="{{k}}">
+					</form>
+				</td>
+				<td>
+					<form action="{{ url_for('download') }}" method=get>
+						<input type=submit value="Download" class="btn btn-primary">
+						<input type="hidden" name="id" value="{{k}}">
+						<input type="hidden" name="results" value="true">
+					</form>
+				</td>
+				<td>
+					<button href="javascript:void(0)" type=submit value="Delete!" class="btn btn-primary" onclick="deleteScenario({{k}})">Delete</button>
+				</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</div>
 
 <!-- Welcone Modal -->
 <div class="modal fade" id="welcomeModal" tabindex="-1" role="dialog" aria-labelledby="welcomeModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="welcomeModalLabel">Welcome to openMod.sh</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        This is openMod.sh.<br>
-        A flexible Open Energy Model for Schleswig-Holstein. <br>
-        <br>
-        Choose or import a scenario and go for it.
-        <br>
-        <br>based on oemof<br>
-        <div><img src="static/welcomeModal2.png"></div>
-        <br>developed at<br>
-        <div><img src="static/znes-logo.png"></div>
-        <br>funded by<br>
-        <div><img src="static/eksh-logo.svg"></div><br>
-        <div><img src="static/arge-logo.svg"></div><br>
-        <div><img src="static/ihk-logo.jpg"></div><br>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="welcomeModalLabel">Welcome to openMod.sh</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				This is openMod.sh.<br>
+				A flexible Open Energy Model for Schleswig-Holstein. <br>
+				<br>
+				Choose or import a scenario and go for it.
+				<br>
+				<br>based on oemof<br>
+				<div><img src="static/welcomeModal2.png"></div>
+				<br>developed at<br>
+				<div><img src="static/znes-logo.png"></div>
+				<br>funded by<br>
+				<div><img src="static/eksh-logo.svg"></div><br>
+				<div><img src="static/arge-logo.svg"></div><br>
+				<div><img src="static/ihk-logo.jpg"></div><br>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+			</div>
+		</div>
+	</div>
 </div>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
@@ -105,23 +105,62 @@
 
 // open welcome modal when coming from login root redirect
 if (document.referrer.split("/").pop() == "login?next=%2F") {
-    $('#welcomeModal').modal();
+	$('#welcomeModal').modal();
 }
 
 function deleteScenario(scenarioId,e=null) {
-    confirmModal("Are you sure you want to delete?", "Delete", function(input) {
-        if(input == true) {
-            $.ajax({
-	            url: 'delete' + '?' + $.param({"id": scenarioId}),
-	            type: 'GET',
-	            success: function () {alertModal("Deleted successfully.","", function(){window.location.reload();})},
-	            error: function () {alertModal("Error while attempting to delete.","", function(){window.location.reload();});}
-	        });
-        }
-        else {
-            return;
-        }
-    });
+	confirmModal("Are you sure you want to delete?", "Delete", function(input) {
+		if(input == true) {
+			$.ajax({
+				url: 'delete' + '?' + $.param({"id": scenarioId}),
+				type: 'GET',
+				success: function () {alertModal("Deleted successfully.","", function(){window.location.reload();})},
+				error: function () {alertModal("Error while attempting to delete.","", function(){window.location.reload();});}
+			});
+		}
+		else {
+			return;
+		}
+	});
+}
+
+// Ready Function
+$(function() {
+	var table = $("table");
+
+	$('th.sortTh').click(function() {
+		$('table .arrowDown, .arrowUp').removeClass('arrowDown arrowUp');
+	    var rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index()));
+	    this.asc = !this.asc;
+	    if (!this.asc){ 
+			rows = rows.reverse();
+		}
+	    for (var i = 0; i < rows.length; i++) {
+			table.append(rows[i])
+		}
+		if(this.asc) {
+			$(this).toggleClass('arrowDown', true);	
+		}
+		else {
+			$(this).toggleClass('arrowUp', true);
+		}
+		
+	});
+
+	// Sort Default
+	$('th.sortTh')[0].click();
+});
+
+
+function comparer(index) {
+    return function(a, b) {
+        var valA = getCellValue(a, index), 
+			valB = getCellValue(b, index);
+        return $.isNumeric(valA) && $.isNumeric(valB) ? valA - valB : valA.localeCompare(valB)
+    }
+}
+function getCellValue(row, index) { 
+	return $(row).children('td').eq(index).html() 
 }
 
 </script>

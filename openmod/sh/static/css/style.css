@@ -178,3 +178,29 @@ footer {
 	cursor: default;
  }
 
+table .sortTh {
+	cursor: pointer;
+	position: relative;
+}
+table .sortTh:before, table .sortTh:after {
+	position: absolute;
+    bottom: 0.9em;
+    display: block;
+    opacity: 0.3;
+}
+/** Up Arrow*/
+table .sortTh:before {
+	right: 1em;
+	content: "\2191";
+}
+/** Down Arrow*/
+table .sortTh:after {
+	right: 0.5em;
+	content: "\2193";
+}
+table .sortTh.arrowUp:before {
+	opacity: 1;
+}
+table .sortTh.arrowDown:after {
+	opacity: 1;
+}
