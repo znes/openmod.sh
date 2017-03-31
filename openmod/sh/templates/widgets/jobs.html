@@ -4,7 +4,16 @@
 <div id="{{ container_id }}">
 <script type="text/javascript">
 
-setTimeout(update, 1000 * {{ countdown_seconds }}, '#{{container_id}}');
+setTimeout(tick, 1000, {{ countdown_seconds }} - 1);
+
+function tick(seconds){
+  if (seconds === 0){ update('#{{container_id}}'); }
+  else {
+    $("#update-jobs-widget").text(
+       "{{ update_button_text }}" + " (" + seconds + ")");
+    setTimeout(tick, 1000, seconds - 1);
+  };
+};
 
 function update(container_id){
   $.ajax({
@@ -69,7 +78,7 @@ function update_job_list(job, container_id) {
 					</tbody>
 				</table>
         <div class="card-block">
-          <button class="btn btn-primary" onclick="update('#{{container_id}}')">{{ update_button_text }}</button>
+          <button id="update-jobs-widget" class="btn btn-primary" onclick="update('#{{container_id}}')">{{ update_button_text }} ({{ countdown_seconds }})</button>
           <button class="btn btn-primary" onclick="remove_dead_jobs('#{{container_id}}')"> Remove Dead Jobs</button>
         </div>
         <div class="card-footer text-muted">
