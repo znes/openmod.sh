@@ -2,6 +2,8 @@
 <div id="{{ container_id }}">
 <script type="text/javascript">
 
+setTimeout(update, 7000, '#{{container_id}}')
+
 function update(container_id){
   $.ajax({
     url: '/widgets/jobs',
