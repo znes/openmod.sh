@@ -54,7 +54,7 @@ function update_job_list(job, container_id) {
           <td>{{ job.status() }}</td>
           <td><button class="btn btn-primary"
                       onclick="update_job_list({{k}}, '#{{container_id}}')">
-                Pause / Kill
+                Cancel / Kill
               </button>
           </td>
       </tr>{% endfor %}
