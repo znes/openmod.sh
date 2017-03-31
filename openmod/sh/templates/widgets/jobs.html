@@ -1,8 +1,10 @@
 {% set container_id = container_id | default('steve') %}
+{% set countdown_seconds = 7 %}
+{% set update_button_text = "Update" %}
 <div id="{{ container_id }}">
 <script type="text/javascript">
 
-setTimeout(update, 7000, '#{{container_id}}')
+setTimeout(update, 1000 * {{ countdown_seconds }}, '#{{container_id}}');
 
 function update(container_id){
   $.ajax({
@@ -67,7 +69,7 @@ function update_job_list(job, container_id) {
 					</tbody>
 				</table>
         <div class="card-block">
-          <button class="btn btn-primary" onclick="update('#{{container_id}}')">Update</button>
+          <button class="btn btn-primary" onclick="update('#{{container_id}}')">{{ update_button_text }}</button>
           <button class="btn btn-primary" onclick="remove_dead_jobs('#{{container_id}}')"> Remove Dead Jobs</button>
         </div>
         <div class="card-footer text-muted">
