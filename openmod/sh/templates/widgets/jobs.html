@@ -74,6 +74,9 @@ function update_job_list(job, container_id) {
   <div class="card-block">
     <h4 class="card-title">Queued/Running Simulations</h4>
     <h6 class="card-subtitle mb-2 text-muted">No Jobs.</h6>
+    <button class="btn btn-primary" onclick="update('#{{container_id}}')">
+      Update
+    </button>
     <p><br /></p>
   </div>
 {% endif %}
