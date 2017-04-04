@@ -4,8 +4,8 @@
 	<header>
 		<div class="row align-items-center">
 			<div class="col">
-  			<div class="title">Scenario Name</div>
-			Graph
+  			<div class="title">{{_('Scenario Name')}}</div>
+			{{_('Graph')}}
 		</div>
 	</div>
 	</header>
@@ -15,7 +15,7 @@
 
   			<div class="card">
 				<div class="card-header">
-					Dataset
+					{{_('Dataset')}}
 				</div>
 				<div class="card-block" id="graph_plot">
 				 {{ graph_svg | safe }}

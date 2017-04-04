@@ -8,52 +8,496 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-03-07 13:46+0100\n"
+"POT-Creation-Date: 2017-04-04 15:00+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.3.4\n"
+"Generated-By: Babel 2.4.0\n"
 
-#: gui.py:41
+#: gui.py:56
 msgid "Please provide correct query parameters. At least 'id'."
 msgstr ""
 
-#: templates/edit_scenario.html:39
-msgid "Area Usage"
+#: templates/base_layout.html:38
+msgid "Scenario Overview"
 msgstr ""
 
-#: templates/edit_scenario.html:42
-msgid "Solar Roof"
+#: templates/base_layout.html:41 templates/edit_scenario.html:435
+msgid "Import"
 msgstr ""
 
-#: templates/edit_scenario.html:54
-msgid "Solar Rural"
+#: templates/base_layout.html:44
+msgid "Jobs"
 msgstr ""
 
-#: templates/edit_scenario.html:66
-msgid "Wind"
+#: templates/base_layout.html:52
+msgid "Help"
 msgstr ""
 
-#: templates/edit_scenario.html:79
-msgid "Biomass CHP"
+#: templates/base_layout.html:56
+msgid "User"
 msgstr ""
 
-#: templates/main_menu.html:4
-msgid "What do you want to do?"
+#: templates/base_layout.html:59
+msgid "Logout"
 msgstr ""
 
-#: templates/main_menu.html:6
-msgid "Scenario overview"
+#: templates/base_layout.html:70
+msgid "Selected scenario name"
 msgstr ""
 
-#: templates/main_menu.html:8
-msgid "Compare scenarios"
+#: templates/base_layout.html:90
+msgid "Import a scenario"
 msgstr ""
 
-#: templates/main_menu.html:10
-msgid "Import dataset"
+#: templates/base_layout.html:96
+msgid "You can import scenarios only in the openmod.sh specific JSON-format."
+msgstr ""
+
+#: templates/base_layout.html:100
+msgid "Choose file:"
+msgstr ""
+
+#: templates/base_layout.html:102
+msgid "The file has to be a json-file following the openmod.sh API structure."
+msgstr ""
+
+#: templates/base_layout.html:104
+msgid "Upload"
+msgstr ""
+
+#: templates/base_layout.html:109 templates/show_scenarios.html:92
+msgid "Close"
+msgstr ""
+
+#: templates/base_layout.html:147
+msgid "Uploading..."
+msgstr ""
+
+#: templates/base_layout.html:157
+msgid "scenariofile"
+msgstr ""
+
+#: templates/base_layout.html:164
+msgid "Upload another"
+msgstr ""
+
+#: templates/base_layout.html:165
+msgid "Upload successfull!"
+msgstr ""
+
+#: templates/base_layout.html:167 templates/base_layout.html:172
+msgid "Try again"
+msgstr ""
+
+#: templates/base_layout.html:168
+msgid "Scenario name already taken!"
+msgstr ""
+
+#: templates/base_layout.html:169
+msgid "Choose a new scenario name:"
+msgstr ""
+
+#: templates/base_layout.html:173
+msgid "An error occurred!"
+msgstr ""
+
+#: templates/base_layout.html:177 templates/base_layout.html:179
+msgid "new_scenario_name"
+msgstr ""
+
+#: templates/edit_scenario.html:21
+msgid "Scenario"
+msgstr ""
+
+#: templates/edit_scenario.html:26
+msgid "Save changes"
+msgstr ""
+
+#: templates/edit_scenario.html:27
+msgid "Save as new scenario"
+msgstr ""
+
+#: templates/edit_scenario.html:28
+msgid "Run Simulation"
+msgstr ""
+
+#: templates/edit_scenario.html:45
+msgid "Input Parameter"
+msgstr ""
+
+#: templates/edit_scenario.html:85
+msgid "Biomethan Anteil in Kiel"
+msgstr ""
+
+#: templates/edit_scenario.html:89
+msgid "Anteil in"
+msgstr ""
+
+#: templates/edit_scenario.html:161
+msgid "Residualload"
+msgstr ""
+
+#: templates/edit_scenario.html:174
+msgid "Demand"
+msgstr ""
+
+#: templates/edit_scenario.html:182
+msgid "Production"
+msgstr ""
+
+#: templates/edit_scenario.html:309 templates/edit_scenario.html:586
+#: templates/edit_scenario.html:631
+msgid "No results in db!"
+msgstr ""
+
+#: templates/edit_scenario.html:313
+msgid "CO2-Emissions in Kiel"
+msgstr ""
+
+#: templates/edit_scenario.html:365
+msgid "KI Wärme"
+msgstr ""
+
+#: templates/edit_scenario.html:386
+msgid "Wärmepumpen Potential"
+msgstr ""
+
+#: templates/edit_scenario.html:390
+msgid "KI Solar"
+msgstr ""
+
+#: templates/edit_scenario.html:391
+msgid "KI Wind"
+msgstr ""
+
+#: templates/edit_scenario.html:392
+msgid "Biomethan Import"
+msgstr ""
+
+#: templates/edit_scenario.html:393
+msgid "Biomasse Import"
+msgstr ""
+
+#: templates/edit_scenario.html:426 templates/edit_scenario.html:428
+msgid "Area"
+msgstr ""
+
+#: templates/edit_scenario.html:426
+msgid "in ha"
+msgstr ""
+
+#: templates/edit_scenario.html:428 templates/edit_scenario.html:492
+#: templates/edit_scenario.html:544
+msgid "in"
+msgstr ""
+
+#: templates/edit_scenario.html:434
+msgid "Strom"
+msgstr ""
+
+#: templates/edit_scenario.html:434
+msgid "Wärme"
+msgstr ""
+
+#: templates/edit_scenario.html:435
+msgid "Export"
+msgstr ""
+
+#: templates/edit_scenario.html:450
+msgid "Emissionen"
+msgstr ""
+
+#: templates/edit_scenario.html:483 templates/edit_scenario.html:535
+msgid "Installed power"
+msgstr ""
+
+#: templates/edit_scenario.html:483 templates/edit_scenario.html:535
+#: templates/edit_scenario.html:1009 templates/edit_scenario.html:1014
+#: templates/edit_scenario.html:1018 templates/edit_scenario.html:1019
+msgid "in MW"
+msgstr ""
+
+#: templates/edit_scenario.html:486
+msgid "Electricity production"
+msgstr ""
+
+#: templates/edit_scenario.html:486 templates/edit_scenario.html:538
+msgid "in GWh"
+msgstr ""
+
+#: templates/edit_scenario.html:489 templates/edit_scenario.html:541
+msgid "Fullload hours"
+msgstr ""
+
+#: templates/edit_scenario.html:489 templates/edit_scenario.html:541
+msgid "in h"
+msgstr ""
+
+#: templates/edit_scenario.html:492 templates/edit_scenario.html:544
+msgid "Share of production in Kiel"
+msgstr ""
+
+#: templates/edit_scenario.html:538
+msgid "Heat production"
+msgstr ""
+
+#: templates/edit_scenario.html:557 templates/edit_scenario.html:602
+#: templates/edit_scenario.html:656
+msgid "No hubs founds!"
+msgstr ""
+
+#: templates/edit_scenario.html:590
+msgid "Yearly Production, Consumption and Im-/Export in"
+msgstr ""
+
+#: templates/edit_scenario.html:634
+msgid "No production for selected hub!"
+msgstr ""
+
+#: templates/edit_scenario.html:642
+msgid "Hourly Production and Demand in"
+msgstr ""
+
+#: templates/edit_scenario.html:643 templates/edit_scenario.html:722
+msgid "Production and Demand in MW"
+msgstr ""
+
+#: templates/edit_scenario.html:713
+msgid "No data to render!"
+msgstr ""
+
+#: templates/edit_scenario.html:721
+msgid "Hourly Renewable Production and Demand in"
+msgstr ""
+
+#: templates/edit_scenario.html:732
+msgid ""
+"The simulation runs in the background. See Jobs for an overview of "
+"running simmulation."
+msgstr ""
+
+#: templates/edit_scenario.html:748
+msgid "Result already exists."
+msgstr ""
+
+#: templates/edit_scenario.html:752
+msgid ""
+"There are unsaved changes. You have to save them before you can run a "
+"simulation."
+msgstr ""
+
+#: templates/edit_scenario.html:752
+msgid "Unsaved changes"
+msgstr ""
+
+#: templates/edit_scenario.html:819
+msgid "New Name"
+msgstr ""
+
+#: templates/edit_scenario.html:819
+msgid "Senario Name"
+msgstr ""
+
+#: templates/edit_scenario.html:825
+msgid "alert"
+msgstr ""
+
+#: templates/edit_scenario.html:825
+msgid "Input needs to be more than 0 characters."
+msgstr ""
+
+#: templates/edit_scenario.html:830
+msgid "New description"
+msgstr ""
+
+#: templates/edit_scenario.html:858
+msgid "Saved successfully! Opening new scenario."
+msgstr ""
+
+#: templates/edit_scenario.html:858
+msgid "Info"
+msgstr ""
+
+#: templates/edit_scenario.html:863
+msgid "Scenario name is already taken. Try again."
+msgstr ""
+
+#: templates/edit_scenario.html:863 templates/edit_scenario.html:878
+#: templates/edit_scenario.html:1187
+msgid "Alert"
+msgstr ""
+
+#: templates/edit_scenario.html:878
+msgid "Override existing scenario with new values?"
+msgstr ""
+
+#: templates/edit_scenario.html:903
+msgid "Opening updated scenario."
+msgstr ""
+
+#: templates/edit_scenario.html:903
+msgid "Updated successfully!"
+msgstr ""
+
+#: templates/edit_scenario.html:908
+msgid "Error. This should not have happened. Call somebody."
+msgstr ""
+
+#: templates/edit_scenario.html:970
+msgid "No results in db"
+msgstr ""
+
+#: templates/edit_scenario.html:1008
+msgid "Hourly"
+msgstr ""
+
+#: templates/edit_scenario.html:1013
+msgid "Duration curve of"
+msgstr ""
+
+#: templates/edit_scenario.html:1018
+msgid "Heatmap of"
+msgstr ""
+
+#: templates/edit_scenario.html:1039
+msgid "Residuallast"
+msgstr ""
+
+#: templates/edit_scenario.html:1187
+msgid "Do you really want to loose your changes?"
+msgstr ""
+
+#: templates/edit_scenario.html:1201
+msgid "WITH CHANGES"
+msgstr ""
+
+#: templates/edit_scenario.html:1203
+msgid "Discard Changes"
+msgstr ""
+
+#: templates/edit_scenario.html:1238
+msgid "The simulation for this scenario is finished."
+msgstr ""
+
+#: templates/edit_scenario.html:1238
+msgid "Results are available"
+msgstr ""
+
+#: templates/edit_scenario.html:1242
+msgid "The simulation for the last scenario is finished."
+msgstr ""
+
+#: templates/edit_scenario.html:1243
+msgid "But since starting the simulation you have changed some slider values."
+msgstr ""
+
+#: templates/edit_scenario.html:1244
+msgid "If you want to keep your changes, save them as a new scenario."
+msgstr ""
+
+#: templates/edit_scenario.html:1245
+msgid ""
+"If you want to discard the changes and see the results, just refresh this"
+" page."
+msgstr ""
+
+#: templates/edit_scenario.html:1246
+msgid "Results are available, but..."
+msgstr ""
+
+#: templates/graph_plot.html:7
+msgid "Scenario Name"
+msgstr ""
+
+#: templates/graph_plot.html:8
+msgid "Graph"
+msgstr ""
+
+#: templates/graph_plot.html:18
+msgid "Dataset"
+msgstr ""
+
+#: templates/login.html:19 templates/login.html:34 templates/login.html:58
+msgid "Login"
+msgstr ""
+
+#: templates/login.html:37
+msgid "Logged in as"
+msgstr ""
+
+#: templates/show_scenarios.html:10
+msgid "Scenarios"
+msgstr ""
+
+#: templates/show_scenarios.html:23
+msgid "Name"
+msgstr ""
+
+#: templates/show_scenarios.html:24
+msgid "Year"
+msgstr ""
+
+#: templates/show_scenarios.html:25
+msgid "Description"
+msgstr ""
+
+#: templates/show_scenarios.html:26
+msgid "Edit"
+msgstr ""
+
+#: templates/show_scenarios.html:27
+msgid "Get JSON - dataset"
+msgstr ""
+
+#: templates/show_scenarios.html:28
+msgid "Get Results"
+msgstr ""
+
+#: templates/show_scenarios.html:29
+msgid "Delete"
+msgstr ""
+
+#: templates/show_scenarios.html:71
+msgid "Welcome to openMod.sh"
+msgstr ""
+
+#: templates/show_scenarios.html:77
+msgid "This is openMod.sh."
+msgstr ""
+
+#: templates/show_scenarios.html:78
+msgid "A flexible Open Energy Model for Schleswig-Holstein."
+msgstr ""
+
+#: templates/show_scenarios.html:80
+msgid "Choose or import a scenario and go for it."
+msgstr ""
+
+#: templates/show_scenarios.html:82
+msgid "based on oemof"
+msgstr ""
+
+#: templates/show_scenarios.html:84
+msgid "developed at"
+msgstr ""
+
+#: templates/show_scenarios.html:86
+msgid "funded by"
+msgstr ""
+
+#: templates/show_scenarios.html:117
+msgid "Deleted successfully."
+msgstr ""
+
+#: templates/show_scenarios.html:118
+msgid "Error while attempting to delete."
+msgstr ""
+
+#: templates/pages/jobs.html:7
+msgid "Queued/Running Simulations"
 msgstr ""
 

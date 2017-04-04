@@ -7,7 +7,7 @@
 <header>
 	<div class="row align-items-center">
 		<div class="col">
-			<div class="title">Scenarios</div>
+			<div class="title">{{_('Scenarios')}}</div>
 		</div>
 	</div>
 </header>
@@ -20,13 +20,13 @@
 	<table class="table table-hover">
 		<thead>
 			<tr>
-				<th width="15%" class="sortTh">Name</th>
-				<th class="sortTh">Year</th>
-				<th width="25%">Description</th>
-				<th>Edit</th>
-				<th>Get JSON - dataset</th>
-				<th>Get Results</th>
-				<th>Delete</th>
+				<th width="15%" class="sortTh">{{_('Name')}}</th>
+				<th class="sortTh">{{_('Year')}}</th>
+				<th width="25%">{{_('Description')}}</th>
+				<th>{{_('Edit')}}</th>
+				<th>{{_('Get JSON - dataset')}}</th>
+				<th>{{_('Get Results')}}</th>
+				<th>{{_('Delete')}}</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -68,28 +68,28 @@
 	<div class="modal-dialog modal-lg" role="document">
 		<div class="modal-content">
 			<div class="modal-header">
-				<h5 class="modal-title" id="welcomeModalLabel">Welcome to openMod.sh</h5>
+				<h5 class="modal-title" id="welcomeModalLabel">{{_('Welcome to openMod.sh')}}</h5>
 				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 					<span aria-hidden="true">&times;</span>
 				</button>
 			</div>
 			<div class="modal-body">
-				This is openMod.sh.<br>
-				A flexible Open Energy Model for Schleswig-Holstein. <br>
+				{{_('This is openMod.sh.')}}<br>
+				{{_('A flexible Open Energy Model for Schleswig-Holstein.')}}<br>
 				<br>
-				Choose or import a scenario and go for it.
+				{{_('Choose or import a scenario and go for it.')}}
 				<br>
-				<br>based on oemof<br>
+				<br>{{_('based on oemof')}}<br>
 				<div><img src="static/welcomeModal2.png"></div>
-				<br>developed at<br>
+				<br>{{_('developed at')}}<br>
 				<div><img src="static/znes-logo.png"></div>
-				<br>funded by<br>
+				<br>{{_('funded by')}}<br>
 				<div><img src="static/eksh-logo.svg"></div><br>
 				<div><img src="static/arge-logo.svg"></div><br>
 				<div><img src="static/ihk-logo.jpg"></div><br>
 			</div>
 			<div class="modal-footer">
-				<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">{{_('Close')}}</button>
 			</div>
 		</div>
 	</div>
@@ -114,8 +114,8 @@ function deleteScenario(scenarioId,e=null) {
 			$.ajax({
 				url: 'delete' + '?' + $.param({"id": scenarioId}),
 				type: 'GET',
-				success: function () {alertModal("Deleted successfully.","", function(){window.location.reload();})},
-				error: function () {alertModal("Error while attempting to delete.","", function(){window.location.reload();});}
+				success: function () {alertModal("{{_('Deleted successfully.')}}","", function(){window.location.reload();})},
+				error: function () {alertModal("{{_('Error while attempting to delete.')}}","", function(){window.location.reload();});}
 			});
 		}
 		else {
