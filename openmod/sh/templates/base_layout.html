@@ -157,7 +157,7 @@ form.onsubmit = function(event) {
         formData.append("{{_('scenariofile')}}", file, file.name);
     }
     var xhr = new XMLHttpRequest();
-    xhr.open('POST', 'import', true);x
+    xhr.open('POST', 'import', true);
     xhr.onload = function () {
     if (xhr.status === 200) {
         // File(s) uploaded.

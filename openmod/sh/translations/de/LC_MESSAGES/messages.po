@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-04-04 15:00+0200\n"
-"PO-Revision-Date: 2017-04-04 15:00+0200\n"
+"POT-Creation-Date: 2017-04-04 15:34+0200\n"
+"PO-Revision-Date: 2017-04-04 15:39+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: de\n"
 "Language-Team: de <LL@li.org>\n"
@@ -22,13 +22,45 @@ msgstr ""
 msgid "Please provide correct query parameters. At least 'id'."
 msgstr ""
 
+#: gui.py:82
+msgid "Provide at least id as query parameter."
+msgstr ""
+
+#: gui.py:210
+msgid "No results available, did you compute the result of the scenario?"
+msgstr ""
+
+#: gui.py:276
+msgid "Job cancelled."
+msgstr ""
+
+#: gui.py:277
+msgid "It's still queued but will be disposed "
+msgstr ""
+
+#: gui.py:278
+msgid "of before it starts."
+msgstr ""
+
+#: gui.py:279
+msgid "Job running, but not finished yet."
+msgstr ""
+
+#: gui.py:280
+msgid "Please come back later."
+msgstr ""
+
+#: mcbeth.py:107
+msgid "No description provided."
+msgstr ""
+
 #: templates/base_layout.html:38
 msgid "Scenario Overview"
-msgstr ""
+msgstr "Scenario Übersicht"
 
 #: templates/base_layout.html:41 templates/edit_scenario.html:435
 msgid "Import"
-msgstr ""
+msgstr "Importieren"
 
 #: templates/base_layout.html:44
 msgid "Jobs"
