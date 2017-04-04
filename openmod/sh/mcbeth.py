@@ -104,7 +104,7 @@ def create_energy_system(scenario):
     Node.registry = None
 
     es.scenario_description = scenario['tags'].get('scenario_description',
-                                                   'No description provided.')
+                                                   gettext('No description provided.'))
     es.scenario_name = scenario['name']
 
     return es

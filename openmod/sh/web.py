@@ -150,7 +150,7 @@ def login():
                 flask.session['id-tracker'] = PointIds()
                 #print("Current user: {}".format(fl.current_user))
         else:
-                flask.flash('Invalid username/password combination.')
+                flask.flash(getText('Invalid username/password combination.'))
                 return form.redirect('login')
         #else:
         #    user = schema.User(form.username.data, form.password.data)
@@ -169,7 +169,7 @@ def login():
 def logout():
     fl.logout_user()
     del app.session_interface[flask.session.sid]
-    flask.flash('Logged out')
+    flask.flash(getText('Logged out'))
     return flask.redirect(flask.url_for('login'))
 
 ##### User Management stuff ends here (except for the `@fl.login_required`).
