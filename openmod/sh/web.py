@@ -150,7 +150,7 @@ def login():
                 flask.session['id-tracker'] = PointIds()
                 #print("Current user: {}".format(fl.current_user))
         else:
-                flask.flash(getText('Invalid username/password combination.'))
+                flask.flash('Invalid username/password combination.')
                 return form.redirect('login')
         #else:
         #    user = schema.User(form.username.data, form.password.data)
