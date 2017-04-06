@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-04-06 10:32+0200\n"
+"POT-Creation-Date: 2017-04-06 12:40+0200\n"
 "PO-Revision-Date: 2017-04-05 21:24+0200\n"
 "Last-Translator: \n"
 "Language: de\n"
@@ -254,8 +254,8 @@ msgid "Installed power"
 msgstr "Installierte Leistung"
 
 #: templates/edit_scenario.html:483 templates/edit_scenario.html:535
-#: templates/edit_scenario.html:1009 templates/edit_scenario.html:1014
-#: templates/edit_scenario.html:1018 templates/edit_scenario.html:1019
+#: templates/edit_scenario.html:1008 templates/edit_scenario.html:1013
+#: templates/edit_scenario.html:1017 templates/edit_scenario.html:1018
 msgid "in MW"
 msgstr "in MW"
 
@@ -300,19 +300,19 @@ msgstr "Keine Produktion für gewählte Hubs!"
 msgid "Hourly Production and Demand in"
 msgstr "Stündliche Produktion und Bedarf in"
 
-#: templates/edit_scenario.html:643 templates/edit_scenario.html:722
+#: templates/edit_scenario.html:643 templates/edit_scenario.html:721
 msgid "Production and Demand in MW"
 msgstr "Produktion in Bedarf in MW"
 
-#: templates/edit_scenario.html:713
+#: templates/edit_scenario.html:712
 msgid "No data to render!"
 msgstr "Keine Daten zur Verarbeitung!"
 
-#: templates/edit_scenario.html:721
+#: templates/edit_scenario.html:720
 msgid "Hourly Renewable Production and Demand in"
 msgstr "Stündliche regenerative Produktion und Bedarf in"
 
-#: templates/edit_scenario.html:732
+#: templates/edit_scenario.html:731
 msgid ""
 "The simulation runs in the background. See Jobs for an overview of "
 "running simmulation."
@@ -320,11 +320,11 @@ msgstr ""
 "Die Simulation läuft im Hintergrund. Siehe „Jobs“ für eine Übersicht über"
 " laufende Simulationen."
 
-#: templates/edit_scenario.html:748
+#: templates/edit_scenario.html:747
 msgid "Result already exists."
 msgstr "Ergebnis existiert bereits."
 
-#: templates/edit_scenario.html:752
+#: templates/edit_scenario.html:751
 msgid ""
 "There are unsaved changes. You have to save them before you can run a "
 "simulation."
@@ -332,118 +332,118 @@ msgstr ""
 "Es gibt ungesicherte Änderungen. Für eine Simulation müssen diese erst "
 "gesichert werden."
 
-#: templates/edit_scenario.html:752
+#: templates/edit_scenario.html:751
 msgid "Unsaved changes"
 msgstr "Ungesicherte Änderungen"
 
-#: templates/edit_scenario.html:819
+#: templates/edit_scenario.html:818
 msgid "New Name"
 msgstr "Neuer Name"
 
-#: templates/edit_scenario.html:819
+#: templates/edit_scenario.html:818
 msgid "Senario Name"
 msgstr "Szenarienname"
 
-#: templates/edit_scenario.html:825
+#: templates/edit_scenario.html:824
 msgid "alert"
 msgstr "Warnung"
 
-#: templates/edit_scenario.html:825
+#: templates/edit_scenario.html:824
 msgid "Input needs to be more than 0 characters."
 msgstr "Input muss mehr als 0 Zeichen besitzen."
 
-#: templates/edit_scenario.html:830
+#: templates/edit_scenario.html:829
 msgid "New description"
 msgstr "Neue Beschreibung"
 
-#: templates/edit_scenario.html:858
+#: templates/edit_scenario.html:857
 msgid "Saved successfully! Opening new scenario."
 msgstr "Erfolgreich gesichert! Öffne neues Szenario."
 
-#: templates/edit_scenario.html:858
+#: templates/edit_scenario.html:857
 msgid "Info"
 msgstr "Info"
 
-#: templates/edit_scenario.html:863
+#: templates/edit_scenario.html:862
 msgid "Scenario name is already taken. Try again."
 msgstr "Szenarienname ist bereits vergeben. Bitte erneut versuchen."
 
-#: templates/edit_scenario.html:863 templates/edit_scenario.html:878
-#: templates/edit_scenario.html:1187
+#: templates/edit_scenario.html:862 templates/edit_scenario.html:877
+#: templates/edit_scenario.html:1186
 msgid "Alert"
 msgstr "Warnung"
 
-#: templates/edit_scenario.html:878
+#: templates/edit_scenario.html:877
 msgid "Override existing scenario with new values?"
 msgstr "Bestehendes Szenario mit neuen Werten überschreiben?"
 
-#: templates/edit_scenario.html:903
+#: templates/edit_scenario.html:902
 msgid "Opening updated scenario."
 msgstr "Öffne aktualisiertes Szenario."
 
-#: templates/edit_scenario.html:903
+#: templates/edit_scenario.html:902
 msgid "Updated successfully!"
 msgstr "Erfolgreich aktualisiert!"
 
-#: templates/edit_scenario.html:908
+#: templates/edit_scenario.html:907
 msgid "Error. This should not have happened. Call somebody."
 msgstr "Fehler. Das sollte nicht passieren. Wenden Sie sich an jemanden."
 
-#: templates/edit_scenario.html:970
+#: templates/edit_scenario.html:969
 msgid "No results in db"
 msgstr "Keine Ergebnisse in der Datenbank"
 
-#: templates/edit_scenario.html:1008
+#: templates/edit_scenario.html:1007
 msgid "Hourly"
 msgstr "Stündlich"
 
-#: templates/edit_scenario.html:1013
+#: templates/edit_scenario.html:1012
 msgid "Duration curve of"
 msgstr "Dauerkurve von"
 
-#: templates/edit_scenario.html:1018
+#: templates/edit_scenario.html:1017
 msgid "Heatmap of"
 msgstr "Wärmekarte von"
 
-#: templates/edit_scenario.html:1039
+#: templates/edit_scenario.html:1038
 msgid "Residuallast"
 msgstr "Residuallast"
 
-#: templates/edit_scenario.html:1187
+#: templates/edit_scenario.html:1186
 msgid "Do you really want to loose your changes?"
 msgstr "Änderungen verwerfen?"
 
-#: templates/edit_scenario.html:1201
+#: templates/edit_scenario.html:1200
 msgid "WITH CHANGES"
 msgstr "MIT ÄNDERUNGEN"
 
-#: templates/edit_scenario.html:1203
+#: templates/edit_scenario.html:1202
 msgid "Discard Changes"
 msgstr "Änderungen verwerfen"
 
-#: templates/edit_scenario.html:1238
+#: templates/edit_scenario.html:1237
 msgid "The simulation for this scenario is finished."
 msgstr "Die Simulation für das Szenario ist fertig."
 
-#: templates/edit_scenario.html:1238
+#: templates/edit_scenario.html:1237
 msgid "Results are available"
 msgstr "Ergebnisse sind verfügbar"
 
-#: templates/edit_scenario.html:1242
+#: templates/edit_scenario.html:1241
 msgid "The simulation for the last scenario is finished."
 msgstr "Die Simulation für das letzte Szenario ist fertig."
 
-#: templates/edit_scenario.html:1243
+#: templates/edit_scenario.html:1242
 msgid "But since starting the simulation you have changed some slider values."
 msgstr "Seit Start der Simulation wurden einige Slider verändert."
 
-#: templates/edit_scenario.html:1244
+#: templates/edit_scenario.html:1243
 msgid "If you want to keep your changes, save them as a new scenario."
 msgstr ""
 "Falls die Änderungen behalten werden sollen, speichern Sie diese als ein "
 "neues Szenario."
 
-#: templates/edit_scenario.html:1245
+#: templates/edit_scenario.html:1244
 msgid ""
 "If you want to discard the changes and see the results, just refresh this"
 " page."
@@ -451,7 +451,7 @@ msgstr ""
 "Falls Sie wirklich die Änderungen verwerfen möchten und die Ergebnisse "
 "ansehen wollen, aktualisieren Sie einfach die Seite."
 
-#: templates/edit_scenario.html:1246
+#: templates/edit_scenario.html:1245
 msgid "Results are available, but..."
 msgstr "Ergebnisse sind verfügbar, aber…"
 
@@ -542,6 +542,14 @@ msgstr "Erfolgreich gelöscht."
 #: templates/show_scenarios.html:118
 msgid "Error while attempting to delete."
 msgstr "Fehler beim Löschversuch."
+
+#: templates/show_scenarios.html:157
+msgid "Loading"
+msgstr "Lädt"
+
+#: templates/show_scenarios.html:169
+msgid "No results available"
+msgstr "Keine Ergebnisse verfügbar"
 
 #: templates/pages/jobs.html:7 templates/widgets/jobs.html:44
 msgid "Queued/Running Simulations"

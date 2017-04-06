@@ -881,6 +881,9 @@ function updateScenario(scenario) {
                 $.get('delete', {
                     id: scenario_db_id
                 });
+                
+                alertModal("{{_('Scenario will be uploaded and saved. This can take a while.')}}");
+
                 // Update scenario children from dict which is manipulated by slider
                 // INDIVIDUAL FOR BIOMETHAN SLIDER DIRTY HACK
                 new_value =  $("#biomethan_slider").val();
@@ -907,7 +910,6 @@ function updateScenario(scenario) {
                         alert("{{_('Error. This should not have happened. Call somebody.')}}");
                     }
                 });
-
 
                 } else {
         	           return;

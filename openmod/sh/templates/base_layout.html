@@ -154,29 +154,30 @@ form.onsubmit = function(event) {
         // TODO: Check the file type.
 
         // Add the file to the request.
-        formData.append("{{_('scenariofile')}}", file, file.name);
+        formData.append("scenariofile", file, file.name);
     }
     var xhr = new XMLHttpRequest();
     xhr.open('POST', 'import', true);
     xhr.onload = function () {
-    if (xhr.status === 200) {
-        // File(s) uploaded.
-        uploadButton.innerHTML = "{{_('Upload another')}}";
-        $('#inputResponse').html("{{_('Upload successfull!')}}");
-    } else if (xhr.status === 409) {
-        uploadButton.innerHTML = "{{_('Try again')}}";
-        $('#inputResponse').html("{{_('Scenario name already taken!')}}");
-        $('#inputResponse').append("<label for=\"input-scenario-name\">{{_('Choose a new scenario name:')}}</label>"
-                                   +'<input type="text" class="form-control" id="input-scenario-name" placeholder="'+JSON.parse(xhr.responseText)['scenario_name']+'">');
-    } else {
-        uploadButton.innerHTML = "{{_('Try again')}}";
-        $('#inputResponse').html("{{_('An error occurred!')}}" + " " + xhr.status);
-    }
+      console.log(xhr);
+      if (xhr.status === 200) {
+          // File(s) uploaded.
+          uploadButton.innerHTML = "{{_('Upload another')}}";
+          $('#inputResponse').html("{{_('Upload successfull!')}}");
+      } else if (xhr.status === 409) {
+          uploadButton.innerHTML = "{{_('Try again')}}";
+          $('#inputResponse').html("{{_('Scenario name already taken!')}}");
+          $('#inputResponse').append("<label for=\"input-scenario-name\">{{_('Choose a new scenario name:')}}</label>"
+                                     +'<input type="text" class="form-control" id="input-scenario-name" placeholder="'+JSON.parse(xhr.responseText)['scenario_name']+'">');
+      } else {
+          uploadButton.innerHTML = "{{_('Try again')}}";
+          $('#inputResponse').html("{{_('An error occurred!')}}" + " " + xhr.status);
+      }
     };
     if (document.getElementById('input-scenario-name')) {
-        formData.append("{{_('new_scenario_name')}}", document.getElementById('input-scenario-name').value);
+        formData.append('new_scenario_name', document.getElementById('input-scenario-name').value);
     } else {
-        formData.append("{{_('new_scenario_name')}}", '');
+        formData.append('new_scenario_name', '');
     }
     xhr.send(formData);
 }
