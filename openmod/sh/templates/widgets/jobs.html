@@ -2,16 +2,65 @@
 {% set countdown_seconds = 7 %}
 {% set update_button_text = "Update" %}
 <div id="{{ container_id }}">
+{{_('Scenario')}}
+<div class="card">
+{% if jobs %}
+  <div class="card-block">
+    <h4 class="card-title">{{_('Waiting/Running Simulations')}}</h4>
+  </div>
+  <table class="table table-hover">
+    <thead>
+      <tr><th width="10%">{{_('Scenario')}}</th>
+          <th width="10%">{{_('User')}}</th>
+          <th width="5%">{{_('Process')}}</th>
+          <th width="5%">{{_('Stop')}}</th>
+      </tr>
+    </thead>
+    <tbody>{% for k, job in jobs.items() %}
+      <tr><td><a href="/simulation/{{k}}">{{job.scenario}}</a></td>
+          <td>{{ job.user }}</td>
+          <td>{{ job.status() }}</td>
+          <td><button class="btn btn-primary"
+                      onclick="update_job_list({{k}}, '#{{container_id}}')">
+                {{_('Cancel / Kill')}}
+              </button>
+          </td>
+      </tr>{% endfor %}
+    </tbody>
+  </table>
+  <div class="card-block">
+    <button id="update-jobs-widget" class="btn btn-primary"
+            onclick="update('#{{container_id}}')">
+      {{ update_button_text }} ({{ countdown_seconds }})
+    </button>
+    <button class="btn btn-primary"
+            onclick="remove_dead_jobs('#{{container_id}}')">
+      {{_('Remove Dead Jobs')}}
+    </button>
+  </div>
+  <div class="card-footer text-muted">{{_('2 days ago')}}</div>
+{% else %}
+  <div class="card-block">
+    <h4 class="card-title">{{_('Queued/Running Simulations')}}</h4>
+    <h6 class="card-subtitle mb-2 text-muted">{{_('No Jobs.')}}</h6>
+    <button id="update-jobs-widget" class="btn btn-primary"
+            onclick="update('#{{container_id}}')">
+      {{ update_button_text }} ({{ countdown_seconds }})
+    </button>
+    <p><br /></p>
+  </div>
+{% endif %}
+</div>
 <script type="text/javascript">
-
-setTimeout(tick, 1000, {{ countdown_seconds }} - 1);
+var timer = window.setTimeout(tick, 1000, {{ countdown_seconds }} - 1);
 
 function tick(seconds){
-  if (seconds === 0){ update('#{{container_id}}'); }
+  if (seconds === 0){ 
+    update('#{{container_id}}'); 
+  }
   else {
-    $("#update-jobs-widget").text(
-       "{{ update_button_text }}" + " (" + seconds + ")");
-    setTimeout(tick, 1000, seconds - 1);
+    $("#update-jobs-widget").text("{{update_button_text}}" + " (" + seconds + ")");
+    timer = window.setTimeout(tick, 1000, seconds - 1);
   };
 };
 
@@ -24,6 +73,7 @@ function update(container_id){
 };
 
 function updatecallback(container_id){
+  window.clearTimeout(timer);
   return function (jobs) { $(container_id).replaceWith(jobs); };
 };
 
@@ -48,52 +98,4 @@ function update_job_list(job, container_id) {
 };
 
 </script>
-<div class="card">
-{% if jobs %}
-  <div class="card-block">
-    <h4 class="card-title">Waiting/Running Simulations</h4>
-  </div>
-  <table class="table table-hover">
-    <thead>
-      <tr><th width="10%">Scenario</th>
-          <th width="10%">User</th>
-          <th width="5%">Process</th>
-          <th width="5%">Stop</th>
-      </tr>
-    </thead>
-    <tbody>{% for k, job in jobs.items() %}
-      <tr><td><a href="/simulation/{{k}}">{{job.scenario}}</a></td>
-          <td>{{ job.user }}</td>
-          <td>{{ job.status() }}</td>
-          <td><button class="btn btn-primary"
-                      onclick="update_job_list({{k}}, '#{{container_id}}')">
-                Cancel / Kill
-              </button>
-          </td>
-      </tr>{% endfor %}
-    </tbody>
-  </table>
-  <div class="card-block">
-    <button id="update-jobs-widget" class="btn btn-primary"
-            onclick="update('#{{container_id}}')">
-      {{ update_button_text }} ({{ countdown_seconds }})
-    </button>
-    <button class="btn btn-primary"
-            onclick="remove_dead_jobs('#{{container_id}}')">
-      Remove Dead Jobs
-    </button>
-  </div>
-  <div class="card-footer text-muted">2 days ago</div>
-{% else %}
-  <div class="card-block">
-    <h4 class="card-title">Queued/Running Simulations</h4>
-    <h6 class="card-subtitle mb-2 text-muted">No Jobs.</h6>
-    <button id="update-jobs-widget" class="btn btn-primary"
-            onclick="update('#{{container_id}}')">
-      {{ update_button_text }} ({{ countdown_seconds }})
-    </button>
-    <p><br /></p>
-  </div>
-{% endif %}
-</div>
 </div>

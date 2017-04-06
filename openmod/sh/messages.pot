@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-04-04 15:34+0200\n"
+"POT-Creation-Date: 2017-04-06 10:32+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -55,11 +55,11 @@ msgstr ""
 
 #: templates/base_layout.html:38
 msgid "Scenario Overview"
-msgstr "Scenario Übersicht"
+msgstr ""
 
 #: templates/base_layout.html:41 templates/edit_scenario.html:435
 msgid "Import"
-msgstr "Importieren"
+msgstr ""
 
 #: templates/base_layout.html:44
 msgid "Jobs"
@@ -69,7 +69,7 @@ msgstr ""
 msgid "Help"
 msgstr ""
 
-#: templates/base_layout.html:56
+#: templates/base_layout.html:56 templates/widgets/jobs.html:14
 msgid "User"
 msgstr ""
 
@@ -141,7 +141,8 @@ msgstr ""
 msgid "new_scenario_name"
 msgstr ""
 
-#: templates/edit_scenario.html:21
+#: templates/edit_scenario.html:21 templates/widgets/jobs.html:5
+#: templates/widgets/jobs.html:13
 msgid "Scenario"
 msgstr ""
 
@@ -529,7 +530,35 @@ msgstr ""
 msgid "Error while attempting to delete."
 msgstr ""
 
-#: templates/pages/jobs.html:7
+#: templates/pages/jobs.html:7 templates/widgets/jobs.html:44
 msgid "Queued/Running Simulations"
+msgstr ""
+
+#: templates/widgets/jobs.html:9
+msgid "Waiting/Running Simulations"
+msgstr ""
+
+#: templates/widgets/jobs.html:15
+msgid "Process"
+msgstr ""
+
+#: templates/widgets/jobs.html:16
+msgid "Stop"
+msgstr ""
+
+#: templates/widgets/jobs.html:25
+msgid "Cancel / Kill"
+msgstr ""
+
+#: templates/widgets/jobs.html:38
+msgid "Remove Dead Jobs"
+msgstr ""
+
+#: templates/widgets/jobs.html:41
+msgid "2 days ago"
+msgstr ""
+
+#: templates/widgets/jobs.html:45
+msgid "No Jobs."
 msgstr ""
 

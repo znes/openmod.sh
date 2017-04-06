@@ -7,11 +7,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-04-04 15:34+0200\n"
-"PO-Revision-Date: 2017-04-04 15:39+0200\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"POT-Creation-Date: 2017-04-06 10:32+0200\n"
+"PO-Revision-Date: 2017-04-05 21:24+0200\n"
+"Last-Translator: \n"
 "Language: de\n"
-"Language-Team: de <LL@li.org>\n"
+"Language-Team: \n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
@@ -20,43 +20,45 @@ msgstr ""
 
 #: gui.py:56
 msgid "Please provide correct query parameters. At least 'id'."
-msgstr ""
+msgstr "Geben Sie die korrekten Abfrage-Parameter ein. Mindestens „id“."
 
 #: gui.py:82
 msgid "Provide at least id as query parameter."
-msgstr ""
+msgstr "Bitte geben Sie mindestens „ID“ als Abfrage-Parameter an."
 
 #: gui.py:210
 msgid "No results available, did you compute the result of the scenario?"
 msgstr ""
+"Keine Ergebnisse verfügbar. Haben Sie die Ergebnisse des Szenarios "
+"berechnet?"
 
 #: gui.py:276
 msgid "Job cancelled."
-msgstr ""
+msgstr "Auftrag abgebrochen."
 
 #: gui.py:277
 msgid "It's still queued but will be disposed "
-msgstr ""
+msgstr "Es ist immer noch eingereiht aber verworfen "
 
 #: gui.py:278
 msgid "of before it starts."
-msgstr ""
+msgstr "bevor es beginnt."
 
 #: gui.py:279
 msgid "Job running, but not finished yet."
-msgstr ""
+msgstr "Auftrag läuft, aber ist noch nicht fertig."
 
 #: gui.py:280
 msgid "Please come back later."
-msgstr ""
+msgstr "Bitte kommen Sie später zurück."
 
 #: mcbeth.py:107
 msgid "No description provided."
-msgstr ""
+msgstr "Keine Beschreibung angegeben."
 
 #: templates/base_layout.html:38
 msgid "Scenario Overview"
-msgstr "Scenario Übersicht"
+msgstr "Szenarien Übersicht"
 
 #: templates/base_layout.html:41 templates/edit_scenario.html:435
 msgid "Import"
@@ -64,473 +66,512 @@ msgstr "Importieren"
 
 #: templates/base_layout.html:44
 msgid "Jobs"
-msgstr ""
+msgstr "Aufträge"
 
 #: templates/base_layout.html:52
 msgid "Help"
-msgstr ""
+msgstr "Hilfe"
 
-#: templates/base_layout.html:56
+#: templates/base_layout.html:56 templates/widgets/jobs.html:14
 msgid "User"
-msgstr ""
+msgstr "Benutzer"
 
 #: templates/base_layout.html:59
 msgid "Logout"
-msgstr ""
+msgstr "Logout"
 
 #: templates/base_layout.html:70
 msgid "Selected scenario name"
-msgstr ""
+msgstr "Wähle Szenarien Name"
 
 #: templates/base_layout.html:90
 msgid "Import a scenario"
-msgstr ""
+msgstr "Importiere Szenario"
 
 #: templates/base_layout.html:96
 msgid "You can import scenarios only in the openmod.sh specific JSON-format."
 msgstr ""
+"Sie können Szenarien nur in der openmod.sh spezifischen JSON-Struktur "
+"importieren."
 
 #: templates/base_layout.html:100
 msgid "Choose file:"
-msgstr ""
+msgstr "Wählen Sie die Datei:"
 
 #: templates/base_layout.html:102
 msgid "The file has to be a json-file following the openmod.sh API structure."
-msgstr ""
+msgstr "Die Datei muss eine JSON-Datei in der opendoc.sh API Struktur sein."
 
 #: templates/base_layout.html:104
 msgid "Upload"
-msgstr ""
+msgstr "Hochladen"
 
 #: templates/base_layout.html:109 templates/show_scenarios.html:92
 msgid "Close"
-msgstr ""
+msgstr "Schließen"
 
 #: templates/base_layout.html:147
 msgid "Uploading..."
-msgstr ""
+msgstr "Lädt hoch…"
 
 #: templates/base_layout.html:157
 msgid "scenariofile"
-msgstr ""
+msgstr "Szenariendatei"
 
 #: templates/base_layout.html:164
 msgid "Upload another"
-msgstr ""
+msgstr "Lade eine andere"
 
 #: templates/base_layout.html:165
 msgid "Upload successfull!"
-msgstr ""
+msgstr "Hochladen erfolgreich!"
 
 #: templates/base_layout.html:167 templates/base_layout.html:172
 msgid "Try again"
-msgstr ""
+msgstr "Bitte noch einmal probieren"
 
 #: templates/base_layout.html:168
 msgid "Scenario name already taken!"
-msgstr ""
+msgstr "Name bereits vergeben!"
 
 #: templates/base_layout.html:169
 msgid "Choose a new scenario name:"
-msgstr ""
+msgstr "Wählen Sie ein anderen Szenariennamen:"
 
 #: templates/base_layout.html:173
 msgid "An error occurred!"
-msgstr ""
+msgstr "Ein Fehler ist aufgetreten!"
 
 #: templates/base_layout.html:177 templates/base_layout.html:179
 msgid "new_scenario_name"
-msgstr ""
+msgstr "neuer_szenarien_name"
 
-#: templates/edit_scenario.html:21
+#: templates/edit_scenario.html:21 templates/widgets/jobs.html:5
+#: templates/widgets/jobs.html:13
 msgid "Scenario"
-msgstr ""
+msgstr "Szenario"
 
 #: templates/edit_scenario.html:26
 msgid "Save changes"
-msgstr ""
+msgstr "Änderungen speichern"
 
 #: templates/edit_scenario.html:27
 msgid "Save as new scenario"
-msgstr ""
+msgstr "Als neues Szenario speichern"
 
 #: templates/edit_scenario.html:28
 msgid "Run Simulation"
-msgstr ""
+msgstr "Starte Simulation"
 
 #: templates/edit_scenario.html:45
 msgid "Input Parameter"
-msgstr ""
+msgstr "Eingangsparameter"
 
 #: templates/edit_scenario.html:85
 msgid "Biomethan Anteil in Kiel"
-msgstr ""
+msgstr "Biomethan Anteil in Kiel"
 
 #: templates/edit_scenario.html:89
 msgid "Anteil in"
-msgstr ""
+msgstr "Anteil in"
 
 #: templates/edit_scenario.html:161
 msgid "Residualload"
-msgstr ""
+msgstr "Residuallast"
 
 #: templates/edit_scenario.html:174
 msgid "Demand"
-msgstr ""
+msgstr "Bedarf"
 
 #: templates/edit_scenario.html:182
 msgid "Production"
-msgstr ""
+msgstr "Produktion"
 
 #: templates/edit_scenario.html:309 templates/edit_scenario.html:586
 #: templates/edit_scenario.html:631
 msgid "No results in db!"
-msgstr ""
+msgstr "Keine Ergebnisse in der Datenbank!"
 
 #: templates/edit_scenario.html:313
 msgid "CO2-Emissions in Kiel"
-msgstr ""
+msgstr "CO2-Emissionen in Kiel"
 
 #: templates/edit_scenario.html:365
 msgid "KI Wärme"
-msgstr ""
+msgstr "KI Wärme"
 
 #: templates/edit_scenario.html:386
 msgid "Wärmepumpen Potential"
-msgstr ""
+msgstr "Wärmepumpen Potential"
 
 #: templates/edit_scenario.html:390
 msgid "KI Solar"
-msgstr ""
+msgstr "KI Solar"
 
 #: templates/edit_scenario.html:391
 msgid "KI Wind"
-msgstr ""
+msgstr "KI Wind"
 
 #: templates/edit_scenario.html:392
 msgid "Biomethan Import"
-msgstr ""
+msgstr "Biomethan Import"
 
 #: templates/edit_scenario.html:393
 msgid "Biomasse Import"
-msgstr ""
+msgstr "Biomasse Import"
 
 #: templates/edit_scenario.html:426 templates/edit_scenario.html:428
 msgid "Area"
-msgstr ""
+msgstr "Fläche"
 
 #: templates/edit_scenario.html:426
 msgid "in ha"
-msgstr ""
+msgstr "in ha"
 
 #: templates/edit_scenario.html:428 templates/edit_scenario.html:492
 #: templates/edit_scenario.html:544
 msgid "in"
-msgstr ""
+msgstr "in"
 
 #: templates/edit_scenario.html:434
 msgid "Strom"
-msgstr ""
+msgstr "Strom"
 
 #: templates/edit_scenario.html:434
 msgid "Wärme"
-msgstr ""
+msgstr "Wärme"
 
 #: templates/edit_scenario.html:435
 msgid "Export"
-msgstr ""
+msgstr "Export"
 
 #: templates/edit_scenario.html:450
 msgid "Emissionen"
-msgstr ""
+msgstr "Emissionen"
 
 #: templates/edit_scenario.html:483 templates/edit_scenario.html:535
 msgid "Installed power"
-msgstr ""
+msgstr "Installierte Leistung"
 
 #: templates/edit_scenario.html:483 templates/edit_scenario.html:535
 #: templates/edit_scenario.html:1009 templates/edit_scenario.html:1014
 #: templates/edit_scenario.html:1018 templates/edit_scenario.html:1019
 msgid "in MW"
-msgstr ""
+msgstr "in MW"
 
 #: templates/edit_scenario.html:486
 msgid "Electricity production"
-msgstr ""
+msgstr "Stromproduktion"
 
 #: templates/edit_scenario.html:486 templates/edit_scenario.html:538
 msgid "in GWh"
-msgstr ""
+msgstr "in GWh"
 
 #: templates/edit_scenario.html:489 templates/edit_scenario.html:541
 msgid "Fullload hours"
-msgstr ""
+msgstr "Volllaststunden"
 
 #: templates/edit_scenario.html:489 templates/edit_scenario.html:541
 msgid "in h"
-msgstr ""
+msgstr "in h"
 
 #: templates/edit_scenario.html:492 templates/edit_scenario.html:544
 msgid "Share of production in Kiel"
-msgstr ""
+msgstr "Anteil der Produktion in Kiel"
 
 #: templates/edit_scenario.html:538
 msgid "Heat production"
-msgstr ""
+msgstr "Wärmeproduktion"
 
 #: templates/edit_scenario.html:557 templates/edit_scenario.html:602
 #: templates/edit_scenario.html:656
 msgid "No hubs founds!"
-msgstr ""
+msgstr "Keine Hubs gefunden!"
 
 #: templates/edit_scenario.html:590
 msgid "Yearly Production, Consumption and Im-/Export in"
-msgstr ""
+msgstr "Produktion, Konsum und Im/-Export pro Jahr in"
 
 #: templates/edit_scenario.html:634
 msgid "No production for selected hub!"
-msgstr ""
+msgstr "Keine Produktion für gewählte Hubs!"
 
 #: templates/edit_scenario.html:642
 msgid "Hourly Production and Demand in"
-msgstr ""
+msgstr "Stündliche Produktion und Bedarf in"
 
 #: templates/edit_scenario.html:643 templates/edit_scenario.html:722
 msgid "Production and Demand in MW"
-msgstr ""
+msgstr "Produktion in Bedarf in MW"
 
 #: templates/edit_scenario.html:713
 msgid "No data to render!"
-msgstr ""
+msgstr "Keine Daten zur Verarbeitung!"
 
 #: templates/edit_scenario.html:721
 msgid "Hourly Renewable Production and Demand in"
-msgstr ""
+msgstr "Stündliche regenerative Produktion und Bedarf in"
 
 #: templates/edit_scenario.html:732
 msgid ""
 "The simulation runs in the background. See Jobs for an overview of "
 "running simmulation."
 msgstr ""
+"Die Simulation läuft im Hintergrund. Siehe „Jobs“ für eine Übersicht über"
+" laufende Simulationen."
 
 #: templates/edit_scenario.html:748
 msgid "Result already exists."
-msgstr ""
+msgstr "Ergebnis existiert bereits."
 
 #: templates/edit_scenario.html:752
 msgid ""
 "There are unsaved changes. You have to save them before you can run a "
 "simulation."
 msgstr ""
+"Es gibt ungesicherte Änderungen. Für eine Simulation müssen diese erst "
+"gesichert werden."
 
 #: templates/edit_scenario.html:752
 msgid "Unsaved changes"
-msgstr ""
+msgstr "Ungesicherte Änderungen"
 
 #: templates/edit_scenario.html:819
 msgid "New Name"
-msgstr ""
+msgstr "Neuer Name"
 
 #: templates/edit_scenario.html:819
 msgid "Senario Name"
-msgstr ""
+msgstr "Szenarienname"
 
 #: templates/edit_scenario.html:825
 msgid "alert"
-msgstr ""
+msgstr "Warnung"
 
 #: templates/edit_scenario.html:825
 msgid "Input needs to be more than 0 characters."
-msgstr ""
+msgstr "Input muss mehr als 0 Zeichen besitzen."
 
 #: templates/edit_scenario.html:830
 msgid "New description"
-msgstr ""
+msgstr "Neue Beschreibung"
 
 #: templates/edit_scenario.html:858
 msgid "Saved successfully! Opening new scenario."
-msgstr ""
+msgstr "Erfolgreich gesichert! Öffne neues Szenario."
 
 #: templates/edit_scenario.html:858
 msgid "Info"
-msgstr ""
+msgstr "Info"
 
 #: templates/edit_scenario.html:863
 msgid "Scenario name is already taken. Try again."
-msgstr ""
+msgstr "Szenarienname ist bereits vergeben. Bitte erneut versuchen."
 
 #: templates/edit_scenario.html:863 templates/edit_scenario.html:878
 #: templates/edit_scenario.html:1187
 msgid "Alert"
-msgstr ""
+msgstr "Warnung"
 
 #: templates/edit_scenario.html:878
 msgid "Override existing scenario with new values?"
-msgstr ""
+msgstr "Bestehendes Szenario mit neuen Werten überschreiben?"
 
 #: templates/edit_scenario.html:903
 msgid "Opening updated scenario."
-msgstr ""
+msgstr "Öffne aktualisiertes Szenario."
 
 #: templates/edit_scenario.html:903
 msgid "Updated successfully!"
-msgstr ""
+msgstr "Erfolgreich aktualisiert!"
 
 #: templates/edit_scenario.html:908
 msgid "Error. This should not have happened. Call somebody."
-msgstr ""
+msgstr "Fehler. Das sollte nicht passieren. Wenden Sie sich an jemanden."
 
 #: templates/edit_scenario.html:970
 msgid "No results in db"
-msgstr ""
+msgstr "Keine Ergebnisse in der Datenbank"
 
 #: templates/edit_scenario.html:1008
 msgid "Hourly"
-msgstr ""
+msgstr "Stündlich"
 
 #: templates/edit_scenario.html:1013
 msgid "Duration curve of"
-msgstr ""
+msgstr "Dauerkurve von"
 
 #: templates/edit_scenario.html:1018
 msgid "Heatmap of"
-msgstr ""
+msgstr "Wärmekarte von"
 
 #: templates/edit_scenario.html:1039
 msgid "Residuallast"
-msgstr ""
+msgstr "Residuallast"
 
 #: templates/edit_scenario.html:1187
 msgid "Do you really want to loose your changes?"
-msgstr ""
+msgstr "Änderungen verwerfen?"
 
 #: templates/edit_scenario.html:1201
 msgid "WITH CHANGES"
-msgstr ""
+msgstr "MIT ÄNDERUNGEN"
 
 #: templates/edit_scenario.html:1203
 msgid "Discard Changes"
-msgstr ""
+msgstr "Änderungen verwerfen"
 
 #: templates/edit_scenario.html:1238
 msgid "The simulation for this scenario is finished."
-msgstr ""
+msgstr "Die Simulation für das Szenario ist fertig."
 
 #: templates/edit_scenario.html:1238
 msgid "Results are available"
-msgstr ""
+msgstr "Ergebnisse sind verfügbar"
 
 #: templates/edit_scenario.html:1242
 msgid "The simulation for the last scenario is finished."
-msgstr ""
+msgstr "Die Simulation für das letzte Szenario ist fertig."
 
 #: templates/edit_scenario.html:1243
 msgid "But since starting the simulation you have changed some slider values."
-msgstr ""
+msgstr "Seit Start der Simulation wurden einige Slider verändert."
 
 #: templates/edit_scenario.html:1244
 msgid "If you want to keep your changes, save them as a new scenario."
 msgstr ""
+"Falls die Änderungen behalten werden sollen, speichern Sie diese als ein "
+"neues Szenario."
 
 #: templates/edit_scenario.html:1245
 msgid ""
 "If you want to discard the changes and see the results, just refresh this"
 " page."
 msgstr ""
+"Falls Sie wirklich die Änderungen verwerfen möchten und die Ergebnisse "
+"ansehen wollen, aktualisieren Sie einfach die Seite."
 
 #: templates/edit_scenario.html:1246
 msgid "Results are available, but..."
-msgstr ""
+msgstr "Ergebnisse sind verfügbar, aber…"
 
 #: templates/graph_plot.html:7
 msgid "Scenario Name"
-msgstr ""
+msgstr "Szenarienname"
 
 #: templates/graph_plot.html:8
 msgid "Graph"
-msgstr ""
+msgstr "Graph"
 
 #: templates/graph_plot.html:18
 msgid "Dataset"
-msgstr ""
+msgstr "Dataset"
 
 #: templates/login.html:19 templates/login.html:34 templates/login.html:58
 msgid "Login"
-msgstr ""
+msgstr "Log In"
 
 #: templates/login.html:37
 msgid "Logged in as"
-msgstr ""
+msgstr "Eingeloggt als"
 
 #: templates/show_scenarios.html:10
 msgid "Scenarios"
-msgstr ""
+msgstr "Szenarien"
 
 #: templates/show_scenarios.html:23
 msgid "Name"
-msgstr ""
+msgstr "Name"
 
 #: templates/show_scenarios.html:24
 msgid "Year"
-msgstr ""
+msgstr "Jahr"
 
 #: templates/show_scenarios.html:25
 msgid "Description"
-msgstr ""
+msgstr "Beschreibung"
 
 #: templates/show_scenarios.html:26
 msgid "Edit"
-msgstr ""
+msgstr "Bearbeiten"
 
 #: templates/show_scenarios.html:27
 msgid "Get JSON - dataset"
-msgstr ""
+msgstr "Lade JSON-Datei"
 
 #: templates/show_scenarios.html:28
 msgid "Get Results"
-msgstr ""
+msgstr "Zeige Ergebnisse"
 
 #: templates/show_scenarios.html:29
 msgid "Delete"
-msgstr ""
+msgstr "Löschen"
 
 #: templates/show_scenarios.html:71
 msgid "Welcome to openMod.sh"
-msgstr ""
+msgstr "Willkommen zu openMod.sh"
 
 #: templates/show_scenarios.html:77
 msgid "This is openMod.sh."
-msgstr ""
+msgstr "Das ist openMod.sh."
 
 #: templates/show_scenarios.html:78
 msgid "A flexible Open Energy Model for Schleswig-Holstein."
-msgstr ""
+msgstr "Ein flexibles Open Energy Model für Schleswig-Holstein."
 
 #: templates/show_scenarios.html:80
 msgid "Choose or import a scenario and go for it."
-msgstr ""
+msgstr "Wählen oder importieren Sie ein Szenario und legen Sie los."
 
 #: templates/show_scenarios.html:82
 msgid "based on oemof"
-msgstr ""
+msgstr "basierend auf OEMOF"
 
 #: templates/show_scenarios.html:84
 msgid "developed at"
-msgstr ""
+msgstr "entwickelt bei"
 
 #: templates/show_scenarios.html:86
 msgid "funded by"
-msgstr ""
+msgstr "gefördert von"
 
 #: templates/show_scenarios.html:117
 msgid "Deleted successfully."
-msgstr ""
+msgstr "Erfolgreich gelöscht."
 
 #: templates/show_scenarios.html:118
 msgid "Error while attempting to delete."
-msgstr ""
+msgstr "Fehler beim Löschversuch."
 
-#: templates/pages/jobs.html:7
+#: templates/pages/jobs.html:7 templates/widgets/jobs.html:44
 msgid "Queued/Running Simulations"
-msgstr ""
+msgstr "Eingereihte / Laufende Simulationen"
+
+#: templates/widgets/jobs.html:9
+msgid "Waiting/Running Simulations"
+msgstr "Wartende / Laufende Simulationen"
+
+#: templates/widgets/jobs.html:15
+msgid "Process"
+msgstr "Prozess"
+
+#: templates/widgets/jobs.html:16
+msgid "Stop"
+msgstr "Stop"
+
+#: templates/widgets/jobs.html:25
+msgid "Cancel / Kill"
+msgstr "Abbrechen"
+
+#: templates/widgets/jobs.html:38
+msgid "Remove Dead Jobs"
+msgstr "Entferne abgebrochene Prozesse"
+
+#: templates/widgets/jobs.html:41
+msgid "2 days ago"
+msgstr "Vor 2 Tagen"
+
+#: templates/widgets/jobs.html:45
+msgid "No Jobs."
+msgstr "Keine Prozesse."
 
