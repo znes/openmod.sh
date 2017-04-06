@@ -104,7 +104,7 @@ def create_energy_system(scenario):
     Node.registry = None
 
     es.scenario_description = scenario['tags'].get('scenario_description',
-                                                   gettext('No description provided.'))
+                                                   'No description provided.')
     es.scenario_name = scenario['name']
 
     return es
@@ -532,7 +532,7 @@ def wrapped_simulation(scenario, connection):
         the parent.
 
     """
-    signal.signal(signal.SIGINT, stop_worker)
+    signal.signal(signal.SIGUSR2, stop_worker)
     connection.send(mp.current_process().pid)
     # If theres anything available on our end of the pipe, that means our
     # parent wants us to stop immediately.
