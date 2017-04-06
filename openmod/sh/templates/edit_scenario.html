@@ -681,7 +681,6 @@ function renderStackedInputPlot(select_id, plot_id) {
 
 
 function renderStackedInputSubPlot(hub_name, select_id, plot_id) {
-
     var data = {};
     data[hub_name] = {'production':{}, 'demand':{}};
 
@@ -1331,7 +1330,7 @@ $('#slider_form').change(function () {
 
     if ($('.nav a.active')[0]['hash'] == "#input_stacked_tab") {
         //RERENDER INPUT STACKED TIMESERIES
-        renderStackedInputSubPlot($("#input_stacked_select").val(), "input_stacked")
+        renderStackedInputSubPlot($("#input_stacked_select").val(), "input_stacked_select","input_stacked")
     }
 
 });
