@@ -433,11 +433,11 @@ function renderResultSummary(div_id) {
 
     // EMISSIONS RESULTS
     getEmissionResults(scenario_db_id, multi_hub_name='kiel', function(data) {
-        var helper = {'electricity':"{{_('Strom')}}", 'heat':"{{_('Wärme')}}",
+        var helper = {'electricity':"{{_('Electricity')}}", 'heat':"{{_('Heat')}}",
                       'import':"{{_('Import')}}", 'export': "{{_('Export')}}"};
         var columns = Object.keys(helper);
         var all_columns = JSON.parse(JSON.stringify(columns));
-        all_columns.splice(0, 0, "Emissionen", "");
+        all_columns.splice(0, 0, "{{_('Emissions')}}", "");
         appendToDiv(
             div_id,
             createTable(
@@ -449,7 +449,8 @@ function renderResultSummary(div_id) {
                             return x;
                         }}),
                 "summary_emissions"));
-        var row = prepareRow(columns, data, 1000, "{{_('Emissionen')}}", "in 1000 t");
+
+        var row = prepareRow(columns, data, 1000, "{{_('Emissions')}}", "in 1000 t");
         addTableRow(row, "summary_emissions");
     });
 
