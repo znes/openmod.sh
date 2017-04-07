@@ -668,15 +668,29 @@ def get_co2_results(scenario_identifier, multi_hub_name, by='id', aggregated=Tru
                                if get_tag_value(h.tags, 'sector') ==
                                    'electricity'][0]
 
+            heat_hub = [h for h in hubs
+                               if get_tag_value(h.tags, 'sector') ==
+                                   'heat'][0]
+
             # get the hub results for the electrcity hub
             hub_results = get_hub_results(scenario_identifier=scenario_id,
                                           hub_name=electricity_hub.name,
                                           by='id',
                                           aggregated=False)
 
+            hub_results_heat = get_hub_results(scenario_identifier=scenario_id,
+                                               hub_name=heat_hub.name,
+                                               by='id',
+                                               aggregated=False)
+
+
             electricity_production = hub_results[electricity_hub.name]['production']
-            summed_production = [sum(p)
+            heat_production = hub_results_heat[heat_hub.name]['production']
+
+            summed_production_electricity = [sum(p)
                                  for p in zip(*electricity_production.values())]
+            summed_production_heat = [sum(p)
+                                 for p in zip(*heat_production.values())]
 
             co2_dict = {'import': {},
                         'export': {},
@@ -799,17 +813,26 @@ def get_co2_results(scenario_identifier, multi_hub_name, by='id', aggregated=Tru
             # We also need to check the export slacks
             # in the case of electricity we need to weight this with the
             # average emission factor of the production at the bus
-            total_co2_production = [
+            total_co2_production_electricity = [
                 sum(c) for c in zip(*co2_dict['electricity'].values())]
-            emission_factor = []
+
+            total_co2_production_heat = [
+                sum(c) for c in zip(*co2_dict['heat'].values())]
+
+            emission_factor_electricity = []
             emission_export_absolut = []
-            for i in range(len(summed_production)):
-                emission_factor.append(total_co2_production[i] /
-                                            summed_production[i])
+            for i in range(len(summed_production_electricity)):
+                emission_factor_electricity.append(total_co2_production_electricity[i] /
+                                            summed_production_electricity[i])
 
                 emission_export_absolut.append(
-                    emission_factor[i] *
+                    emission_factor_electricity[i] *
                         hub_results[electricity_hub.name]['export'][import_slack_hub.name][i])
+
+            emission_factor_heat = []
+            for i in range(len(summed_production_heat)):
+                emission_factor_heat.append(total_co2_production_heat[i] /
+                                            summed_production_heat[i])
 
             co2_dict['export'][import_slack_hub.name] = emission_export_absolut
 
@@ -817,10 +840,10 @@ def get_co2_results(scenario_identifier, multi_hub_name, by='id', aggregated=Tru
             if aggregated == True:
                 for k,v in co2_dict.items():
                     co2_dict[k] = sum([sum(c) for c in zip(*co2_dict[k].values())])
-                emission_factor = sum(emission_factor) / 8760
+                co2_dict['emission_factor_electricity'] = sum(emission_factor_electricity)/ 8760
+                co2_dict['emission_factor_heat'] = sum(emission_factor_heat) / 8760
 
-
-            return co2_dict, emission_factor
+            return co2_dict, False
 
 
         else:

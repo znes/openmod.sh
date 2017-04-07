@@ -382,9 +382,10 @@ function renderResultSummary(div_id) {
     getHeatPumpPotential(function(x) {
             potential_dct['heatpump'] = x.reduce(function(a,b) {
                                         return a+b;}, 0);
+            var potential_row = prepareRow(potential_columns, potential_dct, 1000, "{{_('Wärmepumpen Potential')}}", "in GWh");
+            addTableRow(potential_row, "summary_potential");
                          });
-    var potential_row = prepareRow(potential_columns, potential_dct, 1000, "{{_('Wärmepumpen Potential')}}", "in GWh");
-    addTableRow(potential_row, "summary_potential");
+
 
     // AREA USAGE (REMOVE AFTER KIEL WORKSHOP!!!!)
     var area_helper = {'kiel_solar':"{{_('KI Solar')}}",
@@ -394,7 +395,7 @@ function renderResultSummary(div_id) {
     // biomass has to be last
     var area_columns = ["kiel_solar", "biomethan", "biomass"];
     var all_area_columns = JSON.parse(JSON.stringify(area_columns));
-    all_area_columns.splice(0, 0, "Area", "");
+    all_area_columns.splice(0, 0, "{{_('Area')}}", "");
     var area_dct = {};
     var relative_area_dct = {};
 
@@ -435,7 +436,7 @@ function renderResultSummary(div_id) {
                       'import':"{{_('Import')}}", 'export': "{{_('Export')}}"};
         var columns = Object.keys(helper);
         var all_columns = JSON.parse(JSON.stringify(columns));
-        all_columns.splice(0, 0, "Emissionen", "");
+        all_columns.splice(0, 0, "{{_('Emissionen')}}", "");
         appendToDiv(
             div_id,
             createTable(
@@ -447,7 +448,15 @@ function renderResultSummary(div_id) {
                             return x;
                         }}),
                 "summary_emissions"));
-        var row = prepareRow(columns, data, 1000, "{{_('Emissionen')}}", "in 1000 t");
+
+        var row = prepareRow(columns, data, 1000, "{{_('Absolut Emissions')}}", "in 1000 t");
+        addTableRow(row, "summary_emissions");
+        var factor_data = {};
+        factor_data['electricity'] = data['emission_factor_electricity'];
+        factor_data['heat'] = data['emission_factor_heat'];
+        factor_data['import'] = getTagValue('BRD_commodity', 'emission_factor')
+        factor_data['export'] = data['emission_factor_electricity'];
+        var row = prepareRow(columns, factor_data, 0.001, "{{_('Emission Factor (Production)')}}", "in t/GWh");
         addTableRow(row, "summary_emissions");
     });
 
@@ -881,7 +890,7 @@ function updateScenario(scenario) {
                 $.get('delete', {
                     id: scenario_db_id
                 });
-                
+
                 alertModal("{{_('Scenario will be uploaded and saved. This can take a while.')}}");
 
                 // Update scenario children from dict which is manipulated by slider
