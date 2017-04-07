@@ -2,44 +2,44 @@ function makeEmissionBarPlot(div, data, layout) {
     var plotly_layout =  {
             title: layout.title,
             yaxis: {
-                title: "Emission in t"
+                title: "Emissionen in t"
             },
             hovermode: !1,
             barmode: 'stack'
     };
 
     var heat = {
-        x: ["Production", "Export", "Total"],
+        x: ["Produktion", "Export", "Gesamt"],
         y: [data["heat"], 0, 0],
-        name: "Heat",
+        name: "Wärme",
         type: "bar",
         marker: {color: global_colors["heat"]}
     }
     var elec = {
-        x: ["Production", "Export", "Total"],
+        x: ["Produktion", "Export", "Gesamt"],
         y: [data["electricity"], 0, 0],
-        name: "Electricity",
+        name: "Strom",
         type: "bar",
         marker: {color: global_colors["electricity"]}
     }
     var impor = {
-        x: ["Production", "Export", "Total"],
+        x: ["Produktion", "Export", "Gesamt"],
         y: [data["import"], 0, 0],
         name: "Import",
         type: "bar",
         marker: {color: global_colors["import"]}
     }
     var expor = {
-        x: ["Production", "Export", "Total"],
+        x: ["Produktion", "Export", "Gesamt"],
         y: [0, data["export"], 0],
         name: "Export",
         type: "bar",
         marker: {color: global_colors["export"]}
     }
     var total = {
-        x: ["Production", "Export", "Total"],
+        x: ["Produktion", "Export", "Gesamt"],
         y: [0, 0, data["import"]+data["export"]+data["electricity"]+data["heat"]],
-        name: "Total",
+        name: "Gesamt",
         type: "bar",
         marker: {color: "black"}
     }
@@ -82,7 +82,7 @@ function makeBarPlot(div, data, layout) {
     var plotly_layout =  {
             title: layout.title,
             yaxis: {
-                title: 'Energy in MWh',
+                title: 'Energie in MWh',
                 hoverformat: '.1f'
             },
             margin: {
@@ -116,10 +116,10 @@ function makeHeatmapPlot(div, data, layout) {
     var plotly_layout = {
         title: layout.title,
         axis: {
-            title: 'Day of the year',
+            title: 'Tag des Jahres',
         },
         yaxis: {
-            title: 'Hour of the day'
+            title: 'Stunde des Jahres'
         }
     };
 
