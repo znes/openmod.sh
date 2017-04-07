@@ -1,7 +1,6 @@
 from contextlib import contextmanager
 
 from geoalchemy2 import shape
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 import networkx as nx
 
@@ -9,6 +8,8 @@ import oemof.db as db
 
 from openmod.sh.schemas import oms as schema
 
+def safe_zero_division(x,y):
+    return (x/y) if y !=0 else 0
 
 @contextmanager
 def db_session():
@@ -744,11 +745,8 @@ def get_co2_results(scenario_identifier, multi_hub_name, by='id', aggregated=Tru
                         # calculate share and multiply with absolut co2-value
                         import_share = []
                         for i in range(len(net_import)):
-                            # avoid float division erro
-                            if abs_import[i] != 0:
-                                import_share.append(net_import[i] / abs_import[i] * r.value[i])
-                            else:
-                                import_share.append(0)
+                            import_share.append(safe_zero_division(net_import[i], (abs_import[i] * r.value[i])))
+
 
                         if 'electricity' in [get_tag_value(ss.tags, 'sector')
                                              for ss in r.predecessor.successors]:
@@ -794,12 +792,9 @@ def get_co2_results(scenario_identifier, multi_hub_name, by='id', aggregated=Tru
                         heat_share = []
                         for i in range(len(el_flow)):
                             total_output = (heat_flow[i] + el_flow[i])
-                            if total_output > 0:
-                                el_share.append(el_flow[i] / (heat_flow[i] + el_flow[i]))
-                                heat_share.append(heat_flow[i] / (heat_flow[i] + el_flow[i]))
-                            else:
-                                el_share.append(0)
-                                heat_share.append(0)
+                            el_share.append(safe_zero_division(el_flow[i], total_output))
+                            heat_share.append(safe_zero_division(heat_flow[i], total_output))
+
 
                         # weight with 'heat_share' and add to heat result
                         co2_dict['heat'][get_label(r.predecessor)] = [
@@ -822,8 +817,8 @@ def get_co2_results(scenario_identifier, multi_hub_name, by='id', aggregated=Tru
             emission_factor_electricity = []
             emission_export_absolut = []
             for i in range(len(summed_production_electricity)):
-                emission_factor_electricity.append(total_co2_production_electricity[i] /
-                                            summed_production_electricity[i])
+                emission_factor_electricity.append(safe_zero_division(
+                    total_co2_production_electricity[i], summed_production_electricity[i]))
 
                 emission_export_absolut.append(
                     emission_factor_electricity[i] *
@@ -831,8 +826,8 @@ def get_co2_results(scenario_identifier, multi_hub_name, by='id', aggregated=Tru
 
             emission_factor_heat = []
             for i in range(len(summed_production_heat)):
-                emission_factor_heat.append(total_co2_production_heat[i] /
-                                            summed_production_heat[i])
+                emission_factor_heat.append(safe_zero_division(
+                    total_co2_production_heat[i], summed_production_heat[i]))
 
             co2_dict['export'][import_slack_hub.name] = emission_export_absolut
 
