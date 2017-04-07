@@ -382,9 +382,11 @@ function renderResultSummary(div_id) {
     getHeatPumpPotential(function(x) {
             potential_dct['heatpump'] = x.reduce(function(a,b) {
                                         return a+b;}, 0);
+            var potential_row = prepareRow(potential_columns, potential_dct, 1000, "{{_('Wärmepumpen Potential')}}", "in GWh");
+            addTableRow(potential_row, "summary_potential");
                          });
-    var potential_row = prepareRow(potential_columns, potential_dct, 1000, "{{_('Wärmepumpen Potential')}}", "in GWh");
-    addTableRow(potential_row, "summary_potential");
+
+
 
     // AREA USAGE (REMOVE AFTER KIEL WORKSHOP!!!!)
     var area_helper = {'kiel_solar':"{{_('KI Solar')}}",
