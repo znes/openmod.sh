@@ -86,11 +86,11 @@ function makeIndividualBiomethanSilder() {
     var val = 100 - ((parseFloat(getTagValue('gas_commodity', 'emission_factor')) / 0.225)  * 100);
     $('#slider_form').append(
         '<div class="form-group row">'
-            +'<label for="'+element+'" class="col-5 col-form-label">' + "{{_('Anteil in')}} %" + '</label>'
+            +'<label for="'+element+'" class="col-4 col-form-label">' + "{{_('Anteil in')}} %" + '</label>'
             +'<div class="col">'
                 +'<input id="biomethan_slider" class="form-control" type="range" min="0" step="1" value="'+val+'" max="100" onchange="updateBiomethanValue(this.value);"/>'
             +'</div>'
-            +'<div class="col-1">'
+            +'<div class="col-2">'
                 +'<span id="biomethan_value"></span>'
             +'</div>'
         +'</div>');
@@ -251,14 +251,14 @@ function getBiomassAreaUsage(callback_biomass, callback_biomethan) {
                         function(data) {
                                 var sum = data.reduce(function(a,b) {
                                                 return a+b;}, 0);
-                                callback_biomass(sum / parseFloat(biomass_usage_specific));
+                                callback_biomass(sum * parseFloat(biomass_usage_specific));
                         });
     var biomethan_usage_specific = getTagValue('area_factors', 'biomethan');
     getSingleFlowResult(scenario_db_id, 'gas_commodity', 'global_gas',
                         function(data) {
                                 var sum = data.reduce(function(a,b) {
                                                 return a+b;}, 0);
-                                callback_biomethan(sum /
+                                callback_biomethan(sum *
                                                    parseFloat(biomethan_usage_specific) *
                                                    parseFloat($('#biomethan_slider').val()));
                         });
@@ -382,11 +382,9 @@ function renderResultSummary(div_id) {
     getHeatPumpPotential(function(x) {
             potential_dct['heatpump'] = x.reduce(function(a,b) {
                                         return a+b;}, 0);
-            var potential_row = prepareRow(potential_columns, potential_dct, 1000, "{{_('Wärmepumpen Potential')}}", "in GWh");
-            addTableRow(potential_row, "summary_potential");
                          });
-
-
+    var potential_row = prepareRow(potential_columns, potential_dct, 1000, "{{_('Wärmepumpen Potential')}}", "in GWh");
+    addTableRow(potential_row, "summary_potential");
 
     // AREA USAGE (REMOVE AFTER KIEL WORKSHOP!!!!)
     var area_helper = {'kiel_solar':"{{_('KI Solar')}}",
@@ -433,11 +431,11 @@ function renderResultSummary(div_id) {
 
     // EMISSIONS RESULTS
     getEmissionResults(scenario_db_id, multi_hub_name='kiel', function(data) {
-        var helper = {'electricity':"{{_('Electricity')}}", 'heat':"{{_('Heat')}}",
+        var helper = {'electricity':"{{_('Strom')}}", 'heat':"{{_('Wärme')}}",
                       'import':"{{_('Import')}}", 'export': "{{_('Export')}}"};
         var columns = Object.keys(helper);
         var all_columns = JSON.parse(JSON.stringify(columns));
-        all_columns.splice(0, 0, "{{_('Emissions')}}", "");
+        all_columns.splice(0, 0, "Emissionen", "");
         appendToDiv(
             div_id,
             createTable(
@@ -449,8 +447,7 @@ function renderResultSummary(div_id) {
                             return x;
                         }}),
                 "summary_emissions"));
-
-        var row = prepareRow(columns, data, 1000, "{{_('Emissions')}}", "in 1000 t");
+        var row = prepareRow(columns, data, 1000, "{{_('Emissionen')}}", "in 1000 t");
         addTableRow(row, "summary_emissions");
     });
 
@@ -480,7 +477,7 @@ function renderResultSummary(div_id) {
         var columns = Object.keys(production_dct);
         var all_columns = JSON.parse(JSON.stringify(columns));
 
-        all_columns.splice(0,0,"{{_('Electricity Production')}}", "");
+        all_columns.splice(0,0,"Electricity Production", "");
         appendToDiv(div_id, createTable(all_columns.map(function(name){return(getLabel(name));}), "summary_table_kiel_electricity_production"));
         var row = prepareRow(columns, installed_power_dct, 1,
                              "{{_('Installed power')}}", "{{_('in MW')}}");
@@ -531,7 +528,7 @@ function renderResultSummary(div_id) {
          var columns = Object.keys(production_dct);
         var all_columns = JSON.parse(JSON.stringify(columns));
 
-        all_columns.splice(0,0,"{{_('Heat Production')}}", "");
+        all_columns.splice(0,0,"Heat Production", "");
         appendToDiv(div_id, createTable(all_columns.map(function(name){return(getLabel(name));}),
                     "summary_table_kiel_heat_production"));
         var row = prepareRow(columns, installed_power_dct, 1,
