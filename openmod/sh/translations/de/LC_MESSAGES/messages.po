@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-04-06 12:40+0200\n"
+"POT-Creation-Date: 2017-04-07 19:07+0200\n"
 "PO-Revision-Date: 2017-04-05 21:24+0200\n"
 "Last-Translator: \n"
 "Language: de\n"
@@ -16,11 +16,11 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.4.0\n"
+"Generated-By: Babel 2.3.4\n"
 
 #: gui.py:56
 msgid "Please provide correct query parameters. At least 'id'."
-msgstr "Geben Sie die korrekten Abfrage-Parameter ein. Mindestens „id“."
+msgstr "Geben Sie die korrekten Abfrage-Parameter ein. Mindestens 'id'."
 
 #: gui.py:82
 msgid "Provide at least id as query parameter."
@@ -38,7 +38,7 @@ msgstr "Auftrag abgebrochen."
 
 #: gui.py:277
 msgid "It's still queued but will be disposed "
-msgstr "Es ist immer noch eingereiht aber verworfen "
+msgstr "Auftrag ist immer noch eingereiht, aber verworfen "
 
 #: gui.py:278
 msgid "of before it starts."
@@ -46,23 +46,27 @@ msgstr "bevor es beginnt."
 
 #: gui.py:279
 msgid "Job running, but not finished yet."
-msgstr "Auftrag läuft, aber ist noch nicht fertig."
+msgstr "Der Auftrag läuft, ist aber noch nicht fertig."
 
 #: gui.py:280
 msgid "Please come back later."
 msgstr "Bitte kommen Sie später zurück."
 
-#: mcbeth.py:107
-msgid "No description provided."
-msgstr "Keine Beschreibung angegeben."
+#: web.py:154
+msgid "Invalid username/password combination."
+msgstr "Unglütige Username/Passwort Kombination"
+
+#: web.py:174
+msgid "Logged out"
+msgstr "Ausgeloggt"
 
 #: templates/base_layout.html:38
 msgid "Scenario Overview"
 msgstr "Szenarien Übersicht"
 
-#: templates/base_layout.html:41 templates/edit_scenario.html:435
+#: templates/base_layout.html:41 templates/edit_scenario.html:439
 msgid "Import"
-msgstr "Importieren"
+msgstr "Import"
 
 #: templates/base_layout.html:44
 msgid "Jobs"
@@ -82,7 +86,7 @@ msgstr "Logout"
 
 #: templates/base_layout.html:70
 msgid "Selected scenario name"
-msgstr "Wähle Szenarien Name"
+msgstr "Wähle eine Szenarien Namen"
 
 #: templates/base_layout.html:90
 msgid "Import a scenario"
@@ -90,17 +94,16 @@ msgstr "Importiere Szenario"
 
 #: templates/base_layout.html:96
 msgid "You can import scenarios only in the openmod.sh specific JSON-format."
-msgstr ""
-"Sie können Szenarien nur in der openmod.sh spezifischen JSON-Struktur "
+msgstr "Sie können Szenarien nur in der openmod.sh spezifischen JSON-Struktur "
 "importieren."
 
 #: templates/base_layout.html:100
 msgid "Choose file:"
-msgstr "Wählen Sie die Datei:"
+msgstr "Wählen Sie eine Datei:"
 
 #: templates/base_layout.html:102
 msgid "The file has to be a json-file following the openmod.sh API structure."
-msgstr "Die Datei muss eine JSON-Datei in der opendoc.sh API Struktur sein."
+msgstr "Die Datei muss eine JSON-Datei, die in der openmod.sh API Struktur aufgebaut ist."
 
 #: templates/base_layout.html:104
 msgid "Upload"
@@ -114,37 +117,29 @@ msgstr "Schließen"
 msgid "Uploading..."
 msgstr "Lädt hoch…"
 
-#: templates/base_layout.html:157
-msgid "scenariofile"
-msgstr "Szenariendatei"
-
-#: templates/base_layout.html:164
-msgid "Upload another"
-msgstr "Lade eine andere"
-
 #: templates/base_layout.html:165
+msgid "Upload another"
+msgstr "Lade ein weiteres Szenario..."
+
+#: templates/base_layout.html:166
 msgid "Upload successfull!"
 msgstr "Hochladen erfolgreich!"
 
-#: templates/base_layout.html:167 templates/base_layout.html:172
+#: templates/base_layout.html:168 templates/base_layout.html:173
 msgid "Try again"
-msgstr "Bitte noch einmal probieren"
-
-#: templates/base_layout.html:168
-msgid "Scenario name already taken!"
-msgstr "Name bereits vergeben!"
+msgstr "Bitte noch einmal probieren!"
 
 #: templates/base_layout.html:169
+msgid "Scenario name already taken!"
+msgstr "Szenarioname bereits vergeben!"
+
+#: templates/base_layout.html:170
 msgid "Choose a new scenario name:"
 msgstr "Wählen Sie ein anderen Szenariennamen:"
 
-#: templates/base_layout.html:173
+#: templates/base_layout.html:174
 msgid "An error occurred!"
 msgstr "Ein Fehler ist aufgetreten!"
-
-#: templates/base_layout.html:177 templates/base_layout.html:179
-msgid "new_scenario_name"
-msgstr "neuer_szenarien_name"
 
 #: templates/edit_scenario.html:21 templates/widgets/jobs.html:5
 #: templates/widgets/jobs.html:13
@@ -175,156 +170,165 @@ msgstr "Biomethan Anteil in Kiel"
 msgid "Anteil in"
 msgstr "Anteil in"
 
-#: templates/edit_scenario.html:161
+#: templates/edit_scenario.html:164
 msgid "Residualload"
 msgstr "Residuallast"
 
-#: templates/edit_scenario.html:174
+#: templates/edit_scenario.html:177
 msgid "Demand"
 msgstr "Bedarf"
 
-#: templates/edit_scenario.html:182
+#: templates/edit_scenario.html:185
 msgid "Production"
 msgstr "Produktion"
 
-#: templates/edit_scenario.html:309 templates/edit_scenario.html:586
-#: templates/edit_scenario.html:631
+#: templates/edit_scenario.html:312 templates/edit_scenario.html:598
+#: templates/edit_scenario.html:643
 msgid "No results in db!"
 msgstr "Keine Ergebnisse in der Datenbank!"
 
-#: templates/edit_scenario.html:313
+#: templates/edit_scenario.html:316
 msgid "CO2-Emissions in Kiel"
 msgstr "CO2-Emissionen in Kiel"
 
-#: templates/edit_scenario.html:365
+#: templates/edit_scenario.html:368
 msgid "KI Wärme"
 msgstr "KI Wärme"
 
-#: templates/edit_scenario.html:386
+#: templates/edit_scenario.html:388
 msgid "Wärmepumpen Potential"
 msgstr "Wärmepumpen Potential"
 
-#: templates/edit_scenario.html:390
+#: templates/edit_scenario.html:394
 msgid "KI Solar"
 msgstr "KI Solar"
 
-#: templates/edit_scenario.html:391
+#: templates/edit_scenario.html:395
 msgid "KI Wind"
 msgstr "KI Wind"
 
-#: templates/edit_scenario.html:392
+#: templates/edit_scenario.html:396
 msgid "Biomethan Import"
 msgstr "Biomethan Import"
 
-#: templates/edit_scenario.html:393
+#: templates/edit_scenario.html:397
 msgid "Biomasse Import"
 msgstr "Biomasse Import"
 
-#: templates/edit_scenario.html:426 templates/edit_scenario.html:428
+#: templates/edit_scenario.html:401 templates/edit_scenario.html:430
+#: templates/edit_scenario.html:432
 msgid "Area"
 msgstr "Fläche"
 
-#: templates/edit_scenario.html:426
+#: templates/edit_scenario.html:430
 msgid "in ha"
 msgstr "in ha"
 
-#: templates/edit_scenario.html:428 templates/edit_scenario.html:492
-#: templates/edit_scenario.html:544
+#: templates/edit_scenario.html:432 templates/edit_scenario.html:504
+#: templates/edit_scenario.html:556
 msgid "in"
 msgstr "in"
 
-#: templates/edit_scenario.html:434
+#: templates/edit_scenario.html:438
 msgid "Strom"
 msgstr "Strom"
 
-#: templates/edit_scenario.html:434
+#: templates/edit_scenario.html:438
 msgid "Wärme"
 msgstr "Wärme"
 
-#: templates/edit_scenario.html:435
+#: templates/edit_scenario.html:439
 msgid "Export"
 msgstr "Export"
 
-#: templates/edit_scenario.html:450
+#: templates/edit_scenario.html:442
 msgid "Emissionen"
 msgstr "Emissionen"
 
-#: templates/edit_scenario.html:483 templates/edit_scenario.html:535
+#: templates/edit_scenario.html:455
+msgid "Absolut Emissions"
+msgstr "Absolute Emissionen"
+
+#: templates/edit_scenario.html:462
+msgid "Emission Factor (Production)"
+msgstr "Emissionsfaktor (Produktion)"
+
+#: templates/edit_scenario.html:495 templates/edit_scenario.html:547
 msgid "Installed power"
 msgstr "Installierte Leistung"
 
-#: templates/edit_scenario.html:483 templates/edit_scenario.html:535
-#: templates/edit_scenario.html:1008 templates/edit_scenario.html:1013
-#: templates/edit_scenario.html:1017 templates/edit_scenario.html:1018
+#: templates/edit_scenario.html:495 templates/edit_scenario.html:547
+#: templates/edit_scenario.html:1025 templates/edit_scenario.html:1030
+#: templates/edit_scenario.html:1034 templates/edit_scenario.html:1035
 msgid "in MW"
 msgstr "in MW"
 
-#: templates/edit_scenario.html:486
+#: templates/edit_scenario.html:498
 msgid "Electricity production"
 msgstr "Stromproduktion"
 
-#: templates/edit_scenario.html:486 templates/edit_scenario.html:538
+#: templates/edit_scenario.html:498 templates/edit_scenario.html:550
 msgid "in GWh"
 msgstr "in GWh"
 
-#: templates/edit_scenario.html:489 templates/edit_scenario.html:541
+#: templates/edit_scenario.html:501 templates/edit_scenario.html:553
 msgid "Fullload hours"
 msgstr "Volllaststunden"
 
-#: templates/edit_scenario.html:489 templates/edit_scenario.html:541
+#: templates/edit_scenario.html:501 templates/edit_scenario.html:553
 msgid "in h"
 msgstr "in h"
 
-#: templates/edit_scenario.html:492 templates/edit_scenario.html:544
+#: templates/edit_scenario.html:504 templates/edit_scenario.html:556
 msgid "Share of production in Kiel"
 msgstr "Anteil der Produktion in Kiel"
 
-#: templates/edit_scenario.html:538
+#: templates/edit_scenario.html:550
 msgid "Heat production"
 msgstr "Wärmeproduktion"
 
-#: templates/edit_scenario.html:557 templates/edit_scenario.html:602
-#: templates/edit_scenario.html:656
+#: templates/edit_scenario.html:569 templates/edit_scenario.html:614
+#: templates/edit_scenario.html:668
 msgid "No hubs founds!"
 msgstr "Keine Hubs gefunden!"
 
-#: templates/edit_scenario.html:590
+#: templates/edit_scenario.html:602
 msgid "Yearly Production, Consumption and Im-/Export in"
 msgstr "Produktion, Konsum und Im/-Export pro Jahr in"
 
-#: templates/edit_scenario.html:634
+#: templates/edit_scenario.html:646
 msgid "No production for selected hub!"
 msgstr "Keine Produktion für gewählte Hubs!"
 
-#: templates/edit_scenario.html:642
+#: templates/edit_scenario.html:654
 msgid "Hourly Production and Demand in"
 msgstr "Stündliche Produktion und Bedarf in"
 
-#: templates/edit_scenario.html:643 templates/edit_scenario.html:721
+#: templates/edit_scenario.html:655 templates/edit_scenario.html:733
 msgid "Production and Demand in MW"
-msgstr "Produktion in Bedarf in MW"
+msgstr "Produktion und Bedarf in MW"
 
-#: templates/edit_scenario.html:712
+#: templates/edit_scenario.html:724
 msgid "No data to render!"
 msgstr "Keine Daten zur Verarbeitung!"
 
-#: templates/edit_scenario.html:720
+#: templates/edit_scenario.html:732
 msgid "Hourly Renewable Production and Demand in"
 msgstr "Stündliche regenerative Produktion und Bedarf in"
 
-#: templates/edit_scenario.html:731
+#: templates/edit_scenario.html:743
 msgid ""
 "The simulation runs in the background. See Jobs for an overview of "
 "running simmulation."
 msgstr ""
-"Die Simulation läuft im Hintergrund. Siehe „Jobs“ für eine Übersicht über"
+"Die Simulation läuft im Hintergrund. Siehe „Aufträge“ für eine Übersicht über"
 " laufende Simulationen."
 
-#: templates/edit_scenario.html:747
+#: templates/edit_scenario.html:759
 msgid "Result already exists."
 msgstr "Ergebnis existiert bereits."
 
-#: templates/edit_scenario.html:751
+#: templates/edit_scenario.html:763
 msgid ""
 "There are unsaved changes. You have to save them before you can run a "
 "simulation."
@@ -332,118 +336,122 @@ msgstr ""
 "Es gibt ungesicherte Änderungen. Für eine Simulation müssen diese erst "
 "gesichert werden."
 
-#: templates/edit_scenario.html:751
+#: templates/edit_scenario.html:763
 msgid "Unsaved changes"
 msgstr "Ungesicherte Änderungen"
 
-#: templates/edit_scenario.html:818
+#: templates/edit_scenario.html:830
 msgid "New Name"
 msgstr "Neuer Name"
 
-#: templates/edit_scenario.html:818
+#: templates/edit_scenario.html:830
 msgid "Senario Name"
 msgstr "Szenarienname"
 
-#: templates/edit_scenario.html:824
+#: templates/edit_scenario.html:836
 msgid "alert"
 msgstr "Warnung"
 
-#: templates/edit_scenario.html:824
+#: templates/edit_scenario.html:836
 msgid "Input needs to be more than 0 characters."
 msgstr "Input muss mehr als 0 Zeichen besitzen."
 
-#: templates/edit_scenario.html:829
+#: templates/edit_scenario.html:841
 msgid "New description"
 msgstr "Neue Beschreibung"
 
-#: templates/edit_scenario.html:857
+#: templates/edit_scenario.html:869
 msgid "Saved successfully! Opening new scenario."
 msgstr "Erfolgreich gesichert! Öffne neues Szenario."
 
-#: templates/edit_scenario.html:857
+#: templates/edit_scenario.html:869
 msgid "Info"
 msgstr "Info"
 
-#: templates/edit_scenario.html:862
+#: templates/edit_scenario.html:874
 msgid "Scenario name is already taken. Try again."
 msgstr "Szenarienname ist bereits vergeben. Bitte erneut versuchen."
 
-#: templates/edit_scenario.html:862 templates/edit_scenario.html:877
-#: templates/edit_scenario.html:1186
+#: templates/edit_scenario.html:874 templates/edit_scenario.html:889
+#: templates/edit_scenario.html:1203
 msgid "Alert"
 msgstr "Warnung"
 
-#: templates/edit_scenario.html:877
+#: templates/edit_scenario.html:889
 msgid "Override existing scenario with new values?"
 msgstr "Bestehendes Szenario mit neuen Werten überschreiben?"
 
-#: templates/edit_scenario.html:902
+#: templates/edit_scenario.html:897
+msgid "Scenario will be uploaded and saved. This can take a while."
+msgstr "Szenario wird hochgeladen und gespeicher. Dies kann einige Minuten dauern."
+
+#: templates/edit_scenario.html:917
 msgid "Opening updated scenario."
 msgstr "Öffne aktualisiertes Szenario."
 
-#: templates/edit_scenario.html:902
+#: templates/edit_scenario.html:917
 msgid "Updated successfully!"
 msgstr "Erfolgreich aktualisiert!"
 
-#: templates/edit_scenario.html:907
+#: templates/edit_scenario.html:922
 msgid "Error. This should not have happened. Call somebody."
-msgstr "Fehler. Das sollte nicht passieren. Wenden Sie sich an jemanden."
+msgstr "Fehler. Das sollte nicht passieren. Starten Sie Ihren Browser neu und loggen sie sich neu ein. Sollte der Fehler bei der selben Aktion wieder auftreten, wenden Sie sich an den Administrator."
 
-#: templates/edit_scenario.html:969
+#: templates/edit_scenario.html:986
 msgid "No results in db"
 msgstr "Keine Ergebnisse in der Datenbank"
 
-#: templates/edit_scenario.html:1007
+#: templates/edit_scenario.html:1024
 msgid "Hourly"
 msgstr "Stündlich"
 
-#: templates/edit_scenario.html:1012
+#: templates/edit_scenario.html:1029
 msgid "Duration curve of"
-msgstr "Dauerkurve von"
+msgstr "Jahresdauerlinie von"
 
-#: templates/edit_scenario.html:1017
+#: templates/edit_scenario.html:1034
 msgid "Heatmap of"
-msgstr "Wärmekarte von"
+msgstr "Heatmap-Grafik von"
 
-#: templates/edit_scenario.html:1038
+#: templates/edit_scenario.html:1055
 msgid "Residuallast"
 msgstr "Residuallast"
 
-#: templates/edit_scenario.html:1186
+#: templates/edit_scenario.html:1203
 msgid "Do you really want to loose your changes?"
 msgstr "Änderungen verwerfen?"
 
-#: templates/edit_scenario.html:1200
+#: templates/edit_scenario.html:1217
 msgid "WITH CHANGES"
-msgstr "MIT ÄNDERUNGEN"
+msgstr "VORHANDENE ÄNDERUNGEN"
 
-#: templates/edit_scenario.html:1202
+#: templates/edit_scenario.html:1219
 msgid "Discard Changes"
 msgstr "Änderungen verwerfen"
 
-#: templates/edit_scenario.html:1237
+#: templates/edit_scenario.html:1254
 msgid "The simulation for this scenario is finished."
 msgstr "Die Simulation für das Szenario ist fertig."
 
-#: templates/edit_scenario.html:1237
+#: templates/edit_scenario.html:1254
 msgid "Results are available"
 msgstr "Ergebnisse sind verfügbar"
 
-#: templates/edit_scenario.html:1241
+#: templates/edit_scenario.html:1258
 msgid "The simulation for the last scenario is finished."
 msgstr "Die Simulation für das letzte Szenario ist fertig."
 
-#: templates/edit_scenario.html:1242
+#: templates/edit_scenario.html:1259
 msgid "But since starting the simulation you have changed some slider values."
-msgstr "Seit Start der Simulation wurden einige Slider verändert."
+msgstr "Seit Start der Simulation wurden einige Werte an Slidern verändert."
 
-#: templates/edit_scenario.html:1243
+#: templates/edit_scenario.html:1260
 msgid "If you want to keep your changes, save them as a new scenario."
 msgstr ""
-"Falls die Änderungen behalten werden sollen, speichern Sie diese als ein "
+"Falls die Änderungen behalten werden wollen, speichern Sie diese als ein "
 "neues Szenario."
 
-#: templates/edit_scenario.html:1244
+#: templates/edit_scenario.html:1261
 msgid ""
 "If you want to discard the changes and see the results, just refresh this"
 " page."
@@ -451,7 +459,7 @@ msgstr ""
 "Falls Sie wirklich die Änderungen verwerfen möchten und die Ergebnisse "
 "ansehen wollen, aktualisieren Sie einfach die Seite."
 
-#: templates/edit_scenario.html:1245
+#: templates/edit_scenario.html:1262
 msgid "Results are available, but..."
 msgstr "Ergebnisse sind verfügbar, aber…"
 
@@ -465,7 +473,7 @@ msgstr "Graph"
 
 #: templates/graph_plot.html:18
 msgid "Dataset"
-msgstr "Dataset"
+msgstr "Datasatz"
 
 #: templates/login.html:19 templates/login.html:34 templates/login.html:58
 msgid "Login"
@@ -491,7 +499,7 @@ msgstr "Jahr"
 msgid "Description"
 msgstr "Beschreibung"
 
-#: templates/show_scenarios.html:26
+#: templates/show_scenarios.html:26 templates/show_scenarios.html:40
 msgid "Edit"
 msgstr "Bearbeiten"
 
@@ -503,13 +511,13 @@ msgstr "Lade JSON-Datei"
 msgid "Get Results"
 msgstr "Zeige Ergebnisse"
 
-#: templates/show_scenarios.html:29
+#: templates/show_scenarios.html:29 templates/show_scenarios.html:58
 msgid "Delete"
 msgstr "Löschen"
 
 #: templates/show_scenarios.html:71
 msgid "Welcome to openMod.sh"
-msgstr "Willkommen zu openMod.sh"
+msgstr "Willkommen bei openMod.sh"
 
 #: templates/show_scenarios.html:77
 msgid "This is openMod.sh."
@@ -517,7 +525,7 @@ msgstr "Das ist openMod.sh."
 
 #: templates/show_scenarios.html:78
 msgid "A flexible Open Energy Model for Schleswig-Holstein."
-msgstr "Ein flexibles Open Energy Model für Schleswig-Holstein."
+msgstr "Ein flexibles offnenes Energiesystem-Modell für Schleswig-Holstein."
 
 #: templates/show_scenarios.html:80
 msgid "Choose or import a scenario and go for it."
@@ -582,4 +590,13 @@ msgstr "Vor 2 Tagen"
 #: templates/widgets/jobs.html:45
 msgid "No Jobs."
 msgstr "Keine Prozesse."
+
+#~ msgid "No description provided."
+#~ msgstr "Keine Beschreibung angegeben."
+
+#~ msgid "scenariofile"
+#~ msgstr "Szenariendatei"
+
+#~ msgid "new_scenario_name"
+#~ msgstr "neuer_szenarien_name"
 
