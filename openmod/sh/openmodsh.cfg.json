@@ -55,11 +55,11 @@
   ],
 
     "hubs": {
-        "kiel_electricity": "KI (Electricity)",
-        "kiel_heat": "KI (Heat)",
-        "nms_electricity": "NMS (Electricity)",
-        "ploe_electricity": "PLÖ (Electricity)",
-        "rdeck_electricity": "RD (Electricity)"},
+        "kiel_electricity": "KI (Strom)",
+        "kiel_heat": "KI (Wärme)",
+        "nms_electricity": "NMS (Strom)",
+        "ploe_electricity": "PLÖ (Strom)",
+        "rdeck_electricity": "RD (Strom)"},
     "global_colors": {
         "solar": "orange",
         "wind": "darkblue",
