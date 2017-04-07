@@ -346,12 +346,12 @@ function addTableRow(columns, table_id) {
     $('#'+table_id+' tbody').append(row);
 }
 
-function prepareRow(keys, dct, factor, firstc, secondc) {
+function prepareRow(keys, dct, factor, firstc, secondc, fixed_to=1) {
     var row = [];
     for (var i=0; i<keys.length; i++) {
         var key = keys[i];
         var number = dct[key]/factor;
-        row.push(number.toFixed(1));
+        row.push(number.toFixed(fixed_to));
     }
     row.splice(0,0, firstc, secondc);
     return row;
@@ -456,7 +456,7 @@ function renderResultSummary(div_id) {
         factor_data['heat'] = data['emission_factor_heat'];
         factor_data['import'] = getTagValue('BRD_commodity', 'emission_factor')
         factor_data['export'] = data['emission_factor_electricity'];
-        var row = prepareRow(columns, factor_data, 0.001, "{{_('Emission Factor (Production)')}}", "in t/GWh");
+        var row = prepareRow(columns, factor_data, 1, "{{_('Emission Factor (Production)')}}", "in t/MWh", fixed_to=3);
         addTableRow(row, "summary_emissions");
     });
 
