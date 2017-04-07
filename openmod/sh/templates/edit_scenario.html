@@ -86,12 +86,15 @@ function makeIndividualBiomethanSilder() {
     var val = 100 - ((parseFloat(getTagValue('gas_commodity', 'emission_factor')) / 0.225)  * 100);
     $('#slider_form').append(
         '<div class="form-group row">'
-            +'<label for="'+element+'" class="col-4 col-form-label">' + "{{_('Anteil in')}} %" + '</label>'
+            +'<label for="'+element+'" class="col-4 col-form-label">' + "{{_('Anteil in')}}" + '</label>'
             +'<div class="col">'
                 +'<input id="biomethan_slider" class="form-control" type="range" min="0" step="1" value="'+val+'" max="100" onchange="updateBiomethanValue(this.value);"/>'
             +'</div>'
-            +'<div class="col-2">'
+            +'<div class="col-2 text-right">'
                 +'<span id="biomethan_value"></span>'
+            +'</div>'
+            +'<div class="col-1 noPadding">'
+                +'<span>%</span>'
             +'</div>'
         +'</div>');
     updateBiomethanValue(val);
@@ -960,8 +963,11 @@ function makeAllAutomaticSlider() {
                         +'<div class="col">'
                             +makeSlider(element, getTagValue(element, l.value), slider_max)
                         +'</div>'
-        			    +'<div class="col-2">'
+        			    +'<div class="col-2 text-right">'
                             +makeSpan(element+"_display", getTagValue(element, l.value))
+                        +'</div>'
+                        +'<div class="col-1 noPadding">'
+                            + '<span>MW</span>'
                         +'</div>'
                     +"</div>");
             }
