@@ -489,7 +489,7 @@ function renderResultSummary(div_id) {
         var columns = Object.keys(production_dct);
         var all_columns = JSON.parse(JSON.stringify(columns));
 
-        all_columns.splice(0,0,"Electricity Production", "");
+        all_columns.splice(0,0,"{{_('Electricity Summary')}}", "");
         appendToDiv(div_id, createTable(all_columns.map(function(name){return(getLabel(name));}), "summary_table_kiel_electricity_production"));
         var row = prepareRow(columns, installed_power_dct, 1,
                              "{{_('Installed power')}}", "{{_('in MW')}}");
@@ -540,7 +540,7 @@ function renderResultSummary(div_id) {
          var columns = Object.keys(production_dct);
         var all_columns = JSON.parse(JSON.stringify(columns));
 
-        all_columns.splice(0,0,"Heat Production", "");
+        all_columns.splice(0,0,"{{_('Heat Summary')}}", "");
         appendToDiv(div_id, createTable(all_columns.map(function(name){return(getLabel(name));}),
                     "summary_table_kiel_heat_production"));
         var row = prepareRow(columns, installed_power_dct, 1,
