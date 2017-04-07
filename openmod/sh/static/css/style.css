@@ -6,6 +6,13 @@ body {
 }
 
 /**
+ * Helper
+ */
+
+.noPadding {
+	padding: 0;
+}
+/**
  * Site Header
  */
 header.head {
