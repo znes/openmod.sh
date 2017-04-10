@@ -254,16 +254,16 @@ function getBiomassAreaUsage(callback_biomass, callback_biomethan) {
                         function(data) {
                                 var sum = data.reduce(function(a,b) {
                                                 return a+b;}, 0);
-                                callback_biomass(sum * parseFloat(biomass_usage_specific));
+                                callback_biomass(sum / parseFloat(biomass_usage_specific));
                         });
     var biomethan_usage_specific = getTagValue('area_factors', 'biomethan');
     getSingleFlowResult(scenario_db_id, 'gas_commodity', 'global_gas',
                         function(data) {
                                 var sum = data.reduce(function(a,b) {
                                                 return a+b;}, 0);
-                                callback_biomethan(sum *
+                                callback_biomethan(sum /
                                                    parseFloat(biomethan_usage_specific) *
-                                                   parseFloat($('#biomethan_slider').val()));
+                                                   parseFloat($('#biomethan_slider').val() / 100));
                         });
 }
 
