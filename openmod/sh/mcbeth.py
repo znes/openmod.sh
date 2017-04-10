@@ -510,7 +510,7 @@ def compute_results(es):
 
     es.model.results()
 
-    es.rdf = output.DataFramePlot(energy_system=es)
+    #es.rdf = output.DataFramePlot(energy_system=es)
 
     return es
 

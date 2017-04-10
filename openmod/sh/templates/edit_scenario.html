@@ -740,7 +740,7 @@ function runSimulation(scenario) {
     if (!slider_changed) {
         checkIfResultExists(scenario_db_id, function(data) {
             if (data == false) {
-                alertModal("{{_('The simulation runs in the background. See Jobs for an overview of running simmulation.')}}",
+                alertModal("{{_('The simulation runs in the background. See Jobs for an overview of running simulation.')}}",
                     "",
                     function() {
                         $.ajax({
