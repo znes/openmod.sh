@@ -737,10 +737,12 @@ function renderStackedInputSubPlot(hub_name, select_id, plot_id) {
 
 // JQUERY TO START NEW MODEL RUN (Send json)
 function runSimulation(scenario) {
+    var start = "{{_('The simulation runs in the background. See Jobs for an overview of running simmulations.')}}";
+    var unsaved = "{{_('There are unsaved changes. You have to save them before you can run a simulation.')}}";
     if (!slider_changed) {
         checkIfResultExists(scenario_db_id, function(data) {
             if (data == false) {
-                alertModal("{{_('The simulation runs in the background. See Jobs for an overview of running simulation.')}}",
+                alertModal(start,
                     "",
                     function() {
                         $.ajax({
@@ -760,7 +762,7 @@ function runSimulation(scenario) {
             }
         });
     } else {
-        alertModal("{{_('There are unsaved changes. You have to save them before you can run a simulation.')}}", "{{_('Unsaved changes')}}");
+        alertModal(unsaved, "{{_('Unsaved changes')}}");
     }
 }
 
