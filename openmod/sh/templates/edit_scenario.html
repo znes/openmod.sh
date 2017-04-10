@@ -48,7 +48,7 @@
             </div>
         </div>
         <div class="col">
-			 <div class="navbar-collapse">
+            <div class="navbar-collapse">
                <ul class="nav nav-tabs" id="plot_tab"></ul>
             </div>
             <div class="card-block tab-content" id="plot_tab_content">
@@ -737,30 +737,31 @@ function renderStackedInputSubPlot(hub_name, select_id, plot_id) {
 
 // JQUERY TO START NEW MODEL RUN (Send json)
 function runSimulation(scenario) {
+    var upload = "{{_('Uploading scenario data. Simulation will start, once upload is finished. Please stay on this page until you are notified of the simulation start.' )}}";
+    var start = "{{_('The simulation runs in the background. See Jobs for an overview of running simmulations.')}}";
+    var unsaved = "{{_('There are unsaved changes. You have to save them before you can run a simulation.')}}";
     if (!slider_changed) {
         checkIfResultExists(scenario_db_id, function(data) {
             if (data == false) {
-                alertModal("{{_('The simulation runs in the background. See Jobs for an overview of running simulation.')}}",
-                    "",
-                    function() {
-                        $.ajax({
-                            url: 'simulate',
-                            type: 'put',
-                            data: JSON.stringify(scenario),
-                            contentType: 'application/json; charset=utf-8',
-                            dataType: 'json',
-                            success: function(data) {
-                                setResultExists();
-                            }
-                        });
-                    });
+                $.ajax({
+                    url: 'simulate',
+                    type: 'put',
+                    data: JSON.stringify(scenario),
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                    success: function(data) {
+                        alertModal(start, "Job started");
+                        setResultExists();
+                    }
+                });
+                alertModal(upload, "Uploading job data");
             }
             else {
                 alertModal("{{_('Result already exists.')}}");
             }
         });
     } else {
-        alertModal("{{_('There are unsaved changes. You have to save them before you can run a simulation.')}}", "{{_('Unsaved changes')}}");
+        alertModal(unsaved, "{{_('Unsaved changes')}}");
     }
 }
 
