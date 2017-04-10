@@ -742,20 +742,17 @@ function runSimulation(scenario) {
     if (!slider_changed) {
         checkIfResultExists(scenario_db_id, function(data) {
             if (data == false) {
-                alertModal(start,
-                    "",
-                    function() {
-                        $.ajax({
-                            url: 'simulate',
-                            type: 'put',
-                            data: JSON.stringify(scenario),
-                            contentType: 'application/json; charset=utf-8',
-                            dataType: 'json',
-                            success: function(data) {
-                                setResultExists();
-                            }
-                        });
-                    });
+                $.ajax({
+                    url: 'simulate',
+                    type: 'put',
+                    data: JSON.stringify(scenario),
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                    success: function(data) {
+                        alertModal(start, "Job started");
+                        setResultExists();
+                    }
+                });
             }
             else {
                 alertModal("{{_('Result already exists.')}}");
