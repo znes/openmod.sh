@@ -584,10 +584,9 @@ def get_flow_result(scenario_identifier, predecessor_name, successor_name,
                                   predecessor_id=predecessor.id,
                                   successor_id=successor.id)
                    .first())
-        flow_result = flow_result.value
 
         if flow_result:
-            return flow_result
+            return flow_result.value
         else:
             return False
 
