@@ -570,23 +570,26 @@ def get_flow_result(scenario_identifier, predecessor_name, successor_name,
         else:
             scenario_id = scenario_identifier
 
-            predecessor = (session
-                           .query(schema.Element)
-                           .filter(schema.Element.name.like(predecessor_name))
-                           .first())
-            successor = (session
-                         .query(schema.Element)
-                         .filter(schema.Element.name.like(successor_name))
-                         .first())
-            flow_result = (session
-                           .query(schema.ResultSequences)
-                           .filter_by(scenario_id=scenario_id,
-                                      predecessor_id=predecessor.id,
-                                      successor_id=successor.id)
+        predecessor = (session
+                       .query(schema.Element)
+                       .filter(schema.Element.name.like(predecessor_name))
                        .first())
-            flow_result = flow_result.value
+        successor = (session
+                     .query(schema.Element)
+                     .filter(schema.Element.name.like(successor_name))
+                     .first())
+        flow_result = (session
+                       .query(schema.ResultSequences)
+                       .filter_by(scenario_id=scenario_id,
+                                  predecessor_id=predecessor.id,
+                                  successor_id=successor.id)
+                   .first())
+        flow_result = flow_result.value
 
-    return flow_result
+        if flow_result:
+            return flow_result
+        else:
+            return False
 
 def get_flow_results(scenario_identifier, by='id', subset='false'):
     """

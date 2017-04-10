@@ -157,9 +157,11 @@ $(function() {
 		$(this).append("<span class='hideInfo'>{{_('Loading')}}</span>");
 		$(that).find("input[type='submit']").hide();
 		$.ajax({
-        	url: 'API/flow_results',
+        	url: 'API/single_flow_result',
         	type: 'get',
-        	data : {scenario_id: id}
+        	data : {scenario_id: id,
+                  predecessor: 'kiel_electricity',
+                  successor: 'kiel_demand_electricity'}
         }).done(function(data) {
         	if(data != false) {
         		$(that).find(".hideInfo").html("");
