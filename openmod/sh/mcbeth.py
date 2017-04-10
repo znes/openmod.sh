@@ -130,7 +130,8 @@ def populate_energy_system(es, node_data):
             b.type = n['type']
             # add all tags as attributes to hub/bus
             for k,v in n['tags'].items():
-                setattr(b, k, v)
+                if k != 'label':
+                    setattr(b, k, v)
             es.add(b)
             hubs[n['name']] = b
 
