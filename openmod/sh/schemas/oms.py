@@ -171,8 +171,3 @@ class ResultSequences(DB.Model):
     type = DB.Column(DB.String(255))
     value = DB.Column(ARRAY(DB.Float, dimensions=1), nullable=False)
 
-
-
-
-
-

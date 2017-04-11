@@ -18,6 +18,9 @@ If you are using the lazy_gettext() function you should tell pybabel that it sho
 
 $ pybabel extract -F babel.cfg -k lazy_gettext -o messages.pot .
 
+If you get an Error: "pybabel: error: no input files or directories specified"
+Add the following Parameter to extract call " --input-dirs=."
+
 This will use the mapping from the babel.cfg file and store the generated template in messages.pot. Now we can create the first translation. For example to translate to German use this command:
 
 $ pybabel init -i messages.pot -d translations -l de
@@ -35,4 +38,6 @@ What if the strings change? Create a new messages.pot like above and then let py
 $ pybabel update -i messages.pot -d translations
 
 Afterwards some strings might be marked as fuzzy (where it tried to figure out if a translation matched a changed key). If you have fuzzy entries, make sure to check them by hand and remove the fuzzy flag before compiling.
+
+Language gets selected on Request Header: Accept-Language
 

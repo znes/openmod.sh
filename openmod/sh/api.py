@@ -1,7 +1,6 @@
 from contextlib import contextmanager
 
 from geoalchemy2 import shape
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 import networkx as nx
 
@@ -9,6 +8,8 @@ import oemof.db as db
 
 from openmod.sh.schemas import oms as schema
 
+def safe_zero_division(x,y):
+    return (x/y) if y !=0 else 0
 
 @contextmanager
 def db_session():
@@ -412,7 +413,7 @@ def results_to_db(scenario_name, results_dict):
     # get scenario element by name
     with db_session() as session:
         scenario = session.query(schema.Element).filter(
-                        schema.Element.name.like(scenario_name)).first()
+                        schema.Element.name == scenario_name).one()
 
         # check if results exist, if so: delete from database
         scenario_results_exist = (session
@@ -427,19 +428,19 @@ def results_to_db(scenario_name, results_dict):
         transmission_dct = {}
         transmission_lookup = {}
         for source, v in results_dict.items():
-            predecessor = (session
-                .query(schema.Element)
-                .filter(schema.Element.name.like(source.label))
-                .first())
+            predecessor = (scenario
+                .query_children
+                .filter(schema.Element.name == source.label)
+                .one_or_none())
             if not predecessor:
                 raise Warning("Missing predeccesor element in db for oemof " \
                               "object {}.".format(source.label))
 
             for target, seq in v.items():
-                successor = (session
-                    .query(schema.Element)
-                    .filter(schema.Element.name.like(target.label))
-                    .first())
+                successor = (scenario
+                    .query_children
+                    .filter(schema.Element.name == target.label)
+                    .one())
                 flow_type = 'no_hub_type'
                 if getattr(source, 'type', '') == 'hub':
                     flow_type = getattr(source, 'sector', 'no_pre_sector')
@@ -562,30 +563,33 @@ def get_flow_result(scenario_identifier, predecessor_name, successor_name,
         if by == 'name':
           scenario = (session
               .query(schema.Element)
-              .filter(schema.Element.name.like(scenario_identifier))
-              .first())
+              .filter(schema.Element.name == scenario_identifier)
+              .one())
           scenario_id = scenario.id
 
         else:
             scenario_id = scenario_identifier
+            scenario = session.query(schema.Element).get(scenario_id)
 
-            predecessor = (session
-                           .query(schema.Element)
-                           .filter(schema.Element.name.like(predecessor_name))
-                           .first())
-            successor = (session
-                         .query(schema.Element)
-                         .filter(schema.Element.name.like(successor_name))
-                         .first())
-            flow_result = (session
-                           .query(schema.ResultSequences)
-                           .filter_by(scenario_id=scenario_id,
-                                      predecessor_id=predecessor.id,
-                                      successor_id=successor.id)
-                       .first())
-            flow_result = flow_result.value
+        predecessor = (scenario
+                       .query_children
+                       .filter(schema.Element.name == predecessor_name)
+                       .one())
+        successor = (scenario
+                     .query_children
+                     .filter(schema.Element.name == successor_name)
+                     .one())
+        flow_result = (session
+                       .query(schema.ResultSequences)
+                       .filter_by(scenario_id=scenario_id,
+                                  predecessor_id=predecessor.id,
+                                  successor_id=successor.id)
+                   .one_or_none())
 
-    return flow_result
+        if flow_result is None:
+            return False
+        else:
+            return flow_result.value
 
 def get_flow_results(scenario_identifier, by='id', subset='false'):
     """
@@ -627,7 +631,7 @@ def get_flow_results(scenario_identifier, by='id', subset='false'):
                          for f in flow_results
                              if f.predecessor.type in [
                                  'volatile_generator', 'flexible_generator',
-                                 'combined_flexbile_generator']
+                                 'combined_flexible_generator', 'extraction_turbine']
                              and get_tag_value(f.successor.tags, 'sector') != 'co2'
                              or  f.successor.type == 'demand'
                              and get_tag_value(f.successor.tags, 'sector') != 'co2'}
@@ -668,15 +672,29 @@ def get_co2_results(scenario_identifier, multi_hub_name, by='id', aggregated=Tru
                                if get_tag_value(h.tags, 'sector') ==
                                    'electricity'][0]
 
+            heat_hub = [h for h in hubs
+                               if get_tag_value(h.tags, 'sector') ==
+                                   'heat'][0]
+
             # get the hub results for the electrcity hub
             hub_results = get_hub_results(scenario_identifier=scenario_id,
                                           hub_name=electricity_hub.name,
                                           by='id',
                                           aggregated=False)
 
+            hub_results_heat = get_hub_results(scenario_identifier=scenario_id,
+                                               hub_name=heat_hub.name,
+                                               by='id',
+                                               aggregated=False)
+
+
             electricity_production = hub_results[electricity_hub.name]['production']
-            summed_production = [sum(p)
+            heat_production = hub_results_heat[heat_hub.name]['production']
+
+            summed_production_electricity = [sum(p)
                                  for p in zip(*electricity_production.values())]
+            summed_production_heat = [sum(p)
+                                 for p in zip(*heat_production.values())]
 
             co2_dict = {'import': {},
                         'export': {},
@@ -730,11 +748,8 @@ def get_co2_results(scenario_identifier, multi_hub_name, by='id', aggregated=Tru
                         # calculate share and multiply with absolut co2-value
                         import_share = []
                         for i in range(len(net_import)):
-                            # avoid float division erro
-                            if abs_import[i] != 0:
-                                import_share.append(net_import[i] / abs_import[i] * r.value[i])
-                            else:
-                                import_share.append(0)
+                            import_share.append(safe_zero_division(net_import[i], (abs_import[i] * r.value[i])))
+
 
                         if 'electricity' in [get_tag_value(ss.tags, 'sector')
                                              for ss in r.predecessor.successors]:
@@ -780,12 +795,9 @@ def get_co2_results(scenario_identifier, multi_hub_name, by='id', aggregated=Tru
                         heat_share = []
                         for i in range(len(el_flow)):
                             total_output = (heat_flow[i] + el_flow[i])
-                            if total_output > 0:
-                                el_share.append(el_flow[i] / (heat_flow[i] + el_flow[i]))
-                                heat_share.append(heat_flow[i] / (heat_flow[i] + el_flow[i]))
-                            else:
-                                el_share.append(0)
-                                heat_share.append(0)
+                            el_share.append(safe_zero_division(el_flow[i], total_output))
+                            heat_share.append(safe_zero_division(heat_flow[i], total_output))
+
 
                         # weight with 'heat_share' and add to heat result
                         co2_dict['heat'][get_label(r.predecessor)] = [
@@ -799,17 +811,26 @@ def get_co2_results(scenario_identifier, multi_hub_name, by='id', aggregated=Tru
             # We also need to check the export slacks
             # in the case of electricity we need to weight this with the
             # average emission factor of the production at the bus
-            total_co2_production = [
+            total_co2_production_electricity = [
                 sum(c) for c in zip(*co2_dict['electricity'].values())]
-            emission_factor = []
+
+            total_co2_production_heat = [
+                sum(c) for c in zip(*co2_dict['heat'].values())]
+
+            emission_factor_electricity = []
             emission_export_absolut = []
-            for i in range(len(summed_production)):
-                emission_factor.append(total_co2_production[i] /
-                                            summed_production[i])
+            for i in range(len(summed_production_electricity)):
+                emission_factor_electricity.append(safe_zero_division(
+                    total_co2_production_electricity[i], summed_production_electricity[i]))
 
                 emission_export_absolut.append(
-                    emission_factor[i] *
+                    emission_factor_electricity[i] *
                         hub_results[electricity_hub.name]['export'][import_slack_hub.name][i])
+
+            emission_factor_heat = []
+            for i in range(len(summed_production_heat)):
+                emission_factor_heat.append(safe_zero_division(
+                    total_co2_production_heat[i], summed_production_heat[i]))
 
             co2_dict['export'][import_slack_hub.name] = emission_export_absolut
 
@@ -817,10 +838,10 @@ def get_co2_results(scenario_identifier, multi_hub_name, by='id', aggregated=Tru
             if aggregated == True:
                 for k,v in co2_dict.items():
                     co2_dict[k] = sum([sum(c) for c in zip(*co2_dict[k].values())])
-                emission_factor = sum(emission_factor) / 8760
+                co2_dict['emission_factor_electricity'] = sum(emission_factor_electricity)/ 8760
+                co2_dict['emission_factor_heat'] = sum(emission_factor_heat) / 8760
 
-
-            return co2_dict, emission_factor
+            return co2_dict, False
 
 
         else:

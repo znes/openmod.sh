@@ -72,7 +72,7 @@ class Job():
             c.send("Cancel!");
             if c.poll():
                 pid = c.recv()
-                os.kill(pid, signal.SIGINT)
+                os.kill(pid, signal.SIGUSR2)
                 self._status = "Stopped."
             else:
                 self._status = "Cancelled."

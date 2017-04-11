@@ -18,14 +18,14 @@
         <div class="row align-items-center">
             <div class="col">
             <div class="title">{{ scenario.get('name', 'NONE') }}</div>
-                Scenario
+                {{_('Scenario')}}
         </div>
             <div class="col text-right">
                 <a class="btn noLink" href="#" id="sliderChangeInfo"></a>
                 <a class="btn btn-primary" href="#" onclick="clickDiscard();" id="discardChanges" role="button"></a>
-                <a class="btn btn-primary" href="javascript:void(0)" onclick="updateScenario(scenario)" role="button">Save changes</a>
-                <a class="btn btn-primary" href="javascript:void(0)" onclick="callSaveScenarioPrompt(scenario)" role="button">Save as new scenario</a>
-                <a class="btn btn-primary" href="javascript:void(0)" onclick="runSimulation(scenario)" role="button">Run Simulation</a>
+                <a class="btn btn-primary" href="javascript:void(0)" onclick="updateScenario(scenario)" role="button">{{_('Save changes')}}</a>
+                <a class="btn btn-primary" href="javascript:void(0)" onclick="callSaveScenarioPrompt(scenario)" role="button">{{_('Save as new scenario')}}</a>
+                <a class="btn btn-primary" href="javascript:void(0)" onclick="runSimulation(scenario)" role="button">{{_('Run Simulation')}}</a>
         </div>
     </div>
     </header>
@@ -42,13 +42,13 @@
     <div class="row no-gutters">
         <div class="col-4">
             <div class="card-block right-border">
-                <h5 class="card-title">Input Parameter</h5>
+                <h5 class="card-title">{{_('Input Parameter')}}</h5>
                 <h6 class="card-subtitle"><br /></h6>
                 <form id="slider_form"></form>
             </div>
         </div>
         <div class="col">
-			 <div class="navbar-collapse">
+            <div class="navbar-collapse">
                <ul class="nav nav-tabs" id="plot_tab"></ul>
             </div>
             <div class="card-block tab-content" id="plot_tab_content">
@@ -82,16 +82,19 @@ function makeTab(id, label, options, content, additonalClass="", onclick="", act
 }
 
 function makeIndividualBiomethanSilder() {
-    $('#slider_form').append("<div><b>Biomethan Anteil in Kiel</b></div>")
+    $('#slider_form').append("<div><b>{{_('Biomethan Anteil in Kiel')}}</b></div>")
     var val = 100 - ((parseFloat(getTagValue('gas_commodity', 'emission_factor')) / 0.225)  * 100);
     $('#slider_form').append(
         '<div class="form-group row">'
-            +'<label for="'+element+'" class="col-5 col-form-label">Anteil in %</label>'
+            +'<label for="'+element+'" class="col-4 col-form-label">' + "{{_('Anteil in')}}" + '</label>'
             +'<div class="col">'
                 +'<input id="biomethan_slider" class="form-control" type="range" min="0" step="1" value="'+val+'" max="100" onchange="updateBiomethanValue(this.value);"/>'
             +'</div>'
-            +'<div class="col-1">'
+            +'<div class="col-2 text-right">'
                 +'<span id="biomethan_value"></span>'
+            +'</div>'
+            +'<div class="col-1 noPadding">'
+                +'<span>%</span>'
             +'</div>'
         +'</div>');
     updateBiomethanValue(val);
@@ -158,7 +161,7 @@ function prepareTimeseries(id) {
         ts_obj.name = hubs[id];
         ts_obj.ts = getResidualLoad(id);
         ts_obj.color = '#2f1b56';
-        ts_obj.type = "Residualload";
+        ts_obj.type = "{{_('Residualload')}}";
     }
     // otherwise we assume it to be a sequence of the element with the id
     else {
@@ -171,7 +174,7 @@ function prepareTimeseries(id) {
             ts_obj.ts = ts.map(function(i) {
                 return i * amount
             });
-            ts.type = "Demand";
+            ts.type = "{{_('Demand')}}";
         }
         else {
             ts = getSequenceValue(id, 'generator_profile');
@@ -179,7 +182,7 @@ function prepareTimeseries(id) {
             ts_obj.ts = ts.map(function(i) {
                 return i * installed_power
             });
-            ts_obj.type = "Production";
+            ts_obj.type = "{{_('Production')}}";
         }
     }
 
@@ -251,16 +254,16 @@ function getBiomassAreaUsage(callback_biomass, callback_biomethan) {
                         function(data) {
                                 var sum = data.reduce(function(a,b) {
                                                 return a+b;}, 0);
-                                callback_biomass(sum * parseFloat(biomass_usage_specific));
+                                callback_biomass(sum / parseFloat(biomass_usage_specific));
                         });
     var biomethan_usage_specific = getTagValue('area_factors', 'biomethan');
     getSingleFlowResult(scenario_db_id, 'gas_commodity', 'global_gas',
                         function(data) {
                                 var sum = data.reduce(function(a,b) {
                                                 return a+b;}, 0);
-                                callback_biomethan(sum *
+                                callback_biomethan(sum /
                                                    parseFloat(biomethan_usage_specific) *
-                                                   parseFloat($('#biomethan_slider').val()));
+                                                   parseFloat($('#biomethan_slider').val() / 100));
                         });
 }
 
@@ -301,17 +304,16 @@ function updateValue(slider_id, newValue) {
     scenario.children_dict[slider_id].tags[l.value] = newValue;
 }
 
-
 function renderEmissionBarPlot(plot_id) {
 
     getEmissionResults(scenario_db_id, multi_hub_name='kiel', function(data) {
         if (data == false) {
             $("#"+plot_id).html("");
-            $("#"+plot_id).append("No results in db!");
+            $("#"+plot_id).append("{{_('No results in db!')}}");
         }
         else {
             makeEmissionBarPlot(div=plot_id, data=data,
-                                layout={'title': 'CO2-Emissions in Kiel'});
+                                layout={'title': "{{_('CO2-Emissions in Kiel')}}"});
         }
     });
 }
@@ -347,12 +349,12 @@ function addTableRow(columns, table_id) {
     $('#'+table_id+' tbody').append(row);
 }
 
-function prepareRow(keys, dct, factor, firstc, secondc) {
+function prepareRow(keys, dct, factor, firstc, secondc, fixed_to=1) {
     var row = [];
     for (var i=0; i<keys.length; i++) {
         var key = keys[i];
         var number = dct[key]/factor;
-        row.push(number.toFixed(1));
+        row.push(number.toFixed(fixed_to));
     }
     row.splice(0,0, firstc, secondc);
     return row;
@@ -363,7 +365,7 @@ function renderResultSummary(div_id) {
     $('#'+div_id).html("");
 
     //HEATPUMP Potential:
-    var potential_helper = {'heatpump':'KI Wärme'};
+    var potential_helper = {'heatpump':"{{_('KI Wärme')}}"};
     var potential_dct = {};
     var potential_columns = ["heatpump"];
     var all_potential_columns = JSON.parse(JSON.stringify(potential_columns));
@@ -383,19 +385,20 @@ function renderResultSummary(div_id) {
     getHeatPumpPotential(function(x) {
             potential_dct['heatpump'] = x.reduce(function(a,b) {
                                         return a+b;}, 0);
+            var potential_row = prepareRow(potential_columns, potential_dct, 1000, "{{_('Wärmepumpen Potential')}}", "in GWh");
+            addTableRow(potential_row, "summary_potential");
                          });
-    var potential_row = prepareRow(potential_columns, potential_dct, 1000, "Wärmepumpen Potential", "in GWh");
-    addTableRow(potential_row, "summary_potential");
+
 
     // AREA USAGE (REMOVE AFTER KIEL WORKSHOP!!!!)
-    var area_helper = {'kiel_solar':'KI Solar',
-                       'kiel_wind':'KI Wind',
-                       'biomethan':'Biomethan Import' ,
-                       'biomass':'Biomasse Import'};
+    var area_helper = {'kiel_solar':"{{_('KI Solar')}}",
+                       'kiel_wind':"{{_('KI Wind')}}",
+                       'biomethan':"{{_('Biomethan Import')}}",
+                       'biomass':"{{_('Biomasse Import')}}"};
     // biomass has to be last
     var area_columns = ["kiel_solar", "biomethan", "biomass"];
     var all_area_columns = JSON.parse(JSON.stringify(area_columns));
-    all_area_columns.splice(0, 0, "Area", "");
+    all_area_columns.splice(0, 0, "{{_('Area')}}", "");
     var area_dct = {};
     var relative_area_dct = {};
 
@@ -424,19 +427,19 @@ function renderResultSummary(div_id) {
 
         area_dct['biomethan'] = biomethan;
         relative_area_dct['biomethan'] = biomethan / 11865 * 100;
-        var area_row = prepareRow(area_columns, area_dct, 1, "Area", "in ha");
+        var area_row = prepareRow(area_columns, area_dct, 1, "{{_('Area')}}", "{{_('in ha')}}");
         addTableRow(area_row, "summary_area");
-        var relative_area_row = prepareRow(area_columns, relative_area_dct, 1, "Area", "in %");
+        var relative_area_row = prepareRow(area_columns, relative_area_dct, 1, "{{_('Area')}}", "{{_('in')}} %");
         addTableRow(relative_area_row, "summary_area");
     });
 
     // EMISSIONS RESULTS
     getEmissionResults(scenario_db_id, multi_hub_name='kiel', function(data) {
-        var helper = {'electricity':'Strom', 'heat':'Wärme' ,
-                      'import':'Import', 'export': 'Export'};
+        var helper = {'electricity':"{{_('Strom')}}", 'heat':"{{_('Wärme')}}",
+                      'import':"{{_('Import')}}", 'export': "{{_('Export')}}"};
         var columns = Object.keys(helper);
         var all_columns = JSON.parse(JSON.stringify(columns));
-        all_columns.splice(0, 0, "Emissionen", "");
+        all_columns.splice(0, 0, "{{_('Emissionen')}}", "");
         appendToDiv(
             div_id,
             createTable(
@@ -448,7 +451,15 @@ function renderResultSummary(div_id) {
                             return x;
                         }}),
                 "summary_emissions"));
-        var row = prepareRow(columns, data, 1000, "Emissionen", "in 1000 t");
+
+        var row = prepareRow(columns, data, 1000, "{{_('Absolut Emissions')}}", "in 1000 t");
+        addTableRow(row, "summary_emissions");
+        var factor_data = {};
+        factor_data['electricity'] = data['emission_factor_electricity'];
+        factor_data['heat'] = data['emission_factor_heat'];
+        factor_data['import'] = getTagValue('BRD_commodity', 'emission_factor')
+        factor_data['export'] = data['emission_factor_electricity'];
+        var row = prepareRow(columns, factor_data, 1, "{{_('Emission Factor (Production)')}}", "in t/MWh", fixed_to=3);
         addTableRow(row, "summary_emissions");
     });
 
@@ -478,19 +489,19 @@ function renderResultSummary(div_id) {
         var columns = Object.keys(production_dct);
         var all_columns = JSON.parse(JSON.stringify(columns));
 
-        all_columns.splice(0,0,"Electricity Production", "");
+        all_columns.splice(0,0,"{{_('Electricity Summary')}}", "");
         appendToDiv(div_id, createTable(all_columns.map(function(name){return(getLabel(name));}), "summary_table_kiel_electricity_production"));
         var row = prepareRow(columns, installed_power_dct, 1,
-                             "Installed power", "in MW");
+                             "{{_('Installed power')}}", "{{_('in MW')}}");
         addTableRow(row, "summary_table_kiel_electricity_production");
         var row = prepareRow(columns, production_dct, 1000,
-                             "Electricity production", "in GWh");
+                             "{{_('Electricity production')}}", "{{_('in GWh')}}");
         addTableRow(row, "summary_table_kiel_electricity_production");
         var row = prepareRow(columns, fullload_hours_dct, 1,
-                             "Fullload hours", "in h");
+                             "{{_('Fullload hours')}}", "{{_('in h')}}");
         addTableRow(row, "summary_table_kiel_electricity_production");
         var row = prepareRow(columns, relative_production_dct, 1/100,
-                             "Share of production in Kiel", "in %");
+                             "{{_('Share of production in Kiel')}}", "{{_('in')}} %");
 
         addTableRow(row, "summary_table_kiel_electricity_production");
     });
@@ -529,20 +540,20 @@ function renderResultSummary(div_id) {
          var columns = Object.keys(production_dct);
         var all_columns = JSON.parse(JSON.stringify(columns));
 
-        all_columns.splice(0,0,"Heat Production", "");
+        all_columns.splice(0,0,"{{_('Heat Summary')}}", "");
         appendToDiv(div_id, createTable(all_columns.map(function(name){return(getLabel(name));}),
                     "summary_table_kiel_heat_production"));
         var row = prepareRow(columns, installed_power_dct, 1,
-                             "Installed power", "in MW");
+                             "{{_('Installed power')}}", "{{_('in MW')}}");
         addTableRow(row, "summary_table_kiel_heat_production");
         var row = prepareRow(columns, production_dct, 1000,
-                             "Heat production", "in GWh");
+                             "{{_('Heat production')}}", "{{_('in GWh')}}");
         addTableRow(row, "summary_table_kiel_heat_production");
         var row = prepareRow(columns, fullload_hours_dct, 1,
-                             "Fullload hours", "in h");
+                             "{{_('Fullload hours')}}", "{{_('in h')}}");
         addTableRow(row, "summary_table_kiel_heat_production");
         var row = prepareRow(columns, relative_production_dct, 1/100,
-                             "Share of production in Kiel", "in %");
+                             "{{_('Share of production in Kiel')}}", "{{_('in')}} %");
         addTableRow(row, "summary_table_kiel_heat_production");
     });
 
@@ -555,7 +566,7 @@ function renderHubBarPlot(select_id, plot_id) {
     getHubs(scenario_db_id, function(data) {
         if (data == false) {
             $("#"+plot_id).html("");
-            $("#"+plot_id).append("No hubs founds!");
+            $("#"+plot_id).append("{{_('No hubs founds!')}}");
         }
         else {
             $.each(data, function(key, value) {
@@ -584,11 +595,11 @@ function HubSubBarPlot(scenario_db_id, hub_label, hub_name, plot_id) {
     result = getHubResults(scenario_db_id, hub_name, true, function(data) {
         if (data == false) {
             $("#" + plot_id).html("");
-            $("#" + plot_id).append("No results in db!");
+            $("#" + plot_id).append("{{_('No results in db!')}}");
         } else {
             makeBarPlot(div = plot_id, data = data,
                 layout = {
-                    'title': "Yearly Production, Consumption and Im-/Export in " + hub_label
+                    'title': "{{_('Yearly Production, Consumption and Im-/Export in')}} " + hub_label
                 });
         }
     });
@@ -600,7 +611,7 @@ function renderStackedResultPlot(select_id, plot_id) {
 
     getHubs(scenario_db_id, function(data) {
         if (data == false) {
-            $("#"+plot_id).html("No hubs founds!");
+            $("#"+plot_id).html("{{_('No hubs founds!')}}");
         }
         else {
             $.each(data, function(key, value) {
@@ -629,10 +640,10 @@ function renderStackedResultPlot(select_id, plot_id) {
 function StackedResultSubPlot(scenario_db_id, hub_label, hub_name, plot_id) {
     getHubResults(scenario_db_id, hub_name, false, function(data) {
         if (data == false) {
-           $("#"+plot_id).html("No results in db!");
+           $("#"+plot_id).html("{{_('No results in db!')}}");
         }
         else if (jQuery.isEmptyObject(data[hub_name].production)) {
-           $("#"+plot_id).html(alertModal("No production for selected hub!"));
+           $("#"+plot_id).html(alertModal("{{_('No production for selected hub!')}}"));
         }
         else {
             keys = Object.keys(data[hub_name].production).concat(Object.keys(data[hub_name].demand));
@@ -640,8 +651,8 @@ function StackedResultSubPlot(scenario_db_id, hub_label, hub_name, plot_id) {
             data.start_date = scenario.tags.year+"-01-01";
             data.timestep = 3600;
             makeStackedResultPlot(div=plot_id, data=data,
-                                  layout={'title': "Hourly Production and Demand in "+hub_label,
-                                          'yaxis_title': "Production and Demand in MW"});
+                                  layout={'title': "{{_('Hourly Production and Demand in')}} "+hub_label,
+                                          'yaxis_title': "{{_('Production and Demand in MW')}}"});
         }
     });
 
@@ -654,7 +665,7 @@ function renderStackedInputPlot(select_id, plot_id) {
 
     getHubs(scenario_db_id, function(data) {
         if (data == false) {
-            $("#"+plot_id).html("No hubs founds!");
+            $("#"+plot_id).html("{{_('No hubs founds!')}}");
         }
         else {
             $.each(data, function(key, value) {
@@ -682,7 +693,6 @@ function renderStackedInputPlot(select_id, plot_id) {
 
 
 function renderStackedInputSubPlot(hub_name, select_id, plot_id) {
-
     var data = {};
     data[hub_name] = {'production':{}, 'demand':{}};
 
@@ -711,7 +721,7 @@ function renderStackedInputSubPlot(hub_name, select_id, plot_id) {
     }
     if ($.isEmptyObject(data[hub_name]['production']) ||
         $.isEmptyObject(data[hub_name]['demand'])) {
-        $("#"+plot_id).html("No data to render!");
+        $("#"+plot_id).html("{{_('No data to render!')}}");
     }
     else {
         nice_hub_name = $("#"+select_id+" option:selected" ).text();
@@ -719,38 +729,39 @@ function renderStackedInputSubPlot(hub_name, select_id, plot_id) {
         data.start_date = scenario.tags.year+"-01-01";
         data.timestep = 3600;
         makeStackedInputPlot(plot_id, data,
-                             layout={'title':"Hourly Renewable Production and Demand in "+nice_hub_name,
-                                     'yaxis_title': "Production and Demand in MW"});
+                             layout={'title':"{{_('Hourly Renewable Production and Demand in')}} "+nice_hub_name,
+                                     'yaxis_title': "{{_('Production and Demand in MW')}}"});
         }
 
 }
 
 // JQUERY TO START NEW MODEL RUN (Send json)
 function runSimulation(scenario) {
+    var upload = "{{_('Uploading scenario data. Simulation will start, once upload is finished. Please do not navigate away from this page or start a new simulation until you are notified that this one runs in the background.' )}}";
+    var start = "{{_('The simulation runs in the background. See Jobs for an overview of running simulations.')}}";
+    var unsaved = "{{_('There are unsaved changes. You have to save them before you can run a simulation.')}}";
     if (!slider_changed) {
         checkIfResultExists(scenario_db_id, function(data) {
             if (data == false) {
-                alertModal("The simulation runs in the background. See Jobs for an overview of running simmulation.",
-                    "",
-                    function() {
-                        $.ajax({
-                            url: 'simulate',
-                            type: 'put',
-                            data: JSON.stringify(scenario),
-                            contentType: 'application/json; charset=utf-8',
-                            dataType: 'json',
-                            success: function(data) {
-                                setResultExists();
-                            }
-                        });
-                    });
+                $.ajax({
+                    url: 'simulate',
+                    type: 'put',
+                    data: JSON.stringify(scenario),
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                    success: function(data) {
+                        alertModal(start, "Job started");
+                        setResultExists();
+                    }
+                });
+                alertModal(upload, "Uploading job data");
             }
             else {
-                alertModal("Result already exists.");
+                alertModal("{{_('Result already exists.')}}");
             }
         });
     } else {
-        alertModal("There are unsaved changes. You have to save them before you can run a simulation.", "Unsaved changes");
+        alertModal(unsaved, "{{_('Unsaved changes')}}");
     }
 }
 
@@ -817,18 +828,18 @@ function getHubs(scenario_db_id, callback) {
 
 function callSaveScenarioPrompt(scenario) {
     // Get name
-    promptModal("New Name", "", "Senario Name", function (input) {
+    promptModal("{{_('New Name')}}", "", "{{_('Senario Name')}}", function (input) {
         if(input == null) {
             return;
         }
         if(input.length == 0) {
             // Maybe just Inform
-            alertModal('alert', 'Input needs to be more than 0 characters.');
+            alertModal("{{_('alert')}}", "{{_('Input needs to be more than 0 characters.')}}");
             return;
         }
         scenario.name = input;
         // Get Des
-        promptModal("", scenario['tags']['description'], "New description", function (input) {
+        promptModal("", scenario['tags']['description'], "{{_('New description')}}", function (input) {
             if(input != null){
                 scenario['tags']['description'] = input;
                 saveNewScenario(scenario);
@@ -856,12 +867,12 @@ function saveNewScenario(scenario) {
         dataType: 'json',
         success: function(data) {
             resetSliderChange();
-            alertModal("Saved successfully! Opening new scenario.", "Info", function() {
+            alertModal("{{_('Saved successfully! Opening new scenario.')}}", "{{_('Info')}}", function() {
                 window.location.replace('edit_scenario?id=' + data.scenario_db_id);
             });
         },
         error: function() {
-            confirmModal("Scenario name is already taken. Try again.", "Alert", function(input) {
+            confirmModal("{{_('Scenario name is already taken. Try again.')}}", "{{_('Alert')}}", function(input) {
                 if(input != null) {
                     callSaveScenarioPrompt(scenario);
                 }
@@ -876,13 +887,16 @@ function saveNewScenario(scenario) {
 
 function updateScenario(scenario) {
     // Delete existing scenario
-    confirmModal("Override existing scenario with new values?", "Alert",
+    confirmModal("{{_('Override existing scenario with new values?')}}", "{{_('Alert')}}",
         function(input) {
             if(input == true) {
                 // If confirmed, delete scenario
                 $.get('delete', {
                     id: scenario_db_id
                 });
+
+                alertModal("{{_('Scenario will be uploaded and saved. This can take a while.')}}");
+
                 // Update scenario children from dict which is manipulated by slider
                 // INDIVIDUAL FOR BIOMETHAN SLIDER DIRTY HACK
                 new_value =  $("#biomethan_slider").val();
@@ -901,15 +915,14 @@ function updateScenario(scenario) {
                     dataType: 'json',
                     success: function(data) {
                         resetSliderChange();
-                        alertModal("Opening updated scenario.", "Updated successfully!", function () {
+                        alertModal("{{_('Opening updated scenario.')}}", "{{_('Updated successfully!')}}", function () {
                             window.location.replace('edit_scenario?id=' + data.scenario_db_id);
                         });
                     },
                     error: function() {
-                        alert("Error. This should not have happened. Call somebody.");
+                        alert("{{_('Error. This should not have happened. Call somebody.')}}");
                     }
                 });
-
 
                 } else {
         	           return;
@@ -951,8 +964,11 @@ function makeAllAutomaticSlider() {
                         +'<div class="col">'
                             +makeSlider(element, getTagValue(element, l.value), slider_max)
                         +'</div>'
-        			    +'<div class="col-2">'
+        			    +'<div class="col-2 text-right">'
                             +makeSpan(element+"_display", getTagValue(element, l.value))
+                        +'</div>'
+                        +'<div class="col-1 noPadding">'
+                            + '<span>MW</span>'
                         +'</div>'
                     +"</div>");
             }
@@ -968,7 +984,7 @@ function renderResultFlowPlot(select_flow_id, select_type_id, plot_id) {
             $("#"+select_type_id).append("<option value='"+x+"'>"+x[0].toUpperCase() + x.slice(1,x.length)+"</option>");
         });
         if (data == false) {
-            $("#"+plot_id).html("No results in db");
+            $("#"+plot_id).html("{{_('No results in db')}}");
         }
         else {
             $("#"+plot_id).html("");
@@ -978,12 +994,12 @@ function renderResultFlowPlot(select_flow_id, select_type_id, plot_id) {
                 $("#"+select_flow_id).append("<option value='"+key+"'>"+key+"</option>");
             });
             var edge = $("#"+select_flow_id).val();
-            var ts_obj = {"name": edge, "ts": data[edge], "type": "Flow"};
+            var ts_obj = {"name": edge, "ts": data[edge], "type": "{{_('Flow')}}"};
             var type = $("#"+select_type_id).val();
             renderTimeseriesSubPlot(plot_id, type, ts_obj);
             $("#"+select_flow_id).on('change', function() {
                 var edge = $(this).val();
-                var ts_obj = {"name": edge, "ts": data[edge], "type": "Flow"};
+                var ts_obj = {"name": edge, "ts": data[edge], "type": "{{_('Flow')}}"};
                 var type = $("#"+select_type_id).val();
                 renderTimeseriesSubPlot(plot_id, type, ts_obj);
                 });
@@ -991,7 +1007,7 @@ function renderResultFlowPlot(select_flow_id, select_type_id, plot_id) {
             $("#"+select_type_id).on('change', function() {
                 var type = $(this).val();
                 var edge = $("#"+select_flow_id).val();
-                var ts_obj = {"name": edge, "ts": data[edge], "type": "Flow"};
+                var ts_obj = {"name": edge, "ts": data[edge], "type": "{{_('Flow')}}"};
                 renderTimeseriesSubPlot(plot_id, type, ts_obj);
                 });
         }
@@ -1006,18 +1022,18 @@ function renderTimeseriesSubPlot(plot_id, type, ts_obj) {
                                  "color": ts_obj.color,
                                  "start_date": scenario.tags.year+"-01-01",
                                  "timestep": 3600},
-                           layout={"title": "Hourly " + ts_obj.type + " " + getLabel(ts_obj.name),
-                                   "yaxis_title": ts_obj.type + " in MW"});
+                           layout={"title": "{{_('Hourly')}} " + ts_obj.type + " " + getLabel(ts_obj.name),
+                                   "yaxis_title": ts_obj.type + " {{_('in MW')}}"});
     } else if (type == "duration") {
         makeOrderedTimeseriesPlot(plot_id,
                                   data=ts_obj,
-                                  layout={"title": "Duration curve of "+getLabel(ts_obj.name),
-                                          "yaxis_title": ts_obj.type + " in MW"});
+                                  layout={"title": "{{_('Duration curve of')}} "+getLabel(ts_obj.name),
+                                          "yaxis_title": ts_obj.type + " {{_('in MW')}}"});
     } else if (type == "heatmap") {
         makeHeatmapPlot(plot_id,
                         data=ts_obj,
-                        layout={"title": "Heatmap of "+ getLabel(ts_obj.name) + " in MW",
-                                "yaxis_title": ts_obj.type + " in MW"});
+                        layout={"title": "{{_('Heatmap of')}} "+ getLabel(ts_obj.name) + " {{_('in MW')}}",
+                                "yaxis_title": ts_obj.type + " {{_('in MW')}}"});
     }
 }
 
@@ -1037,7 +1053,7 @@ function renderInputTimeseries(select_ts_id, select_type_id, plot_id) {
 
         var hub_keys = Object.keys(hubs)
         hub_keys.forEach(function (key) {
-            $("#"+select_ts_id).append("<option value='"+key+"'>"+hubs[key]+" Residuallast"+"</option>");
+            $("#"+select_ts_id).append("<option value='"+key+"'>"+hubs[key]+" {{_('Residuallast')}}"+"</option>");
         });
 
 
@@ -1185,7 +1201,7 @@ function getResidualLoad(hub_name) {
 }
 
 function clickDiscard() {
-    confirmModal("Do you really want to loose your changes?",  "Alert",
+    confirmModal("{{_('Do you really want to loose your changes?')}}",  "{{_('Alert')}}",
             function(input) {
                 if(input == true) {
                     location.reload();
@@ -1199,9 +1215,9 @@ function clickDiscard() {
 function setSliderChangeInfo() {
     if (slider_changed) {
         $('#sliderChangeInfo').show();
-        $('#sliderChangeInfo').html("WITH CHANGES");
+        $('#sliderChangeInfo').html("{{_('WITH CHANGES')}}");
         $('#discardChanges').show();
-        $('#discardChanges').html("Discard Changes");
+        $('#discardChanges').html("{{_('Discard Changes')}}");
     } else {
          $('#sliderChangeInfo').hide();
          $('#discardChanges').hide();
@@ -1236,15 +1252,15 @@ function setResultExists(once=false) {
 
             if (!once) {
                 if (!slider_changed) {
-                    alertModal("The simulation for this scenario is finished.", "Results are available");
+                    alertModal("{{_('The simulation for this scenario is finished.')}}", "{{_('Results are available')}}");
                     updateDisabledPlotTabs();
                 } else {
                 	result_exists = false;
-                    alertModal("The simulation for the last scenario is finished.<br><br>"
-                               +"But since starting the simulation you have changed some slider values.<br><br>"
-                               +"If you want to keep your changes, save them as a new scenario.<br><br>"
-                               +"If you want to discard the changes and see the results, just refresh this page.",
-                               "Results are available, but...");
+                    alertModal("{{_('The simulation for the last scenario is finished.')}}<br><br>"
+                               +"{{_('But since starting the simulation you have changed some slider values.')}}<br><br>"
+                               +"{{_('If you want to keep your changes, save them as a new scenario.')}}<br><br>"
+                               +"{{_('If you want to discard the changes and see the results, just refresh this page.')}}",
+                               "{{_('Results are available, but...')}}");
                }
             } else {
             	if(slider_changed)
@@ -1332,7 +1348,7 @@ $('#slider_form').change(function () {
 
     if ($('.nav a.active')[0]['hash'] == "#input_stacked_tab") {
         //RERENDER INPUT STACKED TIMESERIES
-        renderStackedInputSubPlot($("#input_stacked_select").val(), "input_stacked")
+        renderStackedInputSubPlot($("#input_stacked_select").val(), "input_stacked_select","input_stacked")
     }
 
 });

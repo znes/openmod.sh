@@ -130,7 +130,8 @@ def populate_energy_system(es, node_data):
             b.type = n['type']
             # add all tags as attributes to hub/bus
             for k,v in n['tags'].items():
-                setattr(b, k, v)
+                if k != 'label':
+                    setattr(b, k, v)
             es.add(b)
             hubs[n['name']] = b
 
@@ -509,7 +510,7 @@ def compute_results(es):
 
     es.model.results()
 
-    es.rdf = output.DataFramePlot(energy_system=es)
+    #es.rdf = output.DataFramePlot(energy_system=es)
 
     return es
 
@@ -532,7 +533,7 @@ def wrapped_simulation(scenario, connection):
         the parent.
 
     """
-    signal.signal(signal.SIGINT, stop_worker)
+    signal.signal(signal.SIGUSR2, stop_worker)
     connection.send(mp.current_process().pid)
     # If theres anything available on our end of the pipe, that means our
     # parent wants us to stop immediately.
@@ -581,7 +582,7 @@ def wrapped_simulation(scenario, connection):
 
 if __name__ == "__main__":
 
-    scenario = json.load(open('../../data/scenarios/kiel-2014-explicit-geoms-sequences.json'))
+    scenario = json.load(open('/home/simon/Downloads/file.json'))
 
     es = create_energy_system(scenario)
     es = populate_energy_system(es=es, node_data=scenario['children'])

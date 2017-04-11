@@ -79,7 +79,7 @@ def provide_sequence_api_route():
     if 'id' in query_args.keys():
         json = provide_sequence_api(query_args)
         return flask.jsonify(json)
-    return "Provide at least id as query parameter."
+    return gettext("Provide at least id as query parameter.")
 
 # TODO: should we really excempt csrf for this route?
 @csrf.exempt
@@ -207,7 +207,7 @@ def download():
 
             return resp
         else:
-            return "No results available, did you compute the result of the scenario?"
+            return gettext("No results available, did you compute the result of the scenario?")
     else:
         data = dict(provide_element_api(query_args))
 
@@ -273,11 +273,11 @@ def simulation(job):
         return "Unknown job."
     elif not job.ready():
         if job.status() == "Cancelled.":
-            return ("Job cancelled. <br/>" +
-                    "It's still queued but will be disposed " +
-                    "of before it starts.")
-        return ("Job running, but not finished yet. <br />" +
-                "Please come back later.")
+            return (gettext("Job cancelled.") + "<br/>" +
+                    gettext("It's still queued but will be disposed ") +
+                    gettext("of before it starts."))
+        return (gettext("Job running, but not finished yet.") + "<br />" +
+                gettext("Please come back later."))
     else:
         result = job.get()
         return result
@@ -353,4 +353,4 @@ def provide_results_api():
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", debug=True)
+    app.run(host="0.0.0.0", debug=False)

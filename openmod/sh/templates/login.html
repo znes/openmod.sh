@@ -16,7 +16,7 @@
       </header>
       <div class="main">
           <header>
-            <div class="title">Login</div>
+            <div class="title">{{_('Login')}}</div>
           </header>
       {% with messages = get_flashed_messages() %}
         {% if messages %}
@@ -31,10 +31,10 @@
           {% if current_user.is_authenticated %}
             <div class="card-block">
               <div class="card-header">
-                Login
+                {{_('Login')}}
               </div>
               <div class="card-block">
-                <p>Logged in as <strong>{{ current_user.name }}</strong>.</p>
+                <p>{{_('Logged in as')}} <strong>{{ current_user.name }}</strong>.</p>
               </div>
             </div>
           {% else %}
@@ -55,7 +55,7 @@
                   <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
                 </div>
               </div>-->
-              <button type="submit" class="btn btn-primary">Login</button>
+              <button type="submit" class="btn btn-primary">{{_('Login')}}</button>
             </div>
             </form>
           {% endif %}
