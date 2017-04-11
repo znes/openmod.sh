@@ -153,26 +153,18 @@ class ResultSequences(DB.Model):
     """
     id = DB.Column(DB.Integer, primary_key=True)
 
-    scenario_id = DB.Column(DB.Integer, DB.ForeignKey(Element.id,
-                                                      ondelete='CASCADE'))
+    scenario_id = DB.Column(DB.Integer, DB.ForeignKey(Element.id))
     scenario = DB.relationship(Element, foreign_keys=[scenario_id],
                                uselist=False)
 
-    predecessor_id = DB.Column(DB.Integer, DB.ForeignKey(Element.id,
-                                                         ondelete='CASCADE'))
+    predecessor_id = DB.Column(DB.Integer, DB.ForeignKey(Element.id))
     predecessor = DB.relationship(Element, foreign_keys=[predecessor_id],
                                   uselist=False)
 
-    successor_id = DB.Column(DB.Integer, DB.ForeignKey(Element.id,
-                                                       ondelete='CASCADE'))
+    successor_id = DB.Column(DB.Integer, DB.ForeignKey(Element.id))
     successor = DB.relationship(Element, foreign_keys=[successor_id],
                                 uselist=False)
 
     type = DB.Column(DB.String(255))
     value = DB.Column(ARRAY(DB.Float, dimensions=1), nullable=False)
-
-
-
-
-
 
