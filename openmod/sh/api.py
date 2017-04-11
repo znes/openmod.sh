@@ -428,20 +428,18 @@ def results_to_db(scenario_name, results_dict):
         transmission_dct = {}
         transmission_lookup = {}
         for source, v in results_dict.items():
-            predecessor = (session
-                .query(schema.Element)
+            predecessor = (scenario
+                .query_children
                 .filter(schema.Element.name == source.label)
-                .filter(schema.Element in scenario.children)
                 .one_or_none())
             if not predecessor:
                 raise Warning("Missing predeccesor element in db for oemof " \
                               "object {}.".format(source.label))
 
             for target, seq in v.items():
-                successor = (session
-                    .query(schema.Element)
+                successor = (scenario
+                    .query_children
                     .filter(schema.Element.name == target.label)
-                    .filter(schema.Element in scenario.children)
                     .one())
                 flow_type = 'no_hub_type'
                 if getattr(source, 'type', '') == 'hub':
