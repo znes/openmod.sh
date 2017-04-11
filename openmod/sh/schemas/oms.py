@@ -159,11 +159,11 @@ class ResultSequences(DB.Model):
 
     predecessor_id = DB.Column(DB.Integer, DB.ForeignKey(Element.id))
     predecessor = DB.relationship(Element, foreign_keys=[predecessor_id],
-                                  uselist=False)
+                                  uselist=False, cascade='all, delete')
 
     successor_id = DB.Column(DB.Integer, DB.ForeignKey(Element.id))
     successor = DB.relationship(Element, foreign_keys=[successor_id],
-                                uselist=False)
+                                uselist=False, cascade='all, delete')
 
     type = DB.Column(DB.String(255))
     value = DB.Column(ARRAY(DB.Float, dimensions=1), nullable=False)
