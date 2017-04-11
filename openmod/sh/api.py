@@ -413,7 +413,7 @@ def results_to_db(scenario_name, results_dict):
     # get scenario element by name
     with db_session() as session:
         scenario = session.query(schema.Element).filter(
-                        schema.Element.name == scenario_name).first()
+                        schema.Element.name == scenario_name).one()
 
         # check if results exist, if so: delete from database
         scenario_results_exist = (session
@@ -431,7 +431,7 @@ def results_to_db(scenario_name, results_dict):
             predecessor = (session
                 .query(schema.Element)
                 .filter(schema.Element.name == source.label)
-                .first())
+                .one_or_none())
             if not predecessor:
                 raise Warning("Missing predeccesor element in db for oemof " \
                               "object {}.".format(source.label))
@@ -440,7 +440,7 @@ def results_to_db(scenario_name, results_dict):
                 successor = (session
                     .query(schema.Element)
                     .filter(schema.Element.name == target.label)
-                    .first())
+                    .one())
                 flow_type = 'no_hub_type'
                 if getattr(source, 'type', '') == 'hub':
                     flow_type = getattr(source, 'sector', 'no_pre_sector')
