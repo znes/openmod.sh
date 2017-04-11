@@ -200,7 +200,7 @@ function makeStackedResultPlot(div, data, layout) {
 
     d.y = t.ts;
     var text = [];
-    t.ts.forEach(function(x) {text.push(String(x))});
+    t.ts.forEach(function(x) {text.push(Number(x).toFixed(1))});
     d.text = text;
 
 
@@ -221,7 +221,7 @@ function makeStackedResultPlot(div, data, layout) {
         d.y = base_plus;
         base = base_plus;
         var text = [];
-        t.ts.forEach(function(x) {text.push(String(x))});
+        t.ts.forEach(function(x) {text.push(Number(x).toFixed(1))});
         d.text = text;
         //d.fillcolor = t.color;
         traces.push(d);
@@ -317,7 +317,9 @@ function makeStackedInputPlot(div, data, layout) {
 
     d.y = t.ts;
     var text = [];
-    t.ts.forEach(function(x) {text.push(String(x))});
+    t.ts.forEach(function(x) {
+        text.push(Number(x).toFixed(1));
+    });
     d.text = text;
     //d.fillcolor = t.color;
 
@@ -337,7 +339,9 @@ function makeStackedInputPlot(div, data, layout) {
         d.y = base_plus;
         base = base_plus;
         var text = [];
-        t.ts.forEach(function(x) {text.push(String(x))});
+        t.ts.forEach(function(x) {
+            text.push(Number(x).toFixed(1));
+        });
         d.text = text;
         //d.fillcolor = t.color;
         traces.push(d);
