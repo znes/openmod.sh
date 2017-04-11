@@ -155,7 +155,7 @@ class ResultSequences(DB.Model):
 
     scenario_id = DB.Column(DB.Integer, DB.ForeignKey(Element.id))
     scenario = DB.relationship(Element, foreign_keys=[scenario_id],
-                               uselist=False)
+                               uselist=False, cascade='all, delete')
 
     predecessor_id = DB.Column(DB.Integer, DB.ForeignKey(Element.id))
     predecessor = DB.relationship(Element, foreign_keys=[predecessor_id],
