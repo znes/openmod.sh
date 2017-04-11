@@ -332,7 +332,8 @@ msgid ""
 "Uploading scenario data. Simulation will start, once upload is finished. "
 "Please do not navigate away from this page or start a new simulation "
 "until you are notified that this one runs in the background."
-msgstr ""
+msgstr "Lade Szenario hoch zum berechnen. Die Simulation startet sobald der Upload fertig ist "
+"Bitte verlassen Sie nicht diese Seite und warten Sie bis das Szenario hochgeladen ist."
 
 #: templates/edit_scenario.html:741
 msgid ""
