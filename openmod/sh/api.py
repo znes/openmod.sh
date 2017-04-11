@@ -630,7 +630,7 @@ def get_flow_results(scenario_identifier, by='id', subset='false'):
                          for f in flow_results
                              if f.predecessor.type in [
                                  'volatile_generator', 'flexible_generator',
-                                 'combined_flexbile_generator']
+                                 'combined_flexible_generator', 'extraction_turbine']
                              and get_tag_value(f.successor.tags, 'sector') != 'co2'
                              or  f.successor.type == 'demand'
                              and get_tag_value(f.successor.tags, 'sector') != 'co2'}
