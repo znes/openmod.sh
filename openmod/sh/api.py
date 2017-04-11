@@ -584,9 +584,12 @@ def get_flow_result(scenario_identifier, predecessor_name, successor_name,
                        .filter_by(scenario_id=scenario_id,
                                   predecessor_id=predecessor.id,
                                   successor_id=successor.id)
-                   .one())
+                   .one_or_none())
 
-        return flow_result.value
+        if flow_result is None:
+            return False
+        else:
+            return flow_result.value
 
 def get_flow_results(scenario_identifier, by='id', subset='false'):
     """
