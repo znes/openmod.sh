@@ -569,6 +569,7 @@ def get_flow_result(scenario_identifier, predecessor_name, successor_name,
 
         else:
             scenario_id = scenario_identifier
+            scenario = session.query(schema.Element).get(scenario_id)
 
         predecessor = (scenario
                        .query_children
