@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-04-11 09:48+0200\n"
+"POT-Creation-Date: 2017-04-11 10:19+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -406,6 +406,11 @@ msgstr ""
 
 #: templates/edit_scenario.html:987
 msgid "No results in db"
+msgstr ""
+
+#: templates/edit_scenario.html:997 templates/edit_scenario.html:1002
+#: templates/edit_scenario.html:1010
+msgid "Flow"
 msgstr ""
 
 #: templates/edit_scenario.html:1025

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-04-11 09:48+0200\n"
+"POT-Creation-Date: 2017-04-11 10:19+0200\n"
 "PO-Revision-Date: 2017-04-05 21:24+0200\n"
 "Last-Translator: \n"
 "Language: de\n"
@@ -332,14 +332,18 @@ msgid ""
 "Uploading scenario data. Simulation will start, once upload is finished. "
 "Please do not navigate away from this page or start a new simulation "
 "until you are notified that this one runs in the background."
-msgstr "Lade Szenario hoch zum berechnen. Die Simulation startet sobald der Upload fertig ist "
-"Bitte verlassen Sie nicht diese Seite und warten Sie bis das Szenario hochgeladen ist."
+msgstr ""
+"Lade Szenario hoch zum berechnen. Die Simulation startet sobald der "
+"Upload fertig ist Bitte verlassen Sie nicht diese Seite und warten Sie "
+"bis das Szenario hochgeladen ist."
 
 #: templates/edit_scenario.html:741
 msgid ""
 "The simulation runs in the background. See Jobs for an overview of "
 "running simulations."
-msgstr "Die Berechnung läuft im Hintergrund. Siehe 'Aufträge' für eine Übersicht der laufenden Simulationen."
+msgstr ""
+"Die Berechnung läuft im Hintergrund. Siehe 'Aufträge' für eine Übersicht "
+"der laufenden Simulationen."
 
 #: templates/edit_scenario.html:742
 msgid ""
@@ -421,9 +425,14 @@ msgstr ""
 msgid "No results in db"
 msgstr "Keine Ergebnisse in der Datenbank"
 
+#: templates/edit_scenario.html:997 templates/edit_scenario.html:1002
+#: templates/edit_scenario.html:1010
+msgid "Flow"
+msgstr "Werte"
+
 #: templates/edit_scenario.html:1025
 msgid "Hourly"
-msgstr "Stündlich"
+msgstr "Stündliche"
 
 #: templates/edit_scenario.html:1030
 msgid "Duration curve of"
@@ -619,6 +628,4 @@ msgstr "Keine Prozesse."
 
 #~ msgid "new_scenario_name"
 #~ msgstr "neuer_szenarien_name"
-
-
 
