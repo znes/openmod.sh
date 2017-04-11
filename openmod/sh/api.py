@@ -431,6 +431,7 @@ def results_to_db(scenario_name, results_dict):
             predecessor = (session
                 .query(schema.Element)
                 .filter(schema.Element.name == source.label)
+                .filter(schema.Element in scenario.children)
                 .one_or_none())
             if not predecessor:
                 raise Warning("Missing predeccesor element in db for oemof " \
@@ -440,6 +441,7 @@ def results_to_db(scenario_name, results_dict):
                 successor = (session
                     .query(schema.Element)
                     .filter(schema.Element.name == target.label)
+                    .filter(schema.Element in scenario.children)
                     .one())
                 flow_type = 'no_hub_type'
                 if getattr(source, 'type', '') == 'hub':
