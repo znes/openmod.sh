@@ -8,14 +8,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-04-06 12:40+0200\n"
+"POT-Creation-Date: 2017-04-11 09:48+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.4.0\n"
+"Generated-By: Babel 2.3.4\n"
 
 #: gui.py:56
 msgid "Please provide correct query parameters. At least 'id'."
@@ -49,15 +49,19 @@ msgstr ""
 msgid "Please come back later."
 msgstr ""
 
-#: mcbeth.py:107
-msgid "No description provided."
+#: web.py:154
+msgid "Invalid username/password combination."
+msgstr ""
+
+#: web.py:174
+msgid "Logged out"
 msgstr ""
 
 #: templates/base_layout.html:38
 msgid "Scenario Overview"
 msgstr ""
 
-#: templates/base_layout.html:41 templates/edit_scenario.html:435
+#: templates/base_layout.html:41 templates/edit_scenario.html:439
 msgid "Import"
 msgstr ""
 
@@ -109,36 +113,28 @@ msgstr ""
 msgid "Uploading..."
 msgstr ""
 
-#: templates/base_layout.html:157
-msgid "scenariofile"
-msgstr ""
-
-#: templates/base_layout.html:164
+#: templates/base_layout.html:165
 msgid "Upload another"
 msgstr ""
 
-#: templates/base_layout.html:165
+#: templates/base_layout.html:166
 msgid "Upload successfull!"
 msgstr ""
 
-#: templates/base_layout.html:167 templates/base_layout.html:172
+#: templates/base_layout.html:168 templates/base_layout.html:173
 msgid "Try again"
 msgstr ""
 
-#: templates/base_layout.html:168
+#: templates/base_layout.html:169
 msgid "Scenario name already taken!"
 msgstr ""
 
-#: templates/base_layout.html:169
+#: templates/base_layout.html:170
 msgid "Choose a new scenario name:"
 msgstr ""
 
-#: templates/base_layout.html:173
+#: templates/base_layout.html:174
 msgid "An error occurred!"
-msgstr ""
-
-#: templates/base_layout.html:177 templates/base_layout.html:179
-msgid "new_scenario_name"
 msgstr ""
 
 #: templates/edit_scenario.html:21 templates/widgets/jobs.html:5
@@ -170,275 +166,303 @@ msgstr ""
 msgid "Anteil in"
 msgstr ""
 
-#: templates/edit_scenario.html:161
+#: templates/edit_scenario.html:164
 msgid "Residualload"
 msgstr ""
 
-#: templates/edit_scenario.html:174
+#: templates/edit_scenario.html:177
 msgid "Demand"
 msgstr ""
 
-#: templates/edit_scenario.html:182
+#: templates/edit_scenario.html:185
 msgid "Production"
 msgstr ""
 
-#: templates/edit_scenario.html:309 templates/edit_scenario.html:586
-#: templates/edit_scenario.html:631
+#: templates/edit_scenario.html:312 templates/edit_scenario.html:598
+#: templates/edit_scenario.html:643
 msgid "No results in db!"
 msgstr ""
 
-#: templates/edit_scenario.html:313
+#: templates/edit_scenario.html:316
 msgid "CO2-Emissions in Kiel"
 msgstr ""
 
-#: templates/edit_scenario.html:365
+#: templates/edit_scenario.html:368
 msgid "KI Wärme"
 msgstr ""
 
-#: templates/edit_scenario.html:386
+#: templates/edit_scenario.html:388
 msgid "Wärmepumpen Potential"
 msgstr ""
 
-#: templates/edit_scenario.html:390
+#: templates/edit_scenario.html:394
 msgid "KI Solar"
 msgstr ""
 
-#: templates/edit_scenario.html:391
+#: templates/edit_scenario.html:395
 msgid "KI Wind"
 msgstr ""
 
-#: templates/edit_scenario.html:392
+#: templates/edit_scenario.html:396
 msgid "Biomethan Import"
 msgstr ""
 
-#: templates/edit_scenario.html:393
+#: templates/edit_scenario.html:397
 msgid "Biomasse Import"
 msgstr ""
 
-#: templates/edit_scenario.html:426 templates/edit_scenario.html:428
+#: templates/edit_scenario.html:401 templates/edit_scenario.html:430
+#: templates/edit_scenario.html:432
 msgid "Area"
 msgstr ""
 
-#: templates/edit_scenario.html:426
+#: templates/edit_scenario.html:430
 msgid "in ha"
 msgstr ""
 
-#: templates/edit_scenario.html:428 templates/edit_scenario.html:492
-#: templates/edit_scenario.html:544
+#: templates/edit_scenario.html:432 templates/edit_scenario.html:504
+#: templates/edit_scenario.html:556
 msgid "in"
 msgstr ""
 
-#: templates/edit_scenario.html:434
+#: templates/edit_scenario.html:438
 msgid "Strom"
 msgstr ""
 
-#: templates/edit_scenario.html:434
+#: templates/edit_scenario.html:438
 msgid "Wärme"
 msgstr ""
 
-#: templates/edit_scenario.html:435
+#: templates/edit_scenario.html:439
 msgid "Export"
 msgstr ""
 
-#: templates/edit_scenario.html:450
+#: templates/edit_scenario.html:442
 msgid "Emissionen"
 msgstr ""
 
-#: templates/edit_scenario.html:483 templates/edit_scenario.html:535
+#: templates/edit_scenario.html:455
+msgid "Absolut Emissions"
+msgstr ""
+
+#: templates/edit_scenario.html:462
+msgid "Emission Factor (Production)"
+msgstr ""
+
+#: templates/edit_scenario.html:492
+msgid "Electricity Summary"
+msgstr ""
+
+#: templates/edit_scenario.html:495 templates/edit_scenario.html:547
 msgid "Installed power"
 msgstr ""
 
-#: templates/edit_scenario.html:483 templates/edit_scenario.html:535
-#: templates/edit_scenario.html:1008 templates/edit_scenario.html:1013
-#: templates/edit_scenario.html:1017 templates/edit_scenario.html:1018
+#: templates/edit_scenario.html:495 templates/edit_scenario.html:547
+#: templates/edit_scenario.html:1026 templates/edit_scenario.html:1031
+#: templates/edit_scenario.html:1035 templates/edit_scenario.html:1036
 msgid "in MW"
 msgstr ""
 
-#: templates/edit_scenario.html:486
+#: templates/edit_scenario.html:498
 msgid "Electricity production"
 msgstr ""
 
-#: templates/edit_scenario.html:486 templates/edit_scenario.html:538
+#: templates/edit_scenario.html:498 templates/edit_scenario.html:550
 msgid "in GWh"
 msgstr ""
 
-#: templates/edit_scenario.html:489 templates/edit_scenario.html:541
+#: templates/edit_scenario.html:501 templates/edit_scenario.html:553
 msgid "Fullload hours"
 msgstr ""
 
-#: templates/edit_scenario.html:489 templates/edit_scenario.html:541
+#: templates/edit_scenario.html:501 templates/edit_scenario.html:553
 msgid "in h"
 msgstr ""
 
-#: templates/edit_scenario.html:492 templates/edit_scenario.html:544
+#: templates/edit_scenario.html:504 templates/edit_scenario.html:556
 msgid "Share of production in Kiel"
 msgstr ""
 
-#: templates/edit_scenario.html:538
+#: templates/edit_scenario.html:543
+msgid "Heat Summary"
+msgstr ""
+
+#: templates/edit_scenario.html:550
 msgid "Heat production"
 msgstr ""
 
-#: templates/edit_scenario.html:557 templates/edit_scenario.html:602
-#: templates/edit_scenario.html:656
+#: templates/edit_scenario.html:569 templates/edit_scenario.html:614
+#: templates/edit_scenario.html:668
 msgid "No hubs founds!"
 msgstr ""
 
-#: templates/edit_scenario.html:590
+#: templates/edit_scenario.html:602
 msgid "Yearly Production, Consumption and Im-/Export in"
 msgstr ""
 
-#: templates/edit_scenario.html:634
+#: templates/edit_scenario.html:646
 msgid "No production for selected hub!"
 msgstr ""
 
-#: templates/edit_scenario.html:642
+#: templates/edit_scenario.html:654
 msgid "Hourly Production and Demand in"
 msgstr ""
 
-#: templates/edit_scenario.html:643 templates/edit_scenario.html:721
+#: templates/edit_scenario.html:655 templates/edit_scenario.html:733
 msgid "Production and Demand in MW"
 msgstr ""
 
-#: templates/edit_scenario.html:712
+#: templates/edit_scenario.html:724
 msgid "No data to render!"
 msgstr ""
 
-#: templates/edit_scenario.html:720
+#: templates/edit_scenario.html:732
 msgid "Hourly Renewable Production and Demand in"
 msgstr ""
 
-#: templates/edit_scenario.html:731
+#: templates/edit_scenario.html:740
+msgid ""
+"Uploading scenario data. Simulation will start, once upload is finished. "
+"Please do not navigate away from this page or start a new simulation "
+"until you are notified that this one runs in the background."
+msgstr ""
+
+#: templates/edit_scenario.html:741
 msgid ""
 "The simulation runs in the background. See Jobs for an overview of "
-"running simmulation."
+"running simulations."
 msgstr ""
 
-#: templates/edit_scenario.html:747
-msgid "Result already exists."
-msgstr ""
-
-#: templates/edit_scenario.html:751
+#: templates/edit_scenario.html:742
 msgid ""
 "There are unsaved changes. You have to save them before you can run a "
 "simulation."
 msgstr ""
 
-#: templates/edit_scenario.html:751
+#: templates/edit_scenario.html:760
+msgid "Result already exists."
+msgstr ""
+
+#: templates/edit_scenario.html:764
 msgid "Unsaved changes"
 msgstr ""
 
-#: templates/edit_scenario.html:818
+#: templates/edit_scenario.html:831
 msgid "New Name"
 msgstr ""
 
-#: templates/edit_scenario.html:818
+#: templates/edit_scenario.html:831
 msgid "Senario Name"
 msgstr ""
 
-#: templates/edit_scenario.html:824
+#: templates/edit_scenario.html:837
 msgid "alert"
 msgstr ""
 
-#: templates/edit_scenario.html:824
+#: templates/edit_scenario.html:837
 msgid "Input needs to be more than 0 characters."
 msgstr ""
 
-#: templates/edit_scenario.html:829
+#: templates/edit_scenario.html:842
 msgid "New description"
 msgstr ""
 
-#: templates/edit_scenario.html:857
+#: templates/edit_scenario.html:870
 msgid "Saved successfully! Opening new scenario."
 msgstr ""
 
-#: templates/edit_scenario.html:857
+#: templates/edit_scenario.html:870
 msgid "Info"
 msgstr ""
 
-#: templates/edit_scenario.html:862
+#: templates/edit_scenario.html:875
 msgid "Scenario name is already taken. Try again."
 msgstr ""
 
-#: templates/edit_scenario.html:862 templates/edit_scenario.html:877
-#: templates/edit_scenario.html:1186
+#: templates/edit_scenario.html:875 templates/edit_scenario.html:890
+#: templates/edit_scenario.html:1204
 msgid "Alert"
 msgstr ""
 
-#: templates/edit_scenario.html:877
+#: templates/edit_scenario.html:890
 msgid "Override existing scenario with new values?"
 msgstr ""
 
-#: templates/edit_scenario.html:902
+#: templates/edit_scenario.html:898
+msgid "Scenario will be uploaded and saved. This can take a while."
+msgstr ""
+
+#: templates/edit_scenario.html:918
 msgid "Opening updated scenario."
 msgstr ""
 
-#: templates/edit_scenario.html:902
+#: templates/edit_scenario.html:918
 msgid "Updated successfully!"
 msgstr ""
 
-#: templates/edit_scenario.html:907
+#: templates/edit_scenario.html:923
 msgid "Error. This should not have happened. Call somebody."
 msgstr ""
 
-#: templates/edit_scenario.html:969
+#: templates/edit_scenario.html:987
 msgid "No results in db"
 msgstr ""
 
-#: templates/edit_scenario.html:1007
+#: templates/edit_scenario.html:1025
 msgid "Hourly"
 msgstr ""
 
-#: templates/edit_scenario.html:1012
+#: templates/edit_scenario.html:1030
 msgid "Duration curve of"
 msgstr ""
 
-#: templates/edit_scenario.html:1017
+#: templates/edit_scenario.html:1035
 msgid "Heatmap of"
 msgstr ""
 
-#: templates/edit_scenario.html:1038
+#: templates/edit_scenario.html:1056
 msgid "Residuallast"
 msgstr ""
 
-#: templates/edit_scenario.html:1186
+#: templates/edit_scenario.html:1204
 msgid "Do you really want to loose your changes?"
 msgstr ""
 
-#: templates/edit_scenario.html:1200
+#: templates/edit_scenario.html:1218
 msgid "WITH CHANGES"
 msgstr ""
 
-#: templates/edit_scenario.html:1202
+#: templates/edit_scenario.html:1220
 msgid "Discard Changes"
 msgstr ""
 
-#: templates/edit_scenario.html:1237
+#: templates/edit_scenario.html:1255
 msgid "The simulation for this scenario is finished."
 msgstr ""
 
-#: templates/edit_scenario.html:1237
+#: templates/edit_scenario.html:1255
 msgid "Results are available"
 msgstr ""
 
-#: templates/edit_scenario.html:1241
+#: templates/edit_scenario.html:1259
 msgid "The simulation for the last scenario is finished."
 msgstr ""
 
-#: templates/edit_scenario.html:1242
+#: templates/edit_scenario.html:1260
 msgid "But since starting the simulation you have changed some slider values."
 msgstr ""
 
-#: templates/edit_scenario.html:1243
+#: templates/edit_scenario.html:1261
 msgid "If you want to keep your changes, save them as a new scenario."
 msgstr ""
 
-#: templates/edit_scenario.html:1244
+#: templates/edit_scenario.html:1262
 msgid ""
 "If you want to discard the changes and see the results, just refresh this"
 " page."
 msgstr ""
 
-#: templates/edit_scenario.html:1245
+#: templates/edit_scenario.html:1263
 msgid "Results are available, but..."
 msgstr ""
 
@@ -478,7 +502,7 @@ msgstr ""
 msgid "Description"
 msgstr ""
 
-#: templates/show_scenarios.html:26
+#: templates/show_scenarios.html:26 templates/show_scenarios.html:40
 msgid "Edit"
 msgstr ""
 
@@ -490,7 +514,7 @@ msgstr ""
 msgid "Get Results"
 msgstr ""
 
-#: templates/show_scenarios.html:29
+#: templates/show_scenarios.html:29 templates/show_scenarios.html:58
 msgid "Delete"
 msgstr ""
 
@@ -534,7 +558,7 @@ msgstr ""
 msgid "Loading"
 msgstr ""
 
-#: templates/show_scenarios.html:169
+#: templates/show_scenarios.html:171
 msgid "No results available"
 msgstr ""
 
