@@ -47,20 +47,6 @@ the transaction. To do so, `cd` into the repository's directory and run:
   python setup-database.py
   ```
 
-## Creating and dumping scenarios
-
-To setup test scenarios in the database, just run:
-  ```
-  python misc/geojson2db.py data/scenarios/test1/test1.geojson
-  python misc/csv2geojson.py data/scenario/test2/ data/scenario/test2/test2.geojson
-  python misc/geojson2db.py data/scenario/test2/test2.geojson
-  ```
-
-To dump a scenario from the database as geojson, just run:
-  ```
-  python db2geojson.py test1 test-dump.geojson
-  ```
-
 ## Ready to start
 
 Now you're ready to start `openmod.sh` which is as simple as
