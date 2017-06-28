@@ -411,7 +411,7 @@ def populate_energy_system(es, node_data):
                             Flow(variable_costs=_float(n, 'variable_cost'))},
                         nominal_capacity=_float(n,'installed_energy'),
                         nominal_input_capacity_ratio=nicr,
-                        nominal_output_capacity_ration=nocr)
+                        nominal_output_capacity_ratio=nocr)
             es.add(obj)
             obj.type = n['type']
 
