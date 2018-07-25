@@ -44,13 +44,29 @@ expects its database configuration to be in a `config.ini` section named
 read and write access. Additionaly to the standard `oemof.db` options the
 following section have to be specified:
 schema: e.g. public, the database schema to be used
-webport: e.g. 8000, the port being used when running openmod.sh.py
+webport: e.g. 8000, the port being used when running openmod.sh.py.
+
+A full config section will look like this:
+```
+[openMod.sh R/W]
+username = test_user
+database = test_db
+host     = localhost
+port     = 5432
+pw       = test_pw
+schema   = test_schema
+webport  = 8000
+login_disabled = false
+```
+The standard location for it is in a folder called `.oemof/` in your home
+directory.
+
 
 ## Installation and Execution
 
 As `openmod.sh` is not a full fledged python package yet, there's really
 nothing to install, you'll have to clone the repository manually. As mentioned
-in [Requirements](#requirements). After you have done this, you should have a 
+in [Requirements](#requirements). After you have done this, you should have a
 directory containing the source code for `openmod.sh`. Let's call it
 OPENMOD.SH for the reminder of this section.
 
@@ -91,4 +107,3 @@ Enjoy.
 [0]: https://github.com/oemof/oemof.db/blob/dev/README.rst#configuration
 [1]: http://flask-sqlalchemy.pocoo.org/2.1/
 [2]: http://flask-sqlalchemy.pocoo.org/2.1/contexts/#introduction-into-contexts
-
