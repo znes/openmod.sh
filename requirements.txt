@@ -11,6 +11,10 @@ WTForms
 pydot
 networkx
 
-# oemof.db which is not yet a package on PyPI
--e git+https://github.com/energiekollektiv/oemof.db.git@dev#egg=oemof.db
--e git+https://github.com/energiekollektiv/oemof.git@integration/openmodsh#egg=oemof
+# the following repositories are not available anymore at github
+#-e git+https://github.com/energiekollektiv/oemof.db.git@dev#egg=oemof.db
+#-e git+https://github.com/energiekollektiv/oemof.git@integration/openmodsh#egg=oemof
+
+# therefore a snapshot is included in this repository
+-e dependencies/oemof.db
+-e dependencies/oemof
