@@ -1,6 +1,6 @@
 # **openMod.sh**: The open energy model for Schleswig-Holstein.
 
-openMod.sh v0.2
+openMod.sh v0.3dev
 Copyright (C) 2017  ZNES Flensburg
 
 This program is free software: you can redistribute it and/or modify
