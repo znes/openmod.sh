@@ -47,17 +47,18 @@ schema: e.g. public, the database schema to be used
 webport: e.g. 8000, the port being used when running openmod.sh.py.
 
 A full config section will look like this:
-```
-[openMod.sh R/W]
-username = test_user
-database = test_db
-host     = localhost
-port     = 5432
-pw       = test_pw
-schema   = test_schema
-webport  = 8000
-login_disabled = false
-```
+
+  ```
+  [openMod.sh R/W]
+  username = test_user
+  database = test_db
+  host     = localhost
+  port     = 5432
+  pw       = test_pw
+  schema   = test_schema
+  webport  = 8000
+  login_disabled = false
+  ```
 The standard location for it is in a folder called `.oemof/` in your home
 directory.
 
@@ -86,6 +87,10 @@ the transaction. To do so, `cd` into the repository's directory and run:
   ```
   python setup-database.py
   ```
+
+Note that the specified user, database and schema from the config section have
+to exist beforehand in the posgresql database. Additionally the postgis
+extension is needed.
 
 ## Ready to start
 
