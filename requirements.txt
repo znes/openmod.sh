@@ -18,3 +18,7 @@ networkx
 # therefore a snapshot is included in this repository
 -e dependencies/oemof.db
 -e dependencies/oemof
+
+# needs older pyomo version that fits oemof
+# unfortunately oemof does not take care of this...
+pyomo==5.3
