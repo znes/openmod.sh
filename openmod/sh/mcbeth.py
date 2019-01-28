@@ -582,7 +582,9 @@ def wrapped_simulation(scenario, connection):
 
 if __name__ == "__main__":
 
-    scenario = json.load(open('/home/simon/Downloads/file.json'))
+    scenario = json.load(
+        open("data/scenarios/kiel-2050-GMK-explicit-complete.json")
+        )
 
     es = create_energy_system(scenario)
     es = populate_energy_system(es=es, node_data=scenario['children'])

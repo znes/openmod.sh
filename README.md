@@ -90,7 +90,9 @@ the transaction. To do so, `cd` into the repository's directory and run:
 
 Note that the specified user, database and schema from the config section have
 to exist beforehand in the posgresql database. Additionally the postgis
-extension is needed.
+extension is needed. Also the POSTGIS extension for postgres needs to be installed
+and activated.
+
 
 ## Ready to start
 
