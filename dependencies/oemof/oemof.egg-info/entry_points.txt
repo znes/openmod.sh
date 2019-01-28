@@ -1,0 +1,3 @@
+[console_scripts]
+oemof_examples = examples.examples:examples
+

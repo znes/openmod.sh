@@ -1,0 +1,4 @@
+sqlalchemy>=1.0
+shapely
+psycopg2
+pandas<=0.19.1,>=0.19.1
