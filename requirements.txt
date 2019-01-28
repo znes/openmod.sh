@@ -9,7 +9,7 @@ psycopg2
 Flask-WTF
 WTForms
 pydot
-networkx
+networkx==1.9 # because v2.x does not work with openmod.sh 
 
 # the following repositories are not available anymore at github
 #-e git+https://github.com/energiekollektiv/oemof.db.git@dev#egg=oemof.db
